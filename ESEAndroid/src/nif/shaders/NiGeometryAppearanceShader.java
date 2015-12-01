@@ -1,44 +1,27 @@
 package nif.shaders;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.WeakHashMap;
 
-import javax.media.j3d.Appearance;
-import javax.media.j3d.GLSLShaderProgram;
 import javax.media.j3d.Material;
-import javax.media.j3d.NodeComponent;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.RenderingAttributes;
 import javax.media.j3d.Shader;
 import javax.media.j3d.ShaderAppearance;
-import javax.media.j3d.ShaderAttribute;
 import javax.media.j3d.ShaderAttributeSet;
 import javax.media.j3d.ShaderAttributeValue;
 import javax.media.j3d.ShaderProgram;
-import javax.media.j3d.SourceCodeShader;
 import javax.media.j3d.Texture;
 import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.TextureUnitState;
-import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
-import javax.vecmath.Tuple2f;
 import javax.vecmath.Vector2f;
-import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
-
-import com.sun.j3d.utils.shader.StringIO;
 
 import nif.BgsmSource;
 import nif.NifVer;
@@ -47,33 +30,22 @@ import nif.compound.NifColor3;
 import nif.compound.NifMatrix33;
 import nif.compound.NifMatrix44;
 import nif.compound.NifTexCoord;
-import nif.compound.NifTexDesc;
 import nif.enums.BSLightingShaderPropertyShaderType;
-import nif.enums.BSShaderFlags;
-import nif.enums.BSShaderType;
 import nif.enums.FaceDrawMode;
 import nif.enums.SkyrimShaderPropertyFlags1;
 import nif.enums.SkyrimShaderPropertyFlags2;
 import nif.enums.TexClampMode;
-import nif.enums.VertMode;
 import nif.j3d.J3dNiGeometry;
 import nif.j3d.NiToJ3dData;
 import nif.niobject.NiAlphaProperty;
-import nif.niobject.NiDitherProperty;
-import nif.niobject.NiFogProperty;
 import nif.niobject.NiGeometry;
 import nif.niobject.NiMaterialProperty;
-import nif.niobject.NiMultiTextureProperty;
 import nif.niobject.NiObject;
 import nif.niobject.NiProperty;
-import nif.niobject.NiShadeProperty;
 import nif.niobject.NiSourceTexture;
 import nif.niobject.NiSpecularProperty;
 import nif.niobject.NiStencilProperty;
-import nif.niobject.NiTextureModeProperty;
-import nif.niobject.NiTextureProperty;
 import nif.niobject.NiTexturingProperty;
-import nif.niobject.NiVertexColorProperty;
 import nif.niobject.NiWireframeProperty;
 import nif.niobject.NiZBufferProperty;
 import nif.niobject.bgsm.BgsmFile;
@@ -84,14 +56,10 @@ import nif.niobject.bs.BSShaderNoLightingProperty;
 import nif.niobject.bs.BSShaderPPLightingProperty;
 import nif.niobject.bs.BSShaderProperty;
 import nif.niobject.bs.BSShaderTextureSet;
-import nif.niobject.bs.BSSkyShaderProperty;
-import nif.niobject.bs.BSWaterShaderProperty;
-import nif.niobject.bs.Lighting30ShaderProperty;
 import nif.niobject.bs.SkyShaderProperty;
 import nif.niobject.bs.TallGrassShaderProperty;
 import nif.niobject.bs.TileShaderProperty;
 import nif.niobject.bs.WaterShaderProperty;
-import nif.niobject.controller.NiSingleInterpController;
 import utils.convert.NifOpenGLToJava3D;
 import utils.source.TextureSource;
 
@@ -100,7 +68,7 @@ import utils.source.TextureSource;
 
 */
 
-public class J3dNiGeometryShader
+public class NiGeometryAppearanceShader
 {
 
 	//private static WeakHashMap<NiProperty, NodeComponent> propertyLookup = new WeakHashMap<NiProperty, NodeComponent>();
@@ -124,7 +92,7 @@ public class J3dNiGeometryShader
 	private HashSet<ShaderAttributeValue> allShaderAttributeValues = new HashSet<ShaderAttributeValue>();
 	private HashSet<TextureUnitState> allTextureUnitStates = new HashSet<TextureUnitState>();
 
-	public J3dNiGeometryShader(TextureSource textureSource, NiToJ3dData niToJ3dData)
+	public NiGeometryAppearanceShader(TextureSource textureSource, NiToJ3dData niToJ3dData)
 	{
 		this.textureSource = textureSource;
 
@@ -145,23 +113,6 @@ public class J3dNiGeometryShader
 
 		app.setTransparencyAttributes(ta);
 
-	}
-
-	public static Texture loadTexture(String texName, TextureSource ts)
-	{
-		if (ts != null && texName != null && texName.length() > 0)
-		{
-			// morrowind has bmp and tga endings ?
-			texName = texName.toLowerCase().trim();
-			if (texName.endsWith(".bmp"))
-				texName = texName.substring(0, texName.indexOf(".bmp")) + ".dds";
-			else if (texName.endsWith(".tga"))
-				texName = texName.substring(0, texName.indexOf(".tga")) + ".dds";
-
-			return ts.getTexture(texName);
-		}
-
-		return null;
 	}
 
 	class Property
@@ -277,13 +228,13 @@ public class J3dNiGeometryShader
 		uni1i(textureUnitName, texunit++);
 
 		String white = "shaders/nif/white.dds";
-		String black = "shaders/nif/black.dds";
+		//String black = "shaders/nif/black.dds";
 		String default_n = "shaders/nif/default_n.dds";
 
 		// BSLightingShaderProperty
 		if (bslsp != null)
 		{
-			BSShaderTextureSet texSet = (BSShaderTextureSet) niToJ3dData.get(bslsp.TextureSet);
+ 
 
 			uni1f("lightingEffect1", bslsp.LightingEffect1);
 			uni1f("lightingEffect2", bslsp.LightingEffect2);
@@ -539,7 +490,7 @@ public class J3dNiGeometryShader
 		//tangents += t;
 		//auto b = Vector3::crossproduct( n, t );
 		//bitangents += Vector3( dot, unk1f, unk2f );
-		for (Map.Entry<Integer, String> itx : prog.texcoords.entrySet())
+	/*	for (Map.Entry<Integer, String> itx : prog.texcoords.entrySet())
 		{
 
 			// this just my texcoords index, no probs
@@ -600,7 +551,7 @@ public class J3dNiGeometryShader
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				glTexCoordPointer(2, GL_FLOAT, 0, mesh.coords[set].data());
 			}
-		}
+		}*/
 
 		shaderProgram = prog.shaderProgram;
 		shaderAttributeSet = new ShaderAttributeSet();
@@ -637,6 +588,7 @@ public class J3dNiGeometryShader
 
 		if (translucent)
 		{
+			//Note my old code also used1-bslsp.alpha here
 			ta.setTransparency(0.1f);
 			ta.setTransparencyMode(TransparencyAttributes.BLENDED);
 		}
@@ -863,7 +815,7 @@ public class J3dNiGeometryShader
 
 		tus.setTextureAttributes(textureAttributes);
 
-		Texture tex = loadTexture(fileName, textureSource);
+		Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 		tus.setTexture(tex);
 
 		//setUpTimeController(ntp, niToJ3dData);	
@@ -878,7 +830,7 @@ public class J3dNiGeometryShader
 		//no attributes set now
 		tus.setTextureAttributes(textureAttributes);
 
-		Texture tex = loadTexture(fileName, textureSource);
+		Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 		tus.setTexture(tex);
 
 		//setUpTimeController(bslsp, niToJ3dData);
@@ -902,7 +854,7 @@ public class J3dNiGeometryShader
 		}
 		tus.setTextureAttributes(textureAttributes);
 
-		Texture tex = loadTexture(fileName, textureSource);
+		Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 		tus.setTexture(tex);
 
 		//NiSingleInterpController controller = (NiSingleInterpController) niToJ3dData.get(bslsp.controller);
@@ -919,7 +871,7 @@ public class J3dNiGeometryShader
 		//no attributes set now
 		tus.setTextureAttributes(textureAttributes);
 
-		Texture tex = loadTexture(fileName, textureSource);
+		Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 		tus.setTexture(tex);
 
 		//setUpTimeController(bslsp, niToJ3dData);
