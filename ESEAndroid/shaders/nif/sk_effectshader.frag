@@ -3,18 +3,18 @@
 uniform sampler2D SourceTexture;
 uniform sampler2D GreyscaleMap;
 
-uniform bool doubleSided;
+uniform int doubleSided;
 
-uniform bool hasSourceTexture;
-uniform bool hasGreyscaleMap;
-uniform bool greyscaleAlpha;
-uniform bool greyscaleColor;
+uniform int hasSourceTexture;
+uniform int hasGreyscaleMap;
+uniform int greyscaleAlpha;
+uniform int greyscaleColor;
 
-uniform bool useFalloff;
-uniform bool vertexColors;
-uniform bool vertexAlpha;
+uniform int useFalloff;
+uniform int vertexColors;
+uniform int vertexAlpha;
 
-uniform bool hasWeaponBlood;
+uniform int hasWeaponBlood;
 
 uniform vec4 glowColor;
 uniform float glowMult;
@@ -49,7 +49,7 @@ void main( void )
 	// Reconstructed normal
 	//normal = normalize(cross(dFdy(v.xyz), dFdx(v.xyz)));
 	
-	//if ( !doubleSided && !gl_FrontFacing ) { return; }
+	//if ( doubleSided != 1 && !gl_FrontFacing ) { return; }
 	
 	vec3 E = normalize(ViewDir);
 
@@ -57,7 +57,7 @@ void main( void )
 	
 	// Falloff
 	float falloff = 1.0;
-	if ( useFalloff ) {
+	if ( useFalloff == 1 ) {
 		float startO = min(falloffParams.z, 1.0);
 		float stopO = max(falloffParams.w, 0.0);
 		
@@ -72,7 +72,7 @@ void main( void )
 	color.rgb = baseMap.rgb;
 	color.a = baseMap.a;
 	
-	if ( hasWeaponBlood ) {
+	if ( hasWeaponBlood == 1 ) {
 		color.rgb = vec3( 1.0, 0.0, 0.0 ) * baseMap.r;
 		color.a = baseMap.a * baseMap.g;
 	}
@@ -80,7 +80,7 @@ void main( void )
 	color.rgb *= C.rgb * glowColor.rgb;
 	color.a *= C.a * falloff * alphaMult;
 
-	if ( greyscaleColor ) {
+	if ( greyscaleColor == 1 ) {
 		// Only Red emissive channel is used
 		float emRGB = glowColor.r;
 
@@ -89,7 +89,7 @@ void main( void )
 		color.rgb = luG.rgb;
 	}
 	
-	if ( greyscaleAlpha ) {
+	if ( greyscaleAlpha == 1 ) {
 		vec4 luA = colorLookup( baseMap.a, C.a * falloff * alphaMult );
 		
 		color.a = luA.a;
