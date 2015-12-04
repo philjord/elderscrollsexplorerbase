@@ -24,6 +24,11 @@ public class SourceCodeShader2 extends SourceCodeShader
 		return shaderSource;
 	}
 
+	public boolean shaderHasVar(String var)
+	{
+		return shaderSource.contains(" " + var + ";");
+	}
+
 	//TODO: MUCH improve this checking, convert type to glsl and check white space properly
 	public boolean shaderHasVar(String var, String type)
 	{

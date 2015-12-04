@@ -11,7 +11,7 @@ varying vec4 A;
 varying vec4 C;
 varying vec4 D;
  
-varying float vErr;
+
 
 void main( void )
 {
@@ -32,11 +32,7 @@ void main( void )
 	ViewDir = tbnMatrix * -v.xyz;
 	LightDir = tbnMatrix * gl_LightSource[0].position.xyz;
 	
-	A = gl_LightModel.ambient;
+	A = gl_LightSource[0].ambient;
 	C = gl_Color;
-	D = gl_LightSource[0].diffuse;	
-	
-	//if(gl_LightSource[0].diffuse != vec3(0.0))
-	vErr==1.0;
-	
+	D = gl_LightSource[0].diffuse;
 }
