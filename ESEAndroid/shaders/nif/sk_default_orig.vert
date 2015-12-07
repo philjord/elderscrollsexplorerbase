@@ -35,4 +35,5 @@ void main( void )
 	A = gl_LightSource[0].ambient;
 	C = gl_Color;
 	D = gl_LightSource[0].diffuse;
+	
 }

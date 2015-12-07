@@ -1,7 +1,7 @@
 package nif.shaders;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.ImageComponent;
@@ -37,6 +37,7 @@ import nif.enums.SkyrimShaderPropertyFlags1;
 import nif.enums.SkyrimShaderPropertyFlags2;
 import nif.enums.TexClampMode;
 import nif.j3d.J3dNiGeometry;
+import nif.j3d.J3dNiTriBasedGeom;
 import nif.j3d.NiToJ3dData;
 import nif.niobject.NiAlphaProperty;
 import nif.niobject.NiGeometry;
@@ -77,7 +78,7 @@ import utils.source.TextureSource;
  
  sk_env must have the wrld matrix sent through, perhaps just a dummy to ensure the variable is bound?
  
- 
+ https://gist.github.com/patriciogonzalezvivo/3a81453a24a542aabc63 looks like some real good lighting equations
 */
 
 public class NiGeometryAppearanceShader
@@ -100,8 +101,8 @@ public class NiGeometryAppearanceShader
 
 	private ShaderAttributeSet shaderAttributeSet = null;
 
-	private HashSet<ShaderAttributeValue2> allShaderAttributeValues = new HashSet<ShaderAttributeValue2>();
-	private HashSet<TextureUnitState> allTextureUnitStates = new HashSet<TextureUnitState>();
+	private ArrayList<ShaderAttributeValue2> allShaderAttributeValues = new ArrayList<ShaderAttributeValue2>();
+	private ArrayList<TextureUnitState> allTextureUnitStates = new ArrayList<TextureUnitState>();
 
 	private Program selectedProgram;
 
@@ -111,6 +112,10 @@ public class NiGeometryAppearanceShader
 	{
 		this.textureSource = textureSource;
 		this.niToJ3dData = niToJ3dData;
+
+		//ensure tangetns loaded to geometries
+		J3dNiTriBasedGeom.TANGENTS_BITANGENTS = true;
+		J3dNiTriBasedGeom.INTERLEAVE = false;
 
 		//configure app defaults	
 		mat.setLightingEnable(true);
@@ -461,105 +466,19 @@ public class NiGeometryAppearanceShader
 			uni2f("uvOffset", 0.0f, 0.0f);
 		}
 
-		//TODO: get teh tangenet adn bi tangent into the tex coord in the 2 bits of code
-		// the transTangents are for morphable meshes, so they operate exactly like coords
-		// so for me these are normal texcoord indexes, from .vert
-		//N = normalize(gl_NormalMatrix * gl_Normal);
-		//t = normalize(gl_NormalMatrix * gl_MultiTexCoord1.xyz);
-		//b = normalize(gl_NormalMatrix * gl_MultiTexCoord2.xyz);
-		//I need to set them (obviously) but I also need to be able to morph them(which is a freebie cos they
-		// the same as coords)
-		// interleave handles this fine!
-
-		// because it's ALWAYS in the prog file , I'll just detect not that and warn, otherwise this lot is in the
-		// J3dNiTriBasedGeom code in all cases
-		//texcoords 0 base
-		//texcoords 1 tangents
-		//texcoords 2 bitangents 
-		//I see      once: probably fine
-		//texcoords 0 base
-		//#texcoords 1 tangents
-		//#texcoords 2 bitangents
-
-		//  FO4 bitangents:
-		//auto t = nif->get<ByteVector3>( idx, "Tangent" );
-		//tangents += t;
-		//auto b = Vector3::crossproduct( n, t );
-		//bitangents += Vector3( dot, unk1f, unk2f );
-
-		//notice that the "base" values are in fact pulled from teh list of texture types
-		/*	for (Map.Entry<Integer, String> itx : prog.texcoords.entrySet())
-			{
-		
-				// this just my texcoords index, no probs
-				//map type one(can I use maps?) 
-				if (!activateTextureUnit(itx.getKey()))
-					return false;
-		
-				if (itx.getValue() == "tangents")
-				{
-					if (mesh.tangents.count())
-					{
-						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-						glTexCoordPointer(3, GL_FLOAT, 0, mesh.tangents.data());
-					}
-					else
-					{
-						return false;
-					}
-		
-				}
-				else if (itx.getValue() == "bitangents")
-				{
-					if (mesh.bitangents.count())
-					{
-						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-						glTexCoordPointer(3, GL_FLOAT, 0, mesh.bitangents.data());
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else if (texprop != null)
-				{
-					int txid = ShaderProgarms.TexturingPropertygetId(itx.getValue());
-					if (txid < 0)
-						return false;
-		
-					int set = texprop.coordSet(txid);
-		
-					if (set < 0 || !(set < mesh.coords.count()) || !mesh.coords[set].count())
-						return false;
-		
-					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-					glTexCoordPointer(2, GL_FLOAT, 0, mesh.coords[set].data());
-				}
-				else if (bsprop != null)
-				{
-					int txid = ShaderProgarms.BSShaderLightingPropertygetId(itx.getValue());
-					if (txid < 0)
-						return false;
-		
-					int set = 0;
-		
-					if (set < 0 || !(set < mesh.coords.count()) || !mesh.coords[set].count())
-						return false;
-		
-					glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-					glTexCoordPointer(2, GL_FLOAT, 0, mesh.coords[set].data());
-				}
-			}*/
-
 		shaderProgram = new GLSLShaderProgram2();
 		shaderProgram.name = prog.getName();
 		shaderProgram.setShaders(prog.shaders.values().toArray(new Shader[] {}));
 		shaderAttributeSet = new ShaderAttributeSet();
 
+		//TODO: should I check for variable existence??
+		shaderProgram.setVertexAttrNames(new String[] { "tangent", "binormal" });
+
 		String[] shaderAttrNames = new String[allShaderAttributeValues.size()];
 		int i = 0;
 		for (ShaderAttributeValue sav : allShaderAttributeValues)
 		{
+			System.out.println("i= " + i + " " + sav.getAttributeName() + " " + sav.getValue());
 			shaderAttrNames[i++] = sav.getAttributeName();
 			shaderAttributeSet.put(sav);
 		}
@@ -960,8 +879,10 @@ public class NiGeometryAppearanceShader
 			//NiSingleInterpController controller = (NiSingleInterpController) niToJ3dData.get(bslsp.controller);
 			//setUpTimeController(controller, niToJ3dData);
 
+			System.out.println("bound " + textureUnitName + " to " + texunit + " with " + fileName);
 			allTextureUnitStates.add(tus);
 			uni1i(textureUnitName, texunit++);
+
 		}
 
 	}

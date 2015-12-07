@@ -35,8 +35,6 @@ varying vec4 A;
 varying vec4 C;
 varying vec4 D;
 
-varying float vErr;
-
 
 vec3 tonemap(vec3 x)
 {
@@ -126,15 +124,10 @@ void main( void )
 		albedo *= tintColor;
 	}
 	
-	// diffuse is 0!
-	color.rgb = (albedo * (diffuse + emissive) + spec);
+	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.rgb = tonemap( color.rgb ) / tonemap( vec3(1.0) );
 	color.a = C.a * baseMap.a;
 
 	gl_FragColor = color;
 	gl_FragColor.a *= alpha;
-	
-	if(vErr!=1.0)
-	gl_FragColor.rgb = vec3(1.0,0.0,0.0);
-
 }
