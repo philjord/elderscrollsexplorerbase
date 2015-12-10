@@ -1,4 +1,3 @@
-
 varying vec3 LightDir;
 varying vec3 ViewDir;
 
@@ -19,7 +18,7 @@ void main( void )
 	ViewDir = -v.xyz;
 	LightDir = gl_LightSource[0].position.xyz;
 
-	A = gl_LightSource[0].ambient;
+	A = gl_LightModel.ambient;
 	C = gl_Color;
 	D = gl_LightSource[0].diffuse;
 }

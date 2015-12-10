@@ -141,6 +141,31 @@ public class NiGeometryAppearanceShader
 		return app;
 	}
 
+	public String setupShaderProgram(NiGeometry niGeometry, NiToJ3dData niToJ3dData, String hint)
+	{
+		ShaderPrograms.loadShaderPrograms();
+
+		PropertyList props = new PropertyList(niGeometry.properties, niToJ3dData);
+
+		if (hint != null)
+		{
+			ShaderPrograms.Program program = ShaderPrograms.programs.get(hint);
+
+			if (program != null && program.isStatusOk() && setupProgram(program, niGeometry, niToJ3dData, props))
+				return hint;
+		}
+
+		for (ShaderPrograms.Program program : ShaderPrograms.programs.values())
+		{
+			//System.out.println("program checked " + program);
+			if (program.isStatusOk() && setupProgram(program, niGeometry, niToJ3dData, props))
+				return program.getName();
+		}
+
+		//null mean use fixed
+		return null;
+	}
+
 	private boolean setupProgram(ShaderPrograms.Program prog, NiGeometry niGeometry, NiToJ3dData niToJ3dData, PropertyList props)
 	{
 
@@ -148,10 +173,6 @@ public class NiGeometryAppearanceShader
 			return false;
 
 		this.selectedProgram = prog;
-		//if (!prog.getName().contains("sk_"))
-		System.out.println("using prog " + prog.getName());
-		//for (String name : prog.shaders.keySet())
-		//	System.out.println("shaderCode " + name + "\n" + prog.shaders.get(name).getShaderSource());
 
 		// texturing
 
@@ -466,13 +487,17 @@ public class NiGeometryAppearanceShader
 			uni2f("uvOffset", 0.0f, 0.0f);
 		}
 
+		System.out.println("using prog " + prog.getName());
+		//for (String name : prog.shaders.keySet())
+		//	System.out.println("shaderCode " + name + "\n" + prog.shaders.get(name).getShaderSource());
+
 		shaderProgram = new GLSLShaderProgram2();
 		shaderProgram.name = prog.getName();
 		shaderProgram.setShaders(prog.shaders.values().toArray(new Shader[] {}));
 		shaderAttributeSet = new ShaderAttributeSet();
 
-		//TODO: should I check for variable existence??
-		shaderProgram.setVertexAttrNames(new String[] { "tangent", "binormal" });
+		if (programHasVar("tangent", 0))
+			shaderProgram.setVertexAttrNames(new String[] { "tangent", "binormal" });
 
 		String[] shaderAttrNames = new String[allShaderAttributeValues.size()];
 		int i = 0;
@@ -486,7 +511,10 @@ public class NiGeometryAppearanceShader
 		shaderProgram.setShaderAttrNames(shaderAttrNames);
 
 		TextureUnitState[] tus = allTextureUnitStates.toArray(new TextureUnitState[] {});
-
+		for (TextureUnitState tu : tus)
+		{
+			System.out.println("tu " + tu.getName());
+		}
 		app.setTextureUnitState(tus);
 		app.setShaderProgram(shaderProgram);
 		app.setShaderAttributeSet(shaderAttributeSet);
@@ -769,25 +797,24 @@ public class NiGeometryAppearanceShader
 
 			tus.setTextureAttributes(textureAttributes);
 
-			if (fileName != null && fileName.trim().length() > 0)
+			if (textureSource.textureFileExists(fileName))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
-				if (tex == null)
-				{
-					System.out.println("bindCube BSLightingShaderProperty " + fileName + " No Texture found " + bslsp.nVer.fileName);
-				}
-				else
-				{
-					ImageComponent[] ics = tex.getImages();
-					TextureCubeMap tcm = new TextureCubeMap(ics.length <= 1 ? Texture.BASE_LEVEL : Texture.MULTI_LEVEL_MIPMAP, Texture.RGBA,
-							tex.getWidth());
 
-					for (int f = 0; f < 6; f++)
-						for (int l = 0; l < ics.length; l++)
-							tcm.setImage(l, f, (ImageComponent2D) ics[l]);
+				ImageComponent[] ics = tex.getImages();
+				TextureCubeMap tcm = new TextureCubeMap(ics.length <= 1 ? Texture.BASE_LEVEL : Texture.MULTI_LEVEL_MIPMAP, Texture.RGBA,
+						tex.getWidth());
 
-					tus.setTexture(tcm);
-				}
+				for (int f = 0; f < 6; f++)
+					for (int l = 0; l < ics.length; l++)
+						tcm.setImage(l, f, (ImageComponent2D) ics[l]);
+
+				tus.setTexture(tcm);
+				tus.setName(fileName);
+			}
+			else
+			{
+				System.out.println("bindCube BSLightingShaderProperty " + fileName + " No Texture found " + bslsp.nVer.fileName);
 			}
 
 			//setUpTimeController(ntp, niToJ3dData);	
@@ -810,12 +837,15 @@ public class NiGeometryAppearanceShader
 
 			tus.setTextureAttributes(textureAttributes);
 
-			if (fileName != null && fileName.trim().length() > 0)
+			if (textureSource.textureFileExists(fileName))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
-				if (tex == null)
-					System.out.println("NiTexturingProperty " + fileName + " No Texture found " + ntp.nVer.fileName);
 				tus.setTexture(tex);
+				tus.setName(fileName);
+			}
+			else
+			{
+				System.out.println("NiTexturingProperty " + fileName + " No Texture found " + ntp.nVer.fileName);
 			}
 
 			//setUpTimeController(ntp, niToJ3dData);	
@@ -834,12 +864,15 @@ public class NiGeometryAppearanceShader
 			//no attributes set now
 			tus.setTextureAttributes(textureAttributes);
 
-			if (fileName != null && fileName.trim().length() > 0)
+			if (textureSource.textureFileExists(fileName))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
-				if (tex == null)
-					System.out.println("BSShaderLightingProperty " + fileName + " No Texture found " + bsprop.nVer.fileName);
 				tus.setTexture(tex);
+				tus.setName(fileName);
+			}
+			else
+			{
+				System.out.println("BSShaderLightingProperty " + fileName + " No Texture found " + bsprop.nVer.fileName);
 			}
 
 			//setUpTimeController(bslsp, niToJ3dData);
@@ -867,13 +900,15 @@ public class NiGeometryAppearanceShader
 			}
 			//tus.setTextureAttributes(textureAttributes);
 
-			if (fileName != null && fileName.trim().length() > 0
-					&& !fileName.toLowerCase().contains("terrain\\tamriel\\trees\\tamrieltreelod_n.dds"))
+			if (textureSource.textureFileExists(fileName))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
-				if (tex == null)
-					System.out.println("BSLightingShaderProperty " + fileName + " No Texture found " + bslsp.nVer.fileName);
 				tus.setTexture(tex);
+				tus.setName(fileName);
+			}
+			else
+			{
+				System.out.println("BSLightingShaderProperty " + fileName + " No Texture found " + bslsp.nVer.fileName);
 			}
 
 			//NiSingleInterpController controller = (NiSingleInterpController) niToJ3dData.get(bslsp.controller);
@@ -895,12 +930,15 @@ public class NiGeometryAppearanceShader
 			TextureAttributes textureAttributes = new TextureAttributes();
 			//no attributes set now
 			tus.setTextureAttributes(textureAttributes);
-			if (fileName != null && fileName.trim().length() > 0)
+			if (textureSource.textureFileExists(fileName))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
-				if (tex == null)
-					System.out.println("BSEffectShaderProperty " + fileName + " No Texture found " + bsesp.nVer.fileName);
 				tus.setTexture(tex);
+				tus.setName(fileName);
+			}
+			else
+			{
+				System.out.println("BSEffectShaderProperty " + fileName + " No Texture found " + bsesp.nVer.fileName);
 			}
 
 			//setUpTimeController(bsesp, niToJ3dData);
@@ -1031,42 +1069,6 @@ public class NiGeometryAppearanceShader
 			}
 		}
 		return null;
-	}
-
-	private void setupFixedFunction(NiGeometry niGeometry, NiToJ3dData niToJ3dData, PropertyList props)
-	{
-		//morrowind in particular, also convert jonwd7 code across
-		//TODO: fixedfunction tells me a lot about decals etc
-	}
-
-	public String setupShaderProgram(NiGeometry niGeometry, NiToJ3dData niToJ3dData, String hint)
-	{
-		ShaderPrograms.loadShaderPrograms();
-
-		PropertyList props = new PropertyList(niGeometry.properties, niToJ3dData);
-
-		/*if (  (mesh.scene.options & Scene.DisableShaders) || (mesh.scene.visMode & Scene.VisSilhouette) )
-		{
-			setupFixedFunction( mesh, props );
-			return  "fixed function pipeline" ;
-		}*/
-
-		if (hint != null)
-		{
-			ShaderPrograms.Program program = ShaderPrograms.programs.get(hint);
-
-			if (program != null && program.isStatusOk() && setupProgram(program, niGeometry, niToJ3dData, props))
-				return hint;
-		}
-
-		for (ShaderPrograms.Program program : ShaderPrograms.programs.values())
-		{
-			if (program.isStatusOk() && setupProgram(program, niGeometry, niToJ3dData, props))
-				return program.getName();
-		}
-
-		setupFixedFunction(niGeometry, niToJ3dData, props);
-		return "fixed function pipeline";
 	}
 
 }

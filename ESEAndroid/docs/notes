@@ -1,0 +1,17 @@
+Thigns to do:
+
+make shaders work,
+make only shader morrowind, sky, land, water, particles
+
+make a small morrowind bsa file, using modern half floats system, and look at dds format, I see twice size skyrim image s at same file siaze
+morrowind, drop unneeded file, compress all, put splash screens in bsa etc
+
+make java3d not need awt, at all
+
+look at ftransform missing issue, need to pass gl_mvp matrix through
+
+think about jbullet stack alloc gear, maybe remove?
+
+possibly make a bsa for the newer morrowind stuff, note they have shader in there too
+
+look at all the other shader, FOMM of oblivion, mojoshader etc

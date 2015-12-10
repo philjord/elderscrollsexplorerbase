@@ -1,4 +1,7 @@
 
+attribute vec3 tangent;
+attribute vec3 binormal;
+
 varying vec3 LightDir;
 varying vec3 ViewDir;
 
@@ -16,8 +19,8 @@ void main( void )
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	
 	N = normalize(gl_NormalMatrix * gl_Normal);
-	t = normalize(gl_NormalMatrix * gl_MultiTexCoord1.xyz);
-	b = normalize(gl_NormalMatrix * gl_MultiTexCoord2.xyz);
+	t = normalize(gl_NormalMatrix * tangent);
+	b = normalize(gl_NormalMatrix * binormal);
 	
 	// NOTE: b<->t 
 	mat3 tbnMatrix = mat3(b.x, t.x, N.x,
@@ -29,6 +32,6 @@ void main( void )
 	ViewDir = tbnMatrix * -v.xyz;
 	LightDir = tbnMatrix * gl_LightSource[0].position.xyz;
 	
-	ColorEA = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
+	ColorEA = gl_FrontMaterial.ambient * gl_LightModel.ambient;
 	ColorD = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
 }

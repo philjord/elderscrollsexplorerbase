@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import javax.media.j3d.Shader;
 
@@ -27,13 +30,14 @@ import nif.niobject.bs.BSTriShape;
 public class ShaderPrograms
 {
 	private static HashMap<String, FileShader> allFileShaders;
-	public static HashMap<String, Program> programs;
+	// programs MUST be checked in order!
+	public static LinkedHashMap<String, Program> programs;
 
 	public static void loadShaderPrograms()
 	{
 		if (programs == null)
 		{
-			programs = new HashMap<String, Program>();
+			programs = new LinkedHashMap<String, Program>();
 			allFileShaders = new HashMap<String, FileShader>();
 			File dir = new File("shaders/nif");
 
@@ -57,7 +61,15 @@ public class ShaderPrograms
 				}
 			}
 
-			for (String name : dir.list())
+			//Programs must stay in file order and filesystems think _ is early
+			String[] fileArray = dir.list();
+			Arrays.sort(fileArray, new Comparator<String>() {
+				public int compare(String a, String b)
+				{
+					return a.replace("_", "!").compareTo(b.replace("_", "!"));
+				}
+			});
+			for (String name : fileArray)
 			{
 				if (name.endsWith(".prog"))
 				{
@@ -133,6 +145,11 @@ public class ShaderPrograms
 		public Program(String name2)
 		{
 			this.name = name2;
+		}
+
+		public String toString()
+		{
+			return "Program from " + name + " " + status;
 		}
 
 		boolean load(File file, HashMap<String, FileShader> allShaders) throws Exception
@@ -545,10 +562,15 @@ public class ShaderPrograms
 			else if (left.equalsIgnoreCase("NiTexturingProperty/Apply Mode"))
 			{
 				NiTexturingProperty p = (NiTexturingProperty) props.get(NiTexturingProperty.class);
-				if (p == null)
-					return invert;
-				else
+				if (p != null)
+				{
 					return compare(p.applyMode.applyMode, Integer.parseInt(right)) ^ invert;
+				}
+				else
+				{
+					return invert;
+				}
+
 			}
 			else if (left.equalsIgnoreCase("NiVertexColorProperty"))
 			{

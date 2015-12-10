@@ -13,7 +13,7 @@ varying vec4 ColorD;
 void main( void )
 {
 	float offset = 0.015 - texture2D( BaseMap, gl_TexCoord[0].st ).a * 0.03;
-	vec2 texco = gl_TexCoord[0].st + normalize( ViewDir ).xy * offset;
+	vec2 texco = gl_TexCoord[0].st + normalize( ViewDir ).xy * offset; //why no work?? is the bad un I think xy should be xz?
 	
 	vec4 color = ColorEA;
 
@@ -33,4 +33,7 @@ void main( void )
 	color *= texture2D( BaseMap, texco );
 	
 	gl_FragColor = color;
+	
+	if(1==1)
+	gl_FragColor = vec4(ViewDir,0);
 }

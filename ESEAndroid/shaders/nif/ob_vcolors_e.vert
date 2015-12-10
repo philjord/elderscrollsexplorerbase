@@ -1,4 +1,7 @@
 
+attribute vec3 tangent;
+attribute vec3 binormal;
+
 varying vec3 LightDir;
 varying vec3 ViewDir;
 varying vec3 HalfVector;
@@ -20,14 +23,14 @@ void main( void )
 	gl_Position = ftransform();
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	
-	normal = gl_NormalMatrix * gl_Normal;
-	tangent = gl_NormalMatrix * gl_MultiTexCoord1.xyz;
-	binormal = gl_NormalMatrix * gl_MultiTexCoord2.xyz;
+	normal = normalize(gl_NormalMatrix * gl_Normal);
+	tangent = normalize(gl_NormalMatrix * tangent);
+	binormal = normalize(gl_NormalMatrix * binormal);
 	
 	ViewDir = tspace( ( gl_ModelViewMatrix * gl_Vertex ).xyz );
 	LightDir = tspace( gl_LightSource[0].position.xyz ); // light 0 is directional
 	HalfVector = tspace( gl_LightSource[0].halfVector.xyz );
 	
-	ColorEA = gl_Color + gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
+	ColorEA = gl_Color + gl_FrontMaterial.ambient * gl_LightModel.ambient;
 	ColorD = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
 }

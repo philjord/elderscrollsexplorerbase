@@ -1,8 +1,6 @@
 
-
 attribute vec3 tangent;
 attribute vec3 binormal;
-
 
 varying vec3 LightDir;
 varying vec3 ViewDir;
@@ -15,7 +13,6 @@ varying vec3 v;
 varying vec4 A;
 varying vec4 C;
 varying vec4 D;
- 
 
 
 void main( void )
@@ -23,7 +20,6 @@ void main( void )
 	gl_Position = ftransform();
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	
-	// Note texcoords no pass
 	N = normalize(gl_NormalMatrix * gl_Normal);
 	t = normalize(gl_NormalMatrix * tangent);
 	b = normalize(gl_NormalMatrix * binormal);
@@ -37,9 +33,8 @@ void main( void )
 	
 	ViewDir = tbnMatrix * -v.xyz;
 	LightDir = tbnMatrix * gl_LightSource[0].position.xyz;
-	
-	//gl_LightSource[0].ambient==0 always, my lights are in lg_lightModel
-	A = gl_LightModel.ambient * gl_FrontMaterial.ambient;
+		
+	A = gl_LightModel.ambient;//gl_LightSource[0].ambient==0 always, my lights are in lg_lightModel
 	C = gl_Color;
 	D = gl_LightSource[0].diffuse;	
  
