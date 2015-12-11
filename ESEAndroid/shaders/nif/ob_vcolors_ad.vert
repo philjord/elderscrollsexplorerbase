@@ -30,9 +30,10 @@ void main( void )
                           b.y, t.y, N.y,
                           b.z, t.z, N.z);
 		  
-	v = vec3(gl_ModelViewMatrix * gl_Vertex);
+	v = vec3(gl_ModelViewMatrix * (gl_Vertex ));//* vec4(50.0,50.0,50.0,1)));
 	
-	ViewDir = tbnMatrix * -v.xyz;
+	ViewDir = tbnMatrix * -v.xyz; 
+ 
 	LightDir = tbnMatrix * gl_LightSource[0].position.xyz;
 
 	A = gl_LightModel.ambient;

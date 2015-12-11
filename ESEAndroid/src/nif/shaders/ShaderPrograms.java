@@ -26,6 +26,7 @@ import nif.niobject.bs.BSMeshLODTriShape;
 import nif.niobject.bs.BSShaderPPLightingProperty;
 import nif.niobject.bs.BSSubIndexTriShape;
 import nif.niobject.bs.BSTriShape;
+import nif.niobject.particle.NiPSysData;
 
 public class ShaderPrograms
 {
@@ -511,21 +512,49 @@ public class ShaderPrograms
 					return invert;
 				}
 			}
+			else if (left.equalsIgnoreCase("NiTriBasedGeomData/Has Vertices"))
+			{
+				NiObject data = (NiObject) niToJ3dData.get(niGeometry.data);
+				if (data instanceof NiTriBasedGeomData)
+				{
+					NiTriBasedGeomData ntbgd = (NiTriBasedGeomData) data;
+					return compare(ntbgd.hasVertices ? 1 : 0, Integer.parseInt(right)) ^ invert;
+				}
+				else if (data instanceof NiPSysData)
+				{
+					NiPSysData npsd = (NiPSysData) data;
+					return compare(npsd.hasVertices ? 1 : 0, Integer.parseInt(right)) ^ invert;
+				}
+				else
+				{
+					return invert;
+				}
+			}
 			else if (left.equalsIgnoreCase("NiTriBasedGeomData/Has Normals"))
 			{
-				NiTriBasedGeomData ntbgd = (NiTriBasedGeomData) niToJ3dData.get(niGeometry.data);
-				if (ntbgd == null)
-					return invert;
-				else
+				NiObject data = (NiObject) niToJ3dData.get(niGeometry.data);
+				if (data instanceof NiTriBasedGeomData)
+				{
+					NiTriBasedGeomData ntbgd = (NiTriBasedGeomData) data;
 					return compare(ntbgd.hasNormals ? 1 : 0, Integer.parseInt(right)) ^ invert;
+				}
+				else
+				{
+					return invert;
+				}
 			}
 			else if (left.equalsIgnoreCase("NiTriBasedGeomData/Has Vertex Colors"))
 			{
-				NiObject niObject = (NiObject) niToJ3dData.get(niGeometry.data);
-				if (niObject == null || !(niObject instanceof NiTriBasedGeomData))
-					return invert;
+				NiObject data = (NiObject) niToJ3dData.get(niGeometry.data);
+				if (data instanceof NiTriBasedGeomData)
+				{
+					NiTriBasedGeomData ntbgd = (NiTriBasedGeomData) data;
+					return compare(ntbgd.hasVertexColors ? 1 : 0, Integer.parseInt(right)) ^ invert;
+				}
 				else
-					return compare(((NiTriBasedGeomData) niObject).hasVertexColors ? 1 : 0, Integer.parseInt(right)) ^ invert;
+				{
+					return invert;
+				}
 			}
 			else if (left.equalsIgnoreCase("BSTriShape"))
 			{

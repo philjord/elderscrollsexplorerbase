@@ -120,11 +120,7 @@ public class NiGeometryAppearanceShader
 		//configure app defaults	
 		mat.setLightingEnable(true);
 		mat.setColorTarget(Material.AMBIENT_AND_DIFFUSE);
-		mat.setAmbientColor(new Color3f(0.4f, 0.4f, 0.4f));
-		mat.setDiffuseColor(new Color3f(0.8f, 0.8f, 0.8f));
-		mat.setSpecularColor(new Color3f(1.0f, 1.0f, 1.0f));
-		//TODO: this 128 business of java3d seems arbitrary, test removal (and below too)
-		mat.setShininess(0.33f * 128);//0.33 cos jonwd7 says so
+
 		app.setMaterial(mat);
 
 		//MUST always be set on everything (stencils!)
@@ -268,7 +264,6 @@ public class NiGeometryAppearanceShader
 
 			uni1f("alpha", bslsp.Alpha);
 
-			//TODO:  no change sign as shader does what it likes?? shaders?	
 			uni2f("uvScale", bslsp.UVScale.u, bslsp.UVScale.v);
 
 			uni2f("uvOffset", bslsp.UVOffSet.u, bslsp.UVOffSet.v);
@@ -427,6 +422,24 @@ public class NiGeometryAppearanceShader
 			{
 				bind("HeightMap", bslsp, fileName(bslsp, 3, "shaders/nif/gray.dds"), clamp);
 			}
+			
+			
+			
+			//PJ new gear			
+			//TODO: check this jonwd7 does not do it
+			// apparently the The vertex colors are used as well, just not the alpha component when
+			// SF_Vertex_Animation is present
+			// http://niftools.sourceforge.net/forum/viewtopic.php?f=10&t=3276
+			if (bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Tree_Anim))
+			{
+				//hand through the isTreeAnim flag so the shader can ignore alpha
+				//textureAttributes.setTextureMode(TextureAttributes.COMBINE);
+				//textureAttributes.setCombineAlphaMode(TextureAttributes.COMBINE_REPLACE);
+
+				pa.setCullFace(PolygonAttributes.CULL_NONE);
+				pa.setBackFaceNormalFlip(true);
+			}
+			
 		}
 
 		BSEffectShaderProperty bsesp = (BSEffectShaderProperty) props.get(BSEffectShaderProperty.class);
@@ -497,7 +510,10 @@ public class NiGeometryAppearanceShader
 		shaderAttributeSet = new ShaderAttributeSet();
 
 		if (programHasVar("tangent", 0))
+		{
 			shaderProgram.setVertexAttrNames(new String[] { "tangent", "binormal" });
+			System.out.println("set attribute names");
+		}
 
 		String[] shaderAttrNames = new String[allShaderAttributeValues.size()];
 		int i = 0;
@@ -642,55 +658,67 @@ public class NiGeometryAppearanceShader
 				ta.setTransparencyMode(TransparencyAttributes.BLENDED);
 			}
 
-			if (nsp != null)
+			if (nsp != null && (nsp.flags.flags & 0x01) == 0)
 			{
-				if ((nsp.flags.flags & 0x01) != 0)
-				{
-					mat.setShininess(nmp.glossiness * 128);
-					mat.setSpecularColor(nmp.specularColor.r, nmp.specularColor.g, nmp.specularColor.b);
-				}
-				else
-				{
-					mat.setShininess(0);
-					mat.setSpecularColor(0, 0, 0);
-				}
+				mat.setShininess(0.0f);
+				mat.setSpecularColor(0, 0, 0);
 			}
+			else
+			{
+				mat.setShininess(nmp.glossiness);
+				mat.setSpecularColor(nmp.specularColor.r, nmp.specularColor.g, nmp.specularColor.b);
+			}
+		}
+		else
+		{
+			mat.setAmbientColor(new Color3f(0.4f, 0.4f, 0.4f));
+			mat.setDiffuseColor(new Color3f(0.8f, 0.8f, 0.8f));
+			mat.setSpecularColor(new Color3f(1.0f, 1.0f, 1.0f));
+
+			mat.setShininess(33f);//33 cos jonwd7 says it's a good default
 		}
 
 	}
 
 	private void glProperty(NiAlphaProperty nap)
 	{
-		if (nap != null)
+		if (nap != null && nap.alphaBlendingEnable())
 		{
-			if (nap.alphaBlendingEnable())
+			ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+			ta.setSrcBlendFunction(NifOpenGLToJava3D.convertBlendMode(nap.sourceBlendMode(), true));
+			ta.setDstBlendFunction(NifOpenGLToJava3D.convertBlendMode(nap.destinationBlendMode(), false));
+		}
+		else
+		{
+			ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
+		}
+
+		if (nap != null && nap.alphaTestEnabled())
+		{
+			// I think the PolygonAttributes.CULL_NONE should be applied to anything
+			// with an alphaTestEnabled(), flat_lod trees from skyrim prove it
+			// obviously transparent stuff can be seen from the back quite often
+			// F:\game media\Fallout3\meshes\creatures\alien\alien.nif suggests not these?
+			//pa.setCullFace(PolygonAttributes.CULL_NONE);
+			//pa.setBackFaceNormalFlip(true);
+
+			int alphaTestMode = NifOpenGLToJava3D.convertAlphaTestMode(nap.alphaTestMode());
+			//Test of greater with threshold of 0 is in fact no alpha, and due to sorting issue better to turn off
+			//TODO: test this correct for F:\game media\Fallout3\meshes\creatures\alien\alien.nif
+			if (alphaTestMode == RenderingAttributes.GREATER && nap.threshold == 0)
 			{
-				ta.setTransparencyMode(TransparencyAttributes.BLENDED);
-				ta.setSrcBlendFunction(NifOpenGLToJava3D.convertBlendMode(nap.sourceBlendMode(), true));
-				ta.setDstBlendFunction(NifOpenGLToJava3D.convertBlendMode(nap.destinationBlendMode(), false));
+				ta.setTransparencyMode(TransparencyAttributes.NONE);
 			}
 			else
 			{
-				ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
-			}
-
-			if (nap.alphaTestEnabled())
-			{
-				// I think the PolygonAttributes.CULL_NONE should be applied to anything
-				// with an alphaTestEnabled(), flat_lod trees from skyrim prove it
-				// obviously transparent stuff can be seen from the back quite often
-				pa.setCullFace(PolygonAttributes.CULL_NONE);
-				pa.setBackFaceNormalFlip(true);
-
-				int alphaTestMode = NifOpenGLToJava3D.convertAlphaTestMode(nap.alphaTestMode());
 				ra.setAlphaTestFunction(alphaTestMode);
 
-				float threshold = ((nap.threshold) / 255f);// threshold range of 255 to 0 comfirmed
-															// empirically
+				float threshold = ((nap.threshold) / 255f);// threshold range of 255 to 0 confirmed empirically
 				ra.setAlphaTestValue(threshold);
 			}
-
 		}
+		// do NOT disable no alpha test still enables transparent textures
+		
 
 	}
 
@@ -790,14 +818,15 @@ public class NiGeometryAppearanceShader
 
 	private void bindCube(String textureUnitName, BSLightingShaderProperty bslsp, String fileName)
 	{
+		//TODO: note nifskope bsa extractor has a cube property on dds files
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			TextureAttributes textureAttributes = new TextureAttributes();
+			//TextureAttributes textureAttributes = new TextureAttributes();
+			//no attributes set now
+			//tus.setTextureAttributes(textureAttributes);
 
-			tus.setTextureAttributes(textureAttributes);
-
-			if (textureSource.textureFileExists(fileName))
+			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 
@@ -829,15 +858,16 @@ public class NiGeometryAppearanceShader
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			TextureAttributes textureAttributes = new TextureAttributes();
+			//TextureAttributes textureAttributes = new TextureAttributes();
 
 			//TODO: jonwd7 suggest texture slot is the decaling place, see his fixed pipeline
-			textureAttributes.setTextureMode(ntp.isApplyReplace() ? TextureAttributes.REPLACE
-					: ntp.isApplyDecal() ? TextureAttributes.DECAL : TextureAttributes.MODULATE);
+			// also these should go through as shader uniforms I reckon
+			//textureAttributes.setTextureMode(ntp.isApplyReplace() ? TextureAttributes.REPLACE
+			//		: ntp.isApplyDecal() ? TextureAttributes.DECAL : TextureAttributes.MODULATE);
 
-			tus.setTextureAttributes(textureAttributes);
+			//tus.setTextureAttributes(textureAttributes);
 
-			if (textureSource.textureFileExists(fileName))
+			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 				tus.setTexture(tex);
@@ -860,11 +890,11 @@ public class NiGeometryAppearanceShader
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			TextureAttributes textureAttributes = new TextureAttributes();
+			//TextureAttributes textureAttributes = new TextureAttributes();
 			//no attributes set now
-			tus.setTextureAttributes(textureAttributes);
+			//tus.setTextureAttributes(textureAttributes);
 
-			if (textureSource.textureFileExists(fileName))
+			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 				tus.setTexture(tex);
@@ -887,20 +917,8 @@ public class NiGeometryAppearanceShader
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			TextureAttributes textureAttributes = new TextureAttributes();
 
-			//TODO: check this jonwd7 does not do it
-			// apparently the The vertex colors are used as well, just not the alpha component when
-			// SF_Vertex_Animation is present
-			// http://niftools.sourceforge.net/forum/viewtopic.php?f=10&t=3276
-			if (bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Tree_Anim))
-			{
-				textureAttributes.setTextureMode(TextureAttributes.COMBINE);
-				textureAttributes.setCombineAlphaMode(TextureAttributes.COMBINE_REPLACE);
-			}
-			//tus.setTextureAttributes(textureAttributes);
-
-			if (textureSource.textureFileExists(fileName))
+			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 				tus.setTexture(tex);
@@ -927,10 +945,10 @@ public class NiGeometryAppearanceShader
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			TextureAttributes textureAttributes = new TextureAttributes();
+			//TextureAttributes textureAttributes = new TextureAttributes();
 			//no attributes set now
-			tus.setTextureAttributes(textureAttributes);
-			if (textureSource.textureFileExists(fileName))
+			//tus.setTextureAttributes(textureAttributes);
+			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 				tus.setTexture(tex);
@@ -994,12 +1012,6 @@ public class NiGeometryAppearanceShader
 
 	}
 
-	private boolean hasFileName(NiTexturingProperty ntp, int textureSlot)
-	{
-		String fn = fileName(ntp, textureSlot);
-		return fn != null && fn.trim().length() > 0;
-	}
-
 	private String fileName(NiTexturingProperty ntp, int textureSlot)
 	{
 		//TODO: for now it appears that this is only EVER asking for 0 so let's just trap all others!
@@ -1016,12 +1028,6 @@ public class NiGeometryAppearanceShader
 		}
 
 		return null;
-	}
-
-	private boolean hasFileName(BSShaderProperty bsprop, int textureSlot)
-	{
-		String fn = fileName(bsprop, textureSlot);
-		return fn != null && fn.trim().length() > 0;
 	}
 
 	private String fileName(BSShaderProperty bsprop, int textureSlot)
