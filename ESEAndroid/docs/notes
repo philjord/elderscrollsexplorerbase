@@ -1,4 +1,15 @@
+
+Approach bethesda get rights to ip
+
+kickstarter campaign, explorer, game, google cardboard game
+
+ASM for jbullet has ASMdex on android port across
+
 Things to do:
+
+Must build Jake2, worldwind and ardor3d example on android and make them work!
+
+Shadows in the pipeline 
 
 MUST attach torch to player, point light source, with on off and color setting in settings
 
@@ -45,3 +56,5 @@ Skyrim tree sahder for vertex colors
 particles are not using shaders
 
 outlining needs an outliner shader too
+
+set up time controllers for textures, I notice nifskope suggests only 2 possible controllers

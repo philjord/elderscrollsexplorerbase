@@ -396,82 +396,7 @@ public class ShaderPrograms
 
 		}
 
-		/*
 		
-		check HEADER/Version >= 0x14020007
-		check HEADER/User Version >= 12  >= 11
-		check HEADER/User Version 2 >= 130
-		
-		check BSLightingShaderProperty
-		#check BSLightingShaderProperty/Skyrim Shader Type != 1
-		#check BSLightingShaderProperty/Skyrim Shader Type != 16		
-		check BSLightingShaderProperty/Skyrim Shader Type == 3 == 11  == 2
-		check NiTriBasedGeomData/Has Normals == 1  == 0
-		
-		check NiAVObject/Vertex Flag 1 >= 3
-		check BSTriShape
-		check BSSubIndexTriShape
-		check BSMeshLODTriShape		
-		
-		#check not NiAlphaProperty
-		check BSEffectShaderProperty
-		
-		#check NiTriBasedGeomData/Has Vertex Colors == 1
-		
-		check NiTexturingProperty/Apply Mode == 4
-		check NiTriBasedGeom/Has Shader == 0
-		
-		check NiTriBasedGeomData/Has Vertex Colors == 0
-		checkgroup begin
-		check NiVertexColorProperty/Vertex Mode == 0
-		check NiVertexColorProperty/Lighting Mode == 1
-		checkgroup end
-		
-		check NiTriBasedGeomData/Has Vertex Colors != 0
-		check NiVertexColorProperty/Vertex Mode == 1
-		check NiVertexColorProperty/Lighting Mode == 1
-		
-		check not NiVertexColorProperty
-		
-		check BSShaderPPLightingProperty
-		
-		// 	check BSEffectShaderProperty
-		// 	check NiTriBasedGeomData/Has Vertex Colors == 1
-		
-		
-		HEADER/Version
-		HEADER/User Version
-		HEADER/User Version 2
-		
-		BSLightingShaderProperty
-		BSLightingShaderProperty/Skyrim Shader Type
-		
-		NiTriBasedGeomData/Has Normals
-		NiTriBasedGeomData/Has Vertex Colors
-		
-		NiAVObject/Vertex Flag 1
-		
-		BSTriShape
-		BSSubIndexTriShape
-		BSMeshLODTriShape		
-		
-		NiAlphaProperty
-		BSEffectShaderProperty
-		
-		NiTexturingProperty/Apply Mode
-		
-		NiTriBasedGeom/Has Shader
-		
-		NiVertexColorProperty
-		NiVertexColorProperty/Vertex Mode
-		NiVertexColorProperty/Lighting Mode
-				
-		BSShaderPPLightingProperty
-				
-		BSEffectShaderProperty	
-		
-		
-		 */
 		public boolean eval(NiGeometry niGeometry, NiToJ3dData niToJ3dData, PropertyList props)
 		{
 
@@ -483,7 +408,7 @@ public class ShaderPrograms
 			{
 				return compare(niGeometry.nVer.LOAD_USER_VER, Integer.parseInt(right)) ^ invert;
 			}
-			else if (left.equalsIgnoreCase("User Version 2"))
+			else if (left.equalsIgnoreCase("HEADER/User Version 2"))
 			{
 				return compare(niGeometry.nVer.LOAD_USER_VER2, Integer.parseInt(right)) ^ invert;
 			}

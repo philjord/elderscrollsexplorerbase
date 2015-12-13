@@ -14,7 +14,6 @@ import javax.media.j3d.ShaderAppearance;
 import javax.media.j3d.ShaderAttributeSet;
 import javax.media.j3d.ShaderAttributeValue;
 import javax.media.j3d.Texture;
-import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.TextureCubeMap;
 import javax.media.j3d.TextureUnitState;
 import javax.media.j3d.TransparencyAttributes;
@@ -48,7 +47,9 @@ import nif.niobject.NiStencilProperty;
 import nif.niobject.NiTexturingProperty;
 import nif.niobject.NiWireframeProperty;
 import nif.niobject.NiZBufferProperty;
-import nif.niobject.bgsm.BgsmFile;
+import nif.niobject.bgsm.BSMaterial;
+import nif.niobject.bgsm.EffectMaterial;
+import nif.niobject.bgsm.ShaderMaterial;
 import nif.niobject.bs.BSEffectShaderProperty;
 import nif.niobject.bs.BSLightingShaderProperty;
 import nif.niobject.bs.BSShaderLightingProperty;
@@ -259,27 +260,55 @@ public class NiGeometryAppearanceShader
 		// BSLightingShaderProperty
 		if (bslsp != null)
 		{
+			ShaderMaterial sm = (ShaderMaterial) getMaterial(bslsp);
+
 			uni1f("lightingEffect1", bslsp.LightingEffect1);
 			uni1f("lightingEffect2", bslsp.LightingEffect2);
 
-			uni1f("alpha", bslsp.Alpha);
+			if (sm == null)
+				uni1f("alpha", bslsp.Alpha);
+			else
+				uni1f("alpha", sm.fAlpha);
 
-			uni2f("uvScale", bslsp.UVScale.u, bslsp.UVScale.v);
+			if (sm == null)
+			{
+				uni2f("uvScale", bslsp.UVScale.u, bslsp.UVScale.v);
+				uni2f("uvOffset", bslsp.UVOffSet.u, bslsp.UVOffSet.v);
+			}
+			else
+			{
+				uni2f("uvScale", sm.fUScale, sm.fVScale);
+				uni2f("uvOffset", sm.fUOffset, sm.fVOffset);
+			}
 
-			uni2f("uvOffset", bslsp.UVOffSet.u, bslsp.UVOffSet.v);
+			//TODO: what the hell do I do here?? 
+			Matrix4f viewMatrix = new Matrix4f();
+			viewMatrix.setIdentity();
+			uni4m("viewMatrix", viewMatrix);
+			viewMatrix.invert();
+			uni4m("viewMatrixInverse", viewMatrix);
 
-			//TODO: what the hell do I do here?? modify the shaders no doubt!
-			/*uni4m( "viewMatrix", mesh.viewTrans().toMatrix4() );
-			uni4m( "viewMatrixInverse", mesh.viewTrans().toMatrix4().inverted() );
-			
-			uni4m( "localMatrix", mesh.localTrans().toMatrix4() );
-			uni4m( "localMatrixInverse", mesh.localTrans().toMatrix4().inverted() );
-			
-			uni4m( "worldMatrix", mesh.worldTrans().toMatrix4() );
-			uni4m( "worldMatrixInverse", mesh.worldTrans().toMatrix4().inverted() );*/
+			//uni4m( "localMatrix", mesh.localTrans().toMatrix4() );
+			//uni4m( "localMatrixInverse", mesh.localTrans().toMatrix4().inverted() );
 
-			//sk_env.frag sk_multilayer.frag uses the worldMatrix  
+			Matrix4f worldMatrix = new Matrix4f();
+			worldMatrix.setIdentity();
+			uni4m("worldMatrix", worldMatrix);
+			worldMatrix.invert();
+			uni4m("worldMatrixInverse", worldMatrix);
+
+			//sk_env.frag and sk_multilayer.frag and now fo4_env.frag too  uses the worldMatrix  
 			//sk_msn.frag uses  viewMatrix (msn stand for model space normal mapping)
+
+			boolean hasGreyScaleColor = bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Greyscale_To_PaletteColor);
+			if (sm != null)
+				hasGreyScaleColor = sm.bGrayscaleToPaletteColor != 0;
+
+			uni1i("greyscaleColor", hasGreyScaleColor);
+			if (hasGreyScaleColor)
+			{
+				bind("GreyscaleMap", bslsp, fileName(bslsp, 3, ""), TexClampMode.MIRRORED_S_MIRRORED_T);
+			}
 
 			boolean hasTintColor = bslsp.HairTintColor != null || bslsp.SkinTintColor != null;
 			uni1i("hasTintColor", hasTintColor);
@@ -306,55 +335,108 @@ public class NiGeometryAppearanceShader
 
 			// Rim & Soft params
 			boolean hasSoftlight = bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Soft_Lighting);
-			boolean hasRimlight = bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Rim_Lighting);
-
 			uni1i("hasSoftlight", hasSoftlight);
+
+			boolean hasRimlight = bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Rim_Lighting);
+			if (sm != null)
+				hasRimlight = sm.bRimLighting != 0;
 			uni1i("hasRimlight", hasRimlight);
 
-			if (hasSoftlight || hasRimlight)
+			if (niGeometry.nVer.LOAD_USER_VER2 < 130 && (hasSoftlight || hasRimlight))
 			{
 				bind("LightMask", bslsp, fileName(bslsp, 2, default_n), clamp);
 			}
 
 			// Backlight params
 			boolean hasBacklight = bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Back_Lighting);
+			if (sm != null)
+				hasBacklight = sm.bBackLighting != 0;
 			uni1i("hasBacklight", hasBacklight);
 
-			if (hasBacklight)
+			if (niGeometry.nVer.LOAD_USER_VER2 < 130 && hasBacklight)
 			{
 				bind("BacklightMap", bslsp, fileName(bslsp, 7, default_n), clamp);
 			}
 
 			// Glow params
+			if (sm == null)
+			{
+				boolean hasEmittance = bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Own_Emit);
+				uni1i("hasEmit", hasEmittance);
+				if (hasEmittance)
+					uni1f("glowMult", bslsp.EmissiveMultiple);
+				else
+					uni1f("glowMult", 0);
 
-			boolean hasEmittance = bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Own_Emit);
-			uni1i("hasEmit", hasEmittance);
-			if (hasEmittance)
-				uni1f("glowMult", bslsp.EmissiveMultiple);
+				boolean hasGlowMap = bslsp.SkyrimShaderType.type == BSLightingShaderPropertyShaderType.ST_GlowShader
+						&& bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Glow_Map) && hasFileName(bslsp, 2);
+				uni1i("hasGlowMap", hasGlowMap);
+
+				uni3f("glowColor", bslsp.EmissiveColor.r, bslsp.EmissiveColor.g, bslsp.EmissiveColor.b);
+			}
 			else
-				uni1f("glowMult", 0);
+			{
+				boolean hasEmittance = sm.bEmitEnabled != 0;
+				uni1i("hasEmit", hasEmittance);
+				if (hasEmittance)
+					uni1f("glowMult", sm.fEmittanceMult);
+				else
+					uni1f("glowMult", 0);
 
-			boolean hasGlowMap = bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Glow_Map) && hasFileName(bslsp, 2);
-			uni1i("hasGlowMap", hasGlowMap);
+				boolean hasGlowMap = sm.bGlowmap != 0;
+				uni1i("hasGlowMap", hasGlowMap);
 
-			uni3f("glowColor", bslsp.EmissiveColor.r, bslsp.EmissiveColor.g, bslsp.EmissiveColor.g);
+				if (sm.cEmittanceColor != null)
+					uni3f("glowColor", sm.cEmittanceColor.r, sm.cEmittanceColor.g, sm.cEmittanceColor.b);
+			}
 
 			// Specular params
-
-			uni1f("specStrength", bslsp.SpecularStrength);
+			if (sm == null)
+				uni1f("specStrength", bslsp.SpecularStrength);
+			else
+				uni1f("specStrength", sm.fSpecularMult);
 
 			// Assure specular power does not break the shaders
 			float gloss = bslsp.Glossiness;
+			if (sm != null)
+				gloss = sm.fSmoothness;
 			uni1f("specGlossiness", (gloss > 0.0) ? gloss : 1.0f);
 
-			uni3f("specColor", bslsp.SpecularColor.r, bslsp.SpecularColor.g, bslsp.SpecularColor.b);
+			if (sm == null)
+				uni3f("specColor", bslsp.SpecularColor.r, bslsp.SpecularColor.g, bslsp.SpecularColor.b);
+			else
+				uni3f("specColor", sm.cSpecularColor.r, sm.cSpecularColor.g, sm.cSpecularColor.b);
 
-			boolean hasSpecularMap = bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Specular) && hasFileName(bslsp, 7);
+			boolean hasSpecularMap = bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Specular);
+			if (sm != null)
+				hasSpecularMap = sm.bSpecularEnabled != 0 && hasFileName(bslsp, 2);
 			uni1i("hasSpecularMap", hasSpecularMap);
 
-			if (hasSpecularMap && !hasBacklight)
+			if (hasSpecularMap && (niGeometry.nVer.LOAD_USER_VER2 == 130 || !hasBacklight))
 			{
-				bind("SpecularMap", bslsp, fileName(bslsp, 7, default_n), clamp);
+				bind("SpecularMap", bslsp, fileName(bslsp, 7, white), clamp);
+			}
+
+			if (niGeometry.nVer.LOAD_USER_VER2 == 130)
+			{
+				boolean isDoubleSided = bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Double_Sided);
+				if (sm != null)
+					isDoubleSided = sm.bTwoSided != 0;
+				uni1i("doubleSided", isDoubleSided);
+				if (sm == null)
+				{
+					uni1f("paletteScale", bslsp.GrayscaletoPaletteScale);
+					uni1f("fresnelPower", bslsp.FresnelPower);
+					uni1f("rimPower", 2.0f);
+					uni1f("backlightPower", bslsp.BacklightPower);
+				}
+				else
+				{
+					uni1f("paletteScale", sm.fGrayscaleToPaletteScale);
+					uni1f("fresnelPower", sm.fFresnelPower);
+					uni1f("rimPower", sm.fRimPower);
+					uni1f("backlightPower", sm.fBacklightPower);
+				}
 			}
 
 			// Multi-Layer
@@ -378,16 +460,22 @@ public class NiGeometryAppearanceShader
 
 			hasEnvironmentMap |= bslsp.SkyrimShaderType.type == BSLightingShaderPropertyShaderType.ST_EyeEnvmap
 					&& bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Eye_Environment_Mapping);
-			hasEnvironmentMap |= bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Multi_Layer_Parallax);
+			if (sm != null)
+				hasEnvironmentMap = sm.bEnvironmentMapping != 0;
 
 			boolean hasCubeMap = (bslsp.SkyrimShaderType.type == BSLightingShaderPropertyShaderType.ST_EnvironmentMap
 					|| bslsp.SkyrimShaderType.type == BSLightingShaderPropertyShaderType.ST_EyeEnvmap
 					|| bslsp.SkyrimShaderType.type == BSLightingShaderPropertyShaderType.ST_MultiLayerParallax) && hasEnvironmentMap
 					&& hasFileName(bslsp, 4);
 
+			if (sm != null)
+				hasCubeMap = sm.bEnvironmentMapping != 0 && hasFileName(bslsp, 4);
+
 			uni1i("hasCubeMap", hasCubeMap);
 
 			boolean useEnvironmentMask = hasEnvironmentMap && hasFileName(bslsp, 5);
+			if (sm != null)
+				useEnvironmentMask = hasEnvironmentMap && sm.bGlowmap != 0 && hasFileName(bslsp, 5);
 
 			uni1i("hasEnvMask", useEnvironmentMask);
 
@@ -398,19 +486,21 @@ public class NiGeometryAppearanceShader
 					envReflection = bslsp.EnvironmentMapScale;
 				else if (bslsp.SkyrimShaderType.type == BSLightingShaderPropertyShaderType.ST_EyeEnvmap)
 					envReflection = bslsp.EyeCubemapScale;
+				if (sm != null)
+					envReflection = sm.fEnvironmentMappingMaskScale;
 
 				uni1f("envReflection", envReflection);
 
-				bind("EnvironmentMap", bslsp, fileName(bslsp, 5, white), clamp);
+				if (useEnvironmentMask)
+					bind("EnvironmentMap", bslsp, fileName(bslsp, 5, white), clamp);
 
 				bindCube("CubeMap", bslsp, fileName(bslsp, 4));
 
 			}
 			else
 			{
-				// In the case that the cube texture has already been bound,
-				//	but SLSF1_Environment_Mapping is not set, assure that it 
-				//	removes reflections.
+				// In the case that the cube texture has already been bound, but SLSF1_Environment_Mapping is not set, 
+				//assure that it removes reflections.
 				uni1f("envReflection", 0);
 			}
 
@@ -418,13 +508,11 @@ public class NiGeometryAppearanceShader
 			boolean hasHeightMap = bslsp.SkyrimShaderType.type == BSLightingShaderPropertyShaderType.ST_Heightmap;
 			hasHeightMap |= bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Parallax) && hasFileName(bslsp, 3);
 
-			if (hasHeightMap)
+			if (niGeometry.nVer.LOAD_USER_VER2 < 130 && hasHeightMap)
 			{
 				bind("HeightMap", bslsp, fileName(bslsp, 3, "shaders/nif/gray.dds"), clamp);
 			}
-			
-			
-			
+
 			//PJ new gear			
 			//TODO: check this jonwd7 does not do it
 			// apparently the The vertex colors are used as well, just not the alpha component when
@@ -439,58 +527,139 @@ public class NiGeometryAppearanceShader
 				pa.setCullFace(PolygonAttributes.CULL_NONE);
 				pa.setBackFaceNormalFlip(true);
 			}
-			
+
 		}
 
 		BSEffectShaderProperty bsesp = (BSEffectShaderProperty) props.get(BSEffectShaderProperty.class);
-		if (niGeometry.nVer.LOAD_USER_VER2 < 130 && bsesp != null)
+		if (bsesp != null)
 		{
+
+			Matrix4f worldMatrix = new Matrix4f();
+			worldMatrix.setIdentity();
+			uni4m("worldMatrix", worldMatrix);
+
+			EffectMaterial em = (EffectMaterial) getMaterial(bsesp);
+
 			clamp = bsesp.TextureClampMode.mode;
 			clamp = clamp ^ TexClampMode.MIRRORED_S_MIRRORED_T;
 
-			bind("SourceTexture", bsesp, bsesp.SourceTexture, clamp);
+			String SourceTexture = em == null ? bsesp.SourceTexture : em.textureList.get(0);
+			boolean hasSourceTexture = SourceTexture != null && SourceTexture.trim().length() > 0;
+			String GreyscaleMap = em == null ? bsesp.GreyscaleTexture : em.textureList.get(1);
+			boolean hasGreyscaleMap = GreyscaleMap != null && GreyscaleMap.trim().length() > 0;
+			String EnvMap = em == null ? bsesp.EnvMapTexture : em.textureList.get(2);
+			boolean hasEnvMap = EnvMap != null && EnvMap.trim().length() > 0;
+			String NormalMap = em == null ? bsesp.NormalTexture : em.textureList.get(3);
+			boolean hasNormalMap = NormalMap != null && NormalMap.trim().length() > 0;
+			String EnvMask = em == null ? bsesp.EnvMaskTexture : em.textureList.get(4);
+			boolean hasEnvMask = EnvMask != null && EnvMask.trim().length() > 0;
+
+			bind("SourceTexture", bsesp, SourceTexture, clamp);
 
 			boolean isDoubleSided = bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Double_Sided);
+			if (em != null)
+				isDoubleSided = em.bTwoSided != 0;
 			uni1i("doubleSided", isDoubleSided);
 
-			uni2f("uvScale", bsesp.UVScale.u, bsesp.UVScale.v);
+			if (em == null)
+			{
+				uni2f("uvScale", bslsp.UVScale.u, bslsp.UVScale.v);
+				uni2f("uvOffset", bslsp.UVOffSet.u, bslsp.UVOffSet.v);
+			}
+			else
+			{
+				uni2f("uvScale", em.fUScale, em.fVScale);
+				uni2f("uvOffset", em.fUOffset, em.fVOffset);
+			}
 
-			uni2f("uvOffset", bsesp.UVOffSet.u, bsesp.UVOffSet.v);
-
-			boolean hasSourceTexture = bsesp.SourceTexture != null && bsesp.SourceTexture.trim().length() > 0;
 			uni1i("hasSourceTexture", hasSourceTexture);
-			boolean hasGreyscaleMap = bsesp.GreyscaleTexture != null && bsesp.GreyscaleTexture.trim().length() > 0;
 			uni1i("hasGreyscaleMap", hasGreyscaleMap);
 
 			boolean greyscaleAlpha = bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Greyscale_To_PaletteAlpha);
-			boolean greyscaleColor = bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Greyscale_To_PaletteColor);
+			if (em != null)
+				greyscaleAlpha = em.bGrayscaleToPaletteAlpha != 0;
 			uni1i("greyscaleAlpha", greyscaleAlpha);
+
+			boolean greyscaleColor = bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Greyscale_To_PaletteColor);
+			if (em != null)
+				greyscaleColor = em.bGrayscaleToPaletteColor != 0;
 			uni1i("greyscaleColor", greyscaleColor);
 
 			boolean useFalloff = bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Use_Falloff);
-			boolean vertexAlpha = bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Vertex_Alpha);
-			boolean vertexColors = bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Vertex_Colors);
+			if (em != null)
+				useFalloff = em.bFalloffEnabled != 0;
 			uni1i("useFalloff", useFalloff);
-			uni1i("vertexAlpha", vertexAlpha);
-			uni1i("vertexColors", vertexColors);
+
+			boolean vertexAlpha = bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Vertex_Alpha);
+			uni1i("vertexAlpha", vertexAlpha);// no em
+			boolean vertexColors = bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Vertex_Colors);
+			uni1i("vertexColors", vertexColors);// no em
 
 			boolean hasWeaponBlood = bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Weapon_Blood);
+			if (niGeometry.nVer.LOAD_USER_VER2 == 130)
+				hasWeaponBlood = false;
 			uni1i("hasWeaponBlood", hasWeaponBlood);
 
 			// Glow params
-
-			uni4f("glowColor", bsesp.EmissiveColor.r, bsesp.EmissiveColor.g, bsesp.EmissiveColor.b, bsesp.EmissiveColor.a);
-			uni1f("glowMult", bsesp.EmissiveMultiple);
-
+			if (em == null)
+			{
+				uni4f("glowColor", bsesp.EmissiveColor.r, bsesp.EmissiveColor.g, bsesp.EmissiveColor.b, bsesp.EmissiveColor.a);
+				uni1f("glowMult", bsesp.EmissiveMultiple);
+			}
+			else
+			{
+				uni4f("glowColor", em.cBaseColor.r, em.cBaseColor.g, em.cBaseColor.b, em.fAlpha);
+				uni1f("glowMult", em.fBaseColorScale);
+			}
 			// Falloff params
-
-			uni4f("falloffParams", bsesp.FalloffStartAngle, bsesp.FalloffStopAngle, bsesp.FalloffStartOpacity, bsesp.FalloffStopOpacity);
-
-			uni1f("falloffDepth", bsesp.SoftFalloffDepth);
+			if (em == null)
+			{
+				uni4f("falloffParams", bsesp.FalloffStartAngle, bsesp.FalloffStopAngle, bsesp.FalloffStartOpacity,
+						bsesp.FalloffStopOpacity);
+				uni1f("falloffDepth", bsesp.SoftFalloffDepth);
+			}
+			else
+			{
+				uni4f("falloffParams", em.fFalloffStartAngle, em.fFalloffStopAngle, em.fFalloffStartOpacity, em.fFalloffStopOpacity);
+				uni1f("falloffDepth", em.fSoftDepth);
+			}
 
 			// BSEffectShader textures
-			bind("GreyscaleMap", bsesp, bsesp.GreyscaleTexture, TexClampMode.MIRRORED_S_MIRRORED_T);
+			bind("GreyscaleMap", bsesp, GreyscaleMap, TexClampMode.MIRRORED_S_MIRRORED_T);
 
+			if (niGeometry.nVer.LOAD_USER_VER2 == 130)
+			{
+				if (em == null)
+					uni1f("lightingInfluence", 0f);
+				else
+					uni1f("lightingInfluence", em.fLightingInfluence);
+
+				uni1i("hasNormalMap", hasNormalMap);
+				if (hasNormalMap)
+					bind("NormalMap", bsesp, NormalMap, clamp);
+
+				uni1i("hasCubeMap", hasEnvMap);
+				uni1i("hasEnvMask", hasEnvMask);
+
+				if (hasEnvMap)
+				{
+					if (em == null)
+						uni1f("envReflection", bsesp.EnvironmentMapScale);
+					else
+						uni1f("envReflection", em.fEnvironmentMappingMaskScale);
+
+					if (hasEnvMask)
+						bind("SpecularMap", bsesp, EnvMask, clamp);
+
+					textureUnitName = "CubeMap";
+					bind(textureUnitName, bsprop, fileName(bsprop, 2), clamp);
+				}
+				else
+				{
+					uni1f("envReflection", 0);
+				}
+
+			}
 		}
 
 		// Defaults for uniforms in older meshes
@@ -718,7 +887,6 @@ public class NiGeometryAppearanceShader
 			}
 		}
 		// do NOT disable no alpha test still enables transparent textures
-		
 
 	}
 
@@ -767,15 +935,25 @@ public class NiGeometryAppearanceShader
 	// Sets a mat3 (3x3 matrix)
 	private void uni3m(String var, NifMatrix33 val)
 	{
-		if (programHasVar(var, 1.0f, 3))
-			allShaderAttributeValues.add(new ShaderAttributeValue2(var, new Matrix3f(val.data())));
+		uni3m(var, new Matrix3f(val.data()));
 	}
+
+	private void uni3m(String var, Matrix3f val)
+	{
+		if (programHasVar(var, 1.0f, 3))
+			allShaderAttributeValues.add(new ShaderAttributeValue2(var, val));
+	};
 
 	// Sets a mat4 (4x4 matrix)
 	private void uni4m(String var, NifMatrix44 val)
 	{
+		uni4m(var, new Matrix4f(val.data()));
+	};
+
+	private void uni4m(String var, Matrix4f val)
+	{
 		if (programHasVar(var, 1.0f, 4))
-			allShaderAttributeValues.add(new ShaderAttributeValue2(var, new Matrix4f(val.data())));
+			allShaderAttributeValues.add(new ShaderAttributeValue2(var, val));
 	};
 
 	/**
@@ -818,14 +996,9 @@ public class NiGeometryAppearanceShader
 
 	private void bindCube(String textureUnitName, BSLightingShaderProperty bslsp, String fileName)
 	{
-		//TODO: note nifskope bsa extractor has a cube property on dds files
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			//TextureAttributes textureAttributes = new TextureAttributes();
-			//no attributes set now
-			//tus.setTextureAttributes(textureAttributes);
-
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
@@ -858,14 +1031,11 @@ public class NiGeometryAppearanceShader
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			//TextureAttributes textureAttributes = new TextureAttributes();
 
 			//TODO: jonwd7 suggest texture slot is the decaling place, see his fixed pipeline
 			// also these should go through as shader uniforms I reckon
 			//textureAttributes.setTextureMode(ntp.isApplyReplace() ? TextureAttributes.REPLACE
 			//		: ntp.isApplyDecal() ? TextureAttributes.DECAL : TextureAttributes.MODULATE);
-
-			//tus.setTextureAttributes(textureAttributes);
 
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
@@ -890,9 +1060,6 @@ public class NiGeometryAppearanceShader
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			//TextureAttributes textureAttributes = new TextureAttributes();
-			//no attributes set now
-			//tus.setTextureAttributes(textureAttributes);
 
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
@@ -945,9 +1112,7 @@ public class NiGeometryAppearanceShader
 		if (programHasVar(textureUnitName))
 		{
 			TextureUnitState tus = new TextureUnitState();
-			//TextureAttributes textureAttributes = new TextureAttributes();
-			//no attributes set now
-			//tus.setTextureAttributes(textureAttributes);
+
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
@@ -977,29 +1142,49 @@ public class NiGeometryAppearanceShader
 		return fileName(bslsp, textureSlot, null);
 	}
 
+	private static BSMaterial getMaterial(BSEffectShaderProperty bsesp)
+	{
+		// FO4 has material files pointed at by name
+		if (bsesp.name.toLowerCase().endsWith(".bgem"))
+		{
+			try
+			{
+				return BgsmSource.getMaterial(bsesp.name);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	private static BSMaterial getMaterial(BSLightingShaderProperty bslsp)
+	{
+		// FO4 has material files pointed at by name
+		if (bslsp.Name.toLowerCase().endsWith(".bgsm"))
+		{
+			try
+			{
+				return BgsmSource.getMaterial(bslsp.Name);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
 	private String fileName(BSLightingShaderProperty bslsp, int textureSlot, String defaultFileName)
 	{
 		if (bslsp != null)
 		{
-
 			// FO4 has material files pointed at by name
-			if (bslsp.Name.toLowerCase().endsWith(".bgsm"))
+			BSMaterial material = getMaterial(bslsp);
+			if (material != null)
 			{
-				// if the bgsm file exists the textureset may have bad .tga files in it (or good .dds ones)
-				// but the bgsm definitely has good textures
-
-				try
-				{
-					BgsmFile bgsm = BgsmSource.getBgsmFile(bslsp.Name);
-					if (bgsm != null)
-					{
-						return bgsm.textures[textureSlot];
-					}
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
+				return material.textureList.get(textureSlot);
 			}
 			else if (bslsp.TextureSet.ref != -1)
 			{

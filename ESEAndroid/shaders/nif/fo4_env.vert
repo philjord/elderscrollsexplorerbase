@@ -1,18 +1,18 @@
-
 attribute vec3 tangent;
 attribute vec3 binormal;
 
 varying vec3 LightDir;
 varying vec3 ViewDir;
 
-varying vec4 A;
-varying vec4 C;
-varying vec4 D;
-
 varying vec3 N;
 varying vec3 t;
 varying vec3 b;
 varying vec3 v;
+
+varying vec4 A;
+varying vec4 C;
+varying vec4 D;
+
 
 void main( void )
 {
