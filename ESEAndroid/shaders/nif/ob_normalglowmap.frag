@@ -6,7 +6,7 @@ uniform sampler2D GlowMap;
 uniform sampler2D LightMask;
 uniform sampler2D BacklightMap;
 
-uniform bool hasGlowMap;
+uniform int hasGlowMap;
 uniform vec3 glowColor;
 uniform float glowMult;
 
@@ -17,9 +17,9 @@ uniform float specGlossiness;
 uniform vec2 uvScale;
 uniform vec2 uvOffset;
 
-uniform bool hasSoftlight;
-uniform bool hasBacklight;
-uniform bool hasRimlight;
+uniform int hasSoftlight;
+uniform int hasBacklight;
+uniform int hasRimlight;
 
 uniform float lightingEffect1;
 uniform float lightingEffect2;
@@ -59,7 +59,7 @@ void main( void )
 	vec3 emissive = texture2D( GlowMap, offset ).rgb;
 	
 	// Skyrim
-	if ( hasGlowMap ) {
+	if ( bool(hasGlowMap) ) {
 		color.rgb += tonemap( baseMap.rgb * emissive.rgb * glowColor ) / tonemap( 1.0f / (vec3(glowMult) + 0.001f) );
 	}
 	
@@ -84,20 +84,20 @@ void main( void )
 	}
 	
 	vec3 backlight;
-	if ( hasBacklight ) {
+	if ( bool(hasBacklight) ) {
 		backlight = texture2D( BacklightMap, offset ).rgb;
 		color.rgb += baseMap.rgb * backlight * (1.0 - NdotL) * 0.66;
 	}
 	
 	vec4 mask;
-	if ( hasRimlight || hasSoftlight ) {
+	if ( bool(hasRimlight) || bool(hasSoftlight) ) {
 		mask = texture2D( LightMask, offset );
 	}
 	
 	float facing = dot(-L, E);
 	
 	vec3 rim;
-	if ( hasRimlight ) {
+	if ( bool(hasRimlight) ) {
 		rim = vec3(( 1.0 - NdotL ) * ( 1.0 - max(dot(normal, E), 0.0)));
 		//rim = smoothstep( 0.0, 1.0, rim );
 		rim = mask.rgb * pow(rim, vec3(lightingEffect2)) * gl_LightSource[0].diffuse.rgb * vec3(0.66);
@@ -108,7 +108,7 @@ void main( void )
 	float wrap = dot(normal, -L);
 	
 	vec3 soft;
-	if ( hasSoftlight ) {
+	if ( bool(hasSoftlight) ) {
 		soft = vec3((1.0 - wrap) * (1.0 - NdotL));
 		soft = smoothstep( -1.0, 1.0, soft );
 

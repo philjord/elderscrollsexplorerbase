@@ -24,15 +24,15 @@ uniform vec3 tintColor;
 uniform vec2 uvScale;
 uniform vec2 uvOffset;
 
-uniform bool hasEmit;
-uniform bool hasGlowMap;
-uniform bool hasSoftlight;
-uniform bool hasBacklight;
-uniform bool hasRimlight;
-uniform bool hasTintColor;
-uniform bool hasSpecularMap;
-uniform bool greyscaleColor;
-uniform bool doubleSided;
+uniform int hasEmit;
+uniform int hasGlowMap;
+uniform int hasSoftlight;
+uniform int hasBacklight;
+uniform int hasRimlight;
+uniform int hasTintColor;
+uniform int hasSpecularMap;
+uniform int greyscaleColor;
+uniform int doubleSided;
 
 uniform float lightingEffect1;
 uniform float rimPower;
@@ -111,6 +111,9 @@ void main( void )
 	vec4 glowMap = texture2D( GlowMap, offset );
 	
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
+	if ( !gl_FrontFacing && bool(doubleSided) ) {
+		normal *= -1.0;	
+	}
 	
 	vec3 L = normalize(LightDir);
 	vec3 V = normalize(ViewDir);
@@ -126,7 +129,7 @@ void main( void )
 	vec4 color;
 	vec3 albedo = baseMap.rgb * C.rgb;
 	vec3 diffuse = A.rgb + D.rgb * NdotL;
-	if ( greyscaleColor ) {
+	if ( bool(greyscaleColor) ) {
 		vec4 luG = colorLookup( baseMap.g, C.g * paletteScale );
 
 		albedo = luG.rgb;
@@ -134,10 +137,10 @@ void main( void )
 	
 	// Emissive
 	vec3 emissive = vec3(0.0);
-	if ( hasEmit ) {
+	if ( bool(hasEmit) ) {
 		emissive += glowColor * glowMult;
 		
-		if ( hasGlowMap ) {
+		if ( bool(hasGlowMap) ) {
 			emissive *= glowMap.rgb;
 		}
 	}
@@ -147,15 +150,15 @@ void main( void )
 	float s = 1.0;
 	float roughness = 0.1;
 	vec3 spec = vec3(0.0);
-	if ( hasSpecularMap ) {
+	if ( bool(hasSpecularMap) ) {
 		g = specMap.r;
 		s = specMap.g;
 		roughness = scale( 1.0 - ( g * specGlossiness ), 0.1, 0.9 );
-		spec = specColor * s * LightingFuncGGX_REF( NdotL, NdotV, NdotH, LdotH, roughness, 0.04 ) * specStrength;
+		spec = specColor * s * LightingFuncGGX_REF( NdotL, NdotV, NdotH, LdotH, roughness, 0.04 ) * specStrength;	
 		spec *= D.rgb * 0.9;
-		spec = clamp( spec, 0.0, 1.0 );
+		spec = clamp( spec, 0.0, 1.0 );		
 	}
-
+	
 	vec3 backlight = vec3(0.0);
 	//if ( hasBacklight ) {
 	//	backlight = texture2D( BacklightMap, offset ).rgb;
@@ -165,12 +168,12 @@ void main( void )
 	//}
 
 	vec4 mask = vec4(0.0);
-	if ( hasRimlight || hasSoftlight ) {
+	if ( bool(hasRimlight) || bool(hasSoftlight) ) {
 		mask = vec4( s );
 	}
 
 	vec3 rim = vec3(0.0);
-	if ( hasRimlight ) {
+	if ( bool(hasRimlight) ) {
 		rim = mask.rgb * pow(vec3((1.0 - NdotV)), vec3(rimPower));
 		rim *= smoothstep( -0.2, 1.0, dot(-L, V) );
 		
@@ -187,7 +190,7 @@ void main( void )
 	//	emissive += soft * D.rgb;
 	//}
 	
-	if ( hasTintColor ) {
+	if ( bool(hasTintColor) ) {
 		albedo *= tintColor;
 	}
 
@@ -197,6 +200,7 @@ void main( void )
 	color.a = C.a * baseMap.a;
     
 	gl_FragColor = color;
-	gl_FragColor.a *= alpha;
+	gl_FragColor.a *= alpha;	
+	
 }
 

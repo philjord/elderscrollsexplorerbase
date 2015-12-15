@@ -250,8 +250,14 @@ public class NiGeometryAppearanceShader
 		}
 		else if (bslsp != null)
 		{
-			bind(textureUnitName, bslsp, fileName(bslsp, 2), clamp);
+			ShaderMaterial sm = (ShaderMaterial) getMaterial(bslsp);
+			if (sm == null)
+				bind(textureUnitName, bslsp, fileName(bslsp, 2), clamp);
+			else
+				bind(textureUnitName, bslsp, fileName(bslsp, 5), clamp);
 		}
+
+		//with materials glowmap is in fact 5! and spec is now 2 not 2 and 7 as previous
 
 		String white = "shaders/nif/white.dds";
 		//String black = "shaders/nif/black.dds";
@@ -282,6 +288,8 @@ public class NiGeometryAppearanceShader
 			}
 
 			//TODO: what the hell do I do here?? 
+			//https://en.wikibooks.org/wiki/GLSL_Programming/Vertex_Transformations
+
 			Matrix4f viewMatrix = new Matrix4f();
 			viewMatrix.setIdentity();
 			uni4m("viewMatrix", viewMatrix);
@@ -414,7 +422,10 @@ public class NiGeometryAppearanceShader
 
 			if (hasSpecularMap && (niGeometry.nVer.LOAD_USER_VER2 == 130 || !hasBacklight))
 			{
-				bind("SpecularMap", bslsp, fileName(bslsp, 7, white), clamp);
+				if (sm == null)
+					bind("SpecularMap", bslsp, fileName(bslsp, 7, white), clamp);
+				else
+					bind("SpecularMap", bslsp, fileName(bslsp, 2, white), clamp);
 			}
 
 			if (niGeometry.nVer.LOAD_USER_VER2 == 130)
@@ -423,6 +434,10 @@ public class NiGeometryAppearanceShader
 				if (sm != null)
 					isDoubleSided = sm.bTwoSided != 0;
 				uni1i("doubleSided", isDoubleSided);
+
+				//PJPJPJPJ
+				pa.setCullFace(PolygonAttributes.CULL_NONE);
+
 				if (sm == null)
 				{
 					uni1f("paletteScale", bslsp.GrayscaletoPaletteScale);
@@ -514,7 +529,8 @@ public class NiGeometryAppearanceShader
 			}
 
 			//PJ new gear			
-			//TODO: check this jonwd7 does not do it
+			//TODO: check this jonwd7 does not do it, there is a use vertex alpha flag that would do this, but it
+			// appear to be not used this way on trees
 			// apparently the The vertex colors are used as well, just not the alpha component when
 			// SF_Vertex_Animation is present
 			// http://niftools.sourceforge.net/forum/viewtopic.php?f=10&t=3276
@@ -523,9 +539,6 @@ public class NiGeometryAppearanceShader
 				//hand through the isTreeAnim flag so the shader can ignore alpha
 				//textureAttributes.setTextureMode(TextureAttributes.COMBINE);
 				//textureAttributes.setCombineAlphaMode(TextureAttributes.COMBINE_REPLACE);
-
-				pa.setCullFace(PolygonAttributes.CULL_NONE);
-				pa.setBackFaceNormalFlip(true);
 			}
 
 		}
@@ -560,7 +573,8 @@ public class NiGeometryAppearanceShader
 			if (em != null)
 				isDoubleSided = em.bTwoSided != 0;
 			uni1i("doubleSided", isDoubleSided);
-
+			//PJPJPJPJ
+			pa.setCullFace(PolygonAttributes.CULL_NONE);
 			if (em == null)
 			{
 				uni2f("uvScale", bslsp.UVScale.u, bslsp.UVScale.v);
@@ -681,7 +695,7 @@ public class NiGeometryAppearanceShader
 		if (programHasVar("tangent", 0))
 		{
 			shaderProgram.setVertexAttrNames(new String[] { "tangent", "binormal" });
-			System.out.println("set attribute names");
+			System.out.println("set attribute names, I hope the J3d* has also set them!");
 		}
 
 		String[] shaderAttrNames = new String[allShaderAttributeValues.size()];

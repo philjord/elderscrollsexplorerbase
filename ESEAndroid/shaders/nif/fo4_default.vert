@@ -25,7 +25,7 @@ void main( void )
 	b = normalize(gl_NormalMatrix * binormal);
 	
 	// NOTE: b<->t 
-	mat3 tbnMatrix = mat3(t.x, b.x, N.x,
+	mat3 tbnMatrix = mat3(t.x, b.x, N.x,// why not swapped like sk_?
                           t.y, b.y, N.y,
                           t.z, b.z, N.z);
 						  

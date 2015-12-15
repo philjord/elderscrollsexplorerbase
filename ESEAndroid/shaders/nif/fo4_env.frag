@@ -24,15 +24,15 @@ uniform float alpha;
 uniform vec2 uvScale;
 uniform vec2 uvOffset;
 
-uniform bool hasEmit;
-uniform bool hasSoftlight;
-uniform bool hasBacklight;
-uniform bool hasRimlight;
-uniform bool hasCubeMap;
-uniform bool hasEnvMask;
-uniform bool hasSpecularMap;
-uniform bool greyscaleColor;
-uniform bool doubleSided;
+uniform int hasEmit;
+uniform int hasSoftlight;
+uniform int hasBacklight;
+uniform int hasRimlight;
+uniform int hasCubeMap;
+uniform int hasEnvMask;
+uniform int hasSpecularMap;
+uniform int greyscaleColor;
+uniform int doubleSided;
 
 uniform float lightingEffect1;
 uniform float rimPower;
@@ -118,7 +118,9 @@ void main( void )
 	vec4 specMap = texture2D( SpecularMap, offset );
 	
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
-	
+	if ( !gl_FrontFacing && bool(doubleSided) ) {
+		normal *= -1.0;	
+	}
 	
 	vec3 L = normalize(LightDir);
 	vec3 V = normalize(ViewDir);
@@ -139,7 +141,7 @@ void main( void )
 	vec4 color;
 	vec3 albedo = baseMap.rgb * C.rgb;
 	vec3 diffuse = A.rgb + (D.rgb * NdotL);
-	if ( greyscaleColor ) {
+	if ( bool(greyscaleColor) ) {
 		vec4 luG = colorLookup( baseMap.g, C.g * paletteScale );
 
 		albedo = luG.rgb;
@@ -147,7 +149,7 @@ void main( void )
 	
 	// Emissive
 	vec3 emissive = vec3(0.0);
-	if ( hasEmit ) {
+	if ( bool(hasEmit) ) {
 		emissive += glowColor * glowMult;
 	}
 
@@ -156,7 +158,7 @@ void main( void )
 	float s = 1.0;
 	float roughness = 0.1;
 	vec3 spec = vec3(0.0);
-	if ( hasSpecularMap ) {
+	if ( bool(hasSpecularMap) ) {
 		g = specMap.r;
 		s = specMap.g;
 		roughness = scale( 1.0 - ( g * specGlossiness ), 0.1, 0.9 );
@@ -168,7 +170,7 @@ void main( void )
 	// Environment
 	vec4 cube = textureCubeLod( CubeMap, reflectedWS, 8.0 - g * 8.0 );
 	vec4 env = texture2D( EnvironmentMap, offset );
-	if ( hasCubeMap ) {
+	if ( bool(hasCubeMap) ) {
 		cube.rgb *= envReflection * specStrength * sqrt(g) * 0.9;
 		cube.rgb *= mix( s, env.r, float(hasEnvMask) );
     
@@ -184,12 +186,12 @@ void main( void )
 	//}
 
 	vec4 mask = vec4(0.0);
-	if ( hasRimlight || hasSoftlight ) {
+	if ( bool(hasRimlight) || bool(hasSoftlight) ) {
 		mask = vec4( s );
 	}
 
 	vec3 rim = vec3(0.0);
-	if ( hasRimlight ) {
+	if ( bool(hasRimlight) ) {
 		rim = mask.rgb * pow(vec3((1.0 - NdotV)), vec3(rimPower));
 		rim *= smoothstep( -0.2, 1.0, dot(-L, V) );
 		

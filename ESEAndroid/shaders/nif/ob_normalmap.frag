@@ -15,10 +15,10 @@ uniform float glowMult;
 uniform vec2 uvScale;
 uniform vec2 uvOffset;
 
-uniform bool hasEmit;
-uniform bool hasSoftlight;
-uniform bool hasBacklight;
-uniform bool hasRimlight;
+uniform int hasEmit;
+uniform int hasSoftlight;
+uniform int hasBacklight;
+uniform int hasRimlight;
 
 uniform float lightingEffect1;
 uniform float lightingEffect2;
@@ -77,7 +77,7 @@ void main( void )
 	
 	
 	// Emissive
-	if ( hasEmit ) {
+	if ( bool(hasEmit) ) {
 		color.rgb += tonemap( baseMap.rgb * glowColor ) / tonemap( 1.0f / vec3(glowMult + 0.001f) );
 	}
 
@@ -92,18 +92,18 @@ void main( void )
 	}
 
 	vec3 backlight;
-	if ( hasBacklight ) {
+	if ( bool(hasBacklight) ) {
 		backlight = texture2D( BacklightMap, offset ).rgb;
 		color.rgb += baseMap.rgb * backlight * wrap * D.rgb;
 	}
 
 	vec4 mask;
-	if ( hasRimlight || hasSoftlight ) {
+	if ( bool(hasRimlight) || bool(hasSoftlight) ) {
 		mask = texture2D( LightMask, offset );
 	}
 
 	vec3 rim;
-	if ( hasRimlight ) {
+	if ( bool(hasRimlight) ) {
 		rim = vec3((1.0 - NdotL) * (1.0 - EdotN));
 		rim = mask.rgb * pow(rim, vec3(lightingEffect2)) * D.rgb * vec3(0.66);
 		rim *= smoothstep( -0.5, 1.0, facing );
@@ -112,7 +112,7 @@ void main( void )
 	}
 	
 	vec3 soft;
-	if ( hasSoftlight ) {
+	if ( bool(hasSoftlight) ) {
 		soft = vec3((1.0 - wrap) * (1.0 - NdotL));
 		soft = smoothstep( -1.0, 1.0, soft );
 

@@ -30,7 +30,7 @@ void main( void )
                           b.y, t.y, N.y,
                           b.z, t.z, N.z);
 		  
-	v = vec3(gl_ModelViewMatrix * (gl_Vertex ));//* vec4(50.0,50.0,50.0,1)));
+	v = vec3(gl_ModelViewMatrix * (gl_Vertex ));
 	
 	ViewDir = tbnMatrix * -v.xyz; 
  

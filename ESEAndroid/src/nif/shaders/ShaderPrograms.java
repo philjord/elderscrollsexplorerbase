@@ -418,7 +418,7 @@ public class ShaderPrograms
 				if (niGeometry instanceof BSTriShape)
 				{
 					BSTriShape bsTriShape = (BSTriShape) niGeometry;
-					return compare(bsTriShape.vertexType, Integer.parseInt(right)) ^ invert;
+					return compare(bsTriShape.dwordsPerVertex, Integer.parseInt(right)) ^ invert;
 				}
 				else
 				{

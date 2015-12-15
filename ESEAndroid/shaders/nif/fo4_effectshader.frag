@@ -6,22 +6,22 @@ uniform samplerCube CubeMap;
 uniform sampler2D NormalMap;
 uniform sampler2D SpecularMap;
 
-uniform bool doubleSided;
+uniform int doubleSided;
 
-uniform bool hasSourceTexture;
-uniform bool hasGreyscaleMap;
-uniform bool hasCubeMap;
-uniform bool hasNormalMap;
-uniform bool hasEnvMask;
+uniform int hasSourceTexture;
+uniform int hasGreyscaleMap;
+uniform int hasCubeMap;
+uniform int hasNormalMap;
+uniform int hasEnvMask;
 
-uniform bool greyscaleAlpha;
-uniform bool greyscaleColor;
+uniform int greyscaleAlpha;
+uniform int greyscaleColor;
 
-uniform bool useFalloff;
-uniform bool vertexColors;
-uniform bool vertexAlpha;
+uniform int useFalloff;
+uniform int vertexColors;
+uniform int vertexAlpha;
 
-uniform bool hasWeaponBlood;
+uniform int hasWeaponBlood;
 
 uniform vec4 glowColor;
 uniform float glowMult;
@@ -63,8 +63,11 @@ void main( void )
 	vec4 specMap = texture2D( SpecularMap, offset );
 	
 	vec3 normal = N;
-	if ( hasNormalMap ) {
+	if ( bool(hasNormalMap) ) {
 		normal = normalize(normalMap.rgb * 2.0 - 1.0);
+	}
+	if ( !gl_FrontFacing && bool(doubleSided) ) {
+		normal *= -1.0;	
 	}
 	
 	vec3 L = normalize(LightDir);
@@ -84,7 +87,7 @@ void main( void )
 	
 	// Falloff
 	float falloff = 1.0;
-	if ( useFalloff ) {
+	if ( bool(useFalloff) ) {
 		float startO = min(falloffParams.z, 1.0);
 		float stopO = max(falloffParams.w, 0.0);
 		
@@ -109,7 +112,7 @@ void main( void )
 	color.rgb *= C.rgb * glowColor.rgb;
 	color.a *= C.a * falloff * alphaMult;
 
-	if ( greyscaleColor ) {
+	if ( bool(greyscaleColor) ) {
 		// Only Red emissive channel is used
 		float emRGB = glowColor.r;
 
@@ -118,7 +121,7 @@ void main( void )
 		color.rgb = luG.rgb;
 	}
 	
-	if ( greyscaleAlpha ) {
+	if ( bool(greyscaleAlpha) ) {
 		vec4 luA = colorLookup( baseMap.a, C.a * falloff * alphaMult );
 		
 		color.a = luA.a;
@@ -132,14 +135,14 @@ void main( void )
 	// Specular
 	float g = 1.0;
 	float s = 1.0;
-	if ( hasEnvMask ) {
+	if ( bool(hasEnvMask) ) {
 		g = specMap.r;
 		s = specMap.g;
 	}
 	
 	// Environment
 	vec4 cube = textureCube( CubeMap, reflectedWS );
-	if ( hasCubeMap ) {
+	if ( bool(hasCubeMap) ) {
 		cube.rgb *= envReflection * sqrt(g) * s;
 		
 		color.rgb += cube.rgb * falloff;
