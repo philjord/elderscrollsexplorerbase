@@ -39,7 +39,8 @@ public class NiGeometryAppearanceFactoryOverride implements NiGeometryAppearance
 		}
 		else
 		{
-			System.out.println("using FFP");
+			if (NiGeometryAppearanceShader.OUTPUT_BINDINGS)
+				System.out.println("using FFP");
 			return new NiGeometryAppearanceFixed().configureAppearance(niGeometry, niToJ3dData, textureSource, shape, target);
 		}
 	}

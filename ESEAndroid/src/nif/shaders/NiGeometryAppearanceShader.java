@@ -67,14 +67,9 @@ import utils.source.TextureSource;
 
 /**
  this will build an appearance up out of a NiGeometry that can be used by a real j3dnigeometry 
- It is based on(copied from?)the nifskope 2.0 renderer code from jonwd7
- 
- 
- TODO:S 
- Vertex attribute arrays for tan and bi, so tex coords can go back to 2 dim
- tonemap function in shaders code, make one up
- bool in shader code would be nicer as bool, perhaps push forward on GL number to 4?? Java3D can't send them through as
- GL2 native calls don't accept them
+ It is based on the nifskope 2.0 renderer code from jonwd7
+  
+ TODO:
  The SKYRIM TREE ANIM code in the bind, is useless but should be put into a new shader type
  
  sk_env must have the wrld matrix sent through, perhaps just a dummy to ensure the variable is bound?
@@ -84,6 +79,7 @@ import utils.source.TextureSource;
 
 public class NiGeometryAppearanceShader
 {
+	public static boolean OUTPUT_BINDINGS = false;
 	//private static WeakHashMap<NiProperty, NodeComponent> propertyLookup = new WeakHashMap<NiProperty, NodeComponent>();
 
 	//private static WeakHashMap<BSLightingShaderProperty, NodeComponent> bsLightingShaderPropertyLookup = new WeakHashMap<BSLightingShaderProperty, NodeComponent>();
@@ -546,7 +542,6 @@ public class NiGeometryAppearanceShader
 		BSEffectShaderProperty bsesp = (BSEffectShaderProperty) props.get(BSEffectShaderProperty.class);
 		if (bsesp != null)
 		{
-
 			Matrix4f worldMatrix = new Matrix4f();
 			worldMatrix.setIdentity();
 			uni4m("worldMatrix", worldMatrix);
@@ -683,7 +678,8 @@ public class NiGeometryAppearanceShader
 			uni2f("uvOffset", 0.0f, 0.0f);
 		}
 
-		System.out.println("using prog " + prog.getName());
+		if (OUTPUT_BINDINGS)
+			System.out.println("using prog " + prog.getName());
 		//for (String name : prog.shaders.keySet())
 		//	System.out.println("shaderCode " + name + "\n" + prog.shaders.get(name).getShaderSource());
 
@@ -695,14 +691,16 @@ public class NiGeometryAppearanceShader
 		if (programHasVar("tangent", 0))
 		{
 			shaderProgram.setVertexAttrNames(new String[] { "tangent", "binormal" });
-			System.out.println("set attribute names, I hope the J3d* has also set them!");
+			if (OUTPUT_BINDINGS)
+				System.out.println("set attribute names, I hope the J3d* has also set them!");
 		}
 
 		String[] shaderAttrNames = new String[allShaderAttributeValues.size()];
 		int i = 0;
 		for (ShaderAttributeValue sav : allShaderAttributeValues)
 		{
-			System.out.println("i= " + i + " " + sav.getAttributeName() + " " + sav.getValue());
+			if (OUTPUT_BINDINGS)
+				System.out.println("i= " + i + " " + sav.getAttributeName() + " " + sav.getValue());
 			shaderAttrNames[i++] = sav.getAttributeName();
 			shaderAttributeSet.put(sav);
 		}
@@ -710,69 +708,100 @@ public class NiGeometryAppearanceShader
 		shaderProgram.setShaderAttrNames(shaderAttrNames);
 
 		TextureUnitState[] tus = allTextureUnitStates.toArray(new TextureUnitState[] {});
-		for (TextureUnitState tu : tus)
+		if (OUTPUT_BINDINGS)
 		{
-			System.out.println("tu " + tu.getName());
+			for (TextureUnitState tu : tus)
+			{
+				System.out.println("tu " + tu.getName());
+			}
 		}
 		app.setTextureUnitState(tus);
 		app.setShaderProgram(shaderProgram);
 		app.setShaderAttributeSet(shaderAttributeSet);
 
-		// setup blending
+		BSMaterial m = null;
+		if (bslsp != null)
+			m = getMaterial(bslsp);
+		if (bsesp != null)
+			m = getMaterial(bsesp);
 
-		glProperty((NiAlphaProperty) props.get(NiAlphaProperty.class));
-
-		// BSESP/BSLSP do not always need an NiAlphaProperty, and appear to override it at times
-
-		boolean translucent = (bslsp != null)
-				&& (bslsp.Alpha < 1.0f || bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Refraction));
-
-		translucent |= (bsesp != null) && props.get(NiAlphaProperty.class) == null && bsesp.EmissiveColor.a < 1.0f;
-
-		if (translucent)
+		//TODO: my material version is doing craziness
+		//https://github.com/jonwd7/nifskope/commit/07ad381212d13e27e163faa96d0a51e377fe39a3 
+		// include teh tree anim one in all!
+		if (m == null || 1==1)
 		{
-			//Note my old code also used1-bslsp.alpha here
-			ta.setTransparency(0.1f);
-			ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+			// setup blending
+			glProperty((NiAlphaProperty) props.get(NiAlphaProperty.class));
+			// BSESP/BSLSP do not always need an NiAlphaProperty, and appear to override it at times
+
+			boolean translucent = (bslsp != null)
+					&& (bslsp.Alpha < 1.0f || bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Refraction));
+			translucent |= (bsesp != null) && props.get(NiAlphaProperty.class) == null && bsesp.EmissiveColor.a < 1.0f;
+
+			if (translucent)
+			{
+				ta.setTransparency(0.1f);
+				ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+			}
+
+			// setup material
+
+			glProperty((NiMaterialProperty) props.get(NiMaterialProperty.class), (NiSpecularProperty) props.get(NiSpecularProperty.class));
+
+			// setup z buffer
+
+			glProperty((NiZBufferProperty) props.get(NiZBufferProperty.class));
+
+			boolean depthTest = true;
+			depthTest |= (bslsp != null) && bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_ZBuffer_Test);
+			depthTest |= (bsesp != null) && bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_ZBuffer_Test);
+
+			if (!depthTest)
+			{
+				ra.setDepthBufferEnable(false);
+			}
+
+			boolean depthWrite = true;
+			depthWrite |= (bslsp != null) && bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
+			depthWrite |= (bsesp != null) && bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
+			if (!depthWrite || translucent)
+			{
+				ra.setDepthBufferWriteEnable(false);
+			}
+
+			// setup stencil
+
+			glProperty((NiStencilProperty) props.get(NiStencilProperty.class));
+
+			// wireframe ?
+
+			glProperty((NiWireframeProperty) props.get(NiWireframeProperty.class));
+
 		}
-
-		// setup material
-
-		glProperty((NiMaterialProperty) props.get(NiMaterialProperty.class), (NiSpecularProperty) props.get(NiSpecularProperty.class));
-
-		// setup z buffer
-
-		glProperty((NiZBufferProperty) props.get(NiZBufferProperty.class));
-
-		boolean depthTest = true;
-		depthTest |= (bslsp != null) && bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_ZBuffer_Test);
-		depthTest |= (bsesp != null) && bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_ZBuffer_Test);
-
-		if (!depthTest)
+		else
 		{
-			ra.setDepthBufferEnable(false);
+			// setup blending
+			glPropertyAlpha(m);
+			// setup material
+			glMaterial(m);
+			// setup z buffer
+			glMaterialZBuffer(m);
+			// setup stencil
+			glMaterialStencil(m);
+			// wireframe ?
+			glMaterialWireframe(m);
 		}
-
-		boolean depthWrite = true;
-		depthWrite |= (bslsp != null) && bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
-		depthWrite |= (bsesp != null) && bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
-		if (!depthWrite || translucent)
-		{
-			ra.setDepthBufferWriteEnable(false);
-		}
-
-		// setup stencil
-
-		glProperty((NiStencilProperty) props.get(NiStencilProperty.class));
-
-		// wireframe ?
-
-		glProperty((NiWireframeProperty) props.get(NiWireframeProperty.class));
 
 		return true;
 	}
 
 	private void glProperty(NiWireframeProperty nwp)
+	{
+		// TODO later
+		pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+	}
+
+	private void glMaterialWireframe(BSMaterial m)
 	{
 		// TODO later
 		pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
@@ -802,9 +831,40 @@ public class NiGeometryAppearanceShader
 
 	}
 
+	private void glMaterialStencil(BSMaterial m)
+	{
+		if (m != null)
+		{
+			if (m.bTwoSided != 0)
+			{
+				pa.setCullFace(PolygonAttributes.CULL_NONE);
+				pa.setBackFaceNormalFlip(true);
+			}
+		}
+	}
+
 	private void glProperty(NiZBufferProperty nzp)
 	{
 		if (nzp != null)
+		{
+			//TODO: bit tricky
+			/*	if (nzp.depthTest)
+				{
+					glEnable(GL_DEPTH_TEST);
+					glDepthFunc(nzp. depthFunc);
+				}
+				else
+				{
+					glDisable(GL_DEPTH_TEST);
+				}
+			
+				glDepthMask(nzp.depthMask ? GL_TRUE : GL_FALSE);*/
+		}
+	}
+
+	private void glMaterialZBuffer(BSMaterial m)
+	{
+		if (m != null)
 		{
 			//TODO: bit tricky
 			/*	if (nzp.depthTest)
@@ -863,6 +923,35 @@ public class NiGeometryAppearanceShader
 
 	}
 
+	private void glMaterial(BSMaterial m)
+	{
+		if (m != null)
+		{
+			//TODO: where are ambient and diffuse?
+			if (m instanceof ShaderMaterial)
+			{
+				ShaderMaterial sm = (ShaderMaterial) m;
+				if (sm.bEmitEnabled != 0)
+					mat.setEmissiveColor(sm.cEmittanceColor.r, sm.cEmittanceColor.g, sm.cEmittanceColor.b);
+				
+				if (sm.bSpecularEnabled != 0)
+				{
+					mat.setShininess(sm.fSmoothness);
+					mat.setSpecularColor(sm.cSpecularColor.r, sm.cSpecularColor.g, sm.cSpecularColor.b);
+				}
+			}
+		}
+		else
+		{
+			mat.setAmbientColor(new Color3f(0.4f, 0.4f, 0.4f));
+			mat.setDiffuseColor(new Color3f(0.8f, 0.8f, 0.8f));
+			mat.setSpecularColor(new Color3f(1.0f, 1.0f, 1.0f));
+
+			mat.setShininess(33f);//33 cos jonwd7 says it's a good default
+		}
+
+	}
+
 	private void glProperty(NiAlphaProperty nap)
 	{
 		if (nap != null && nap.alphaBlendingEnable())
@@ -897,6 +986,47 @@ public class NiGeometryAppearanceShader
 				ra.setAlphaTestFunction(alphaTestMode);
 
 				float threshold = ((nap.threshold) / 255f);// threshold range of 255 to 0 confirmed empirically
+				ra.setAlphaTestValue(threshold);
+			}
+		}
+		// do NOT disable no alpha test still enables transparent textures
+
+	}
+
+	private void glPropertyAlpha(BSMaterial m)
+	{
+		if (m != null && m.bAlphaBlend != 0)
+		{
+			ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+			ta.setSrcBlendFunction(NifOpenGLToJava3D.convertBlendMode(m.iAlphaSrc, true));
+			ta.setDstBlendFunction(NifOpenGLToJava3D.convertBlendMode(m.iAlphaSrc, false));
+		}
+		else
+		{
+			ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
+		}
+
+		if (m != null && m.bAlphaTest != 0)
+		{
+			// I think the PolygonAttributes.CULL_NONE should be applied to anything
+			// with an alphaTestEnabled(), flat_lod trees from skyrim prove it
+			// obviously transparent stuff can be seen from the back quite often
+			// F:\game media\Fallout3\meshes\creatures\alien\alien.nif suggests not these?
+			//pa.setCullFace(PolygonAttributes.CULL_NONE);
+			//pa.setBackFaceNormalFlip(true);
+
+			int alphaTestMode = NifOpenGLToJava3D.convertAlphaTestMode(m.bAlphaTest);
+			//Test of greater with threshold of 0 is in fact no alpha, and due to sorting issue better to turn off
+			//TODO: test this correct for F:\game media\Fallout3\meshes\creatures\alien\alien.nif
+			if (alphaTestMode == RenderingAttributes.GREATER && m.iAlphaTestRef == 0)
+			{
+				ta.setTransparencyMode(TransparencyAttributes.NONE);
+			}
+			else
+			{
+				ra.setAlphaTestFunction(alphaTestMode);
+
+				float threshold = ((m.iAlphaTestRef) / 255f);// threshold range of 255 to 0 confirmed empirically
 				ra.setAlphaTestValue(threshold);
 			}
 		}
@@ -1010,7 +1140,7 @@ public class NiGeometryAppearanceShader
 
 	private void bindCube(String textureUnitName, BSLightingShaderProperty bslsp, String fileName)
 	{
-		if (programHasVar(textureUnitName))
+		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
@@ -1030,7 +1160,7 @@ public class NiGeometryAppearanceShader
 			}
 			else
 			{
-				System.out.println("bindCube BSLightingShaderProperty " + fileName + " No Texture found " + bslsp.nVer.fileName);
+				System.out.println("bindCube BSLightingShaderProperty " + fileName + " No Texture found for nif " + bslsp.nVer.fileName);
 			}
 
 			//setUpTimeController(ntp, niToJ3dData);	
@@ -1042,7 +1172,7 @@ public class NiGeometryAppearanceShader
 
 	private void bind(String textureUnitName, NiTexturingProperty ntp, String fileName, int clamp)
 	{
-		if (programHasVar(textureUnitName))
+		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 
@@ -1059,7 +1189,7 @@ public class NiGeometryAppearanceShader
 			}
 			else
 			{
-				System.out.println("NiTexturingProperty " + fileName + " No Texture found " + ntp.nVer.fileName);
+				System.out.println("NiTexturingProperty " + fileName + " No Texture found for nif " + ntp.nVer.fileName);
 			}
 
 			//setUpTimeController(ntp, niToJ3dData);	
@@ -1071,7 +1201,7 @@ public class NiGeometryAppearanceShader
 
 	private void bind(String textureUnitName, BSShaderLightingProperty bsprop, String fileName, int clamp)
 	{
-		if (programHasVar(textureUnitName))
+		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 
@@ -1083,7 +1213,7 @@ public class NiGeometryAppearanceShader
 			}
 			else
 			{
-				System.out.println("BSShaderLightingProperty " + fileName + " No Texture found " + bsprop.nVer.fileName);
+				System.out.println("BSShaderLightingProperty " + fileName + " No Texture found for nif " + bsprop.nVer.fileName);
 			}
 
 			//setUpTimeController(bslsp, niToJ3dData);
@@ -1095,7 +1225,7 @@ public class NiGeometryAppearanceShader
 
 	private void bind(String textureUnitName, BSLightingShaderProperty bslsp, String fileName, int clamp)
 	{
-		if (programHasVar(textureUnitName))
+		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 
@@ -1107,13 +1237,15 @@ public class NiGeometryAppearanceShader
 			}
 			else
 			{
-				System.out.println("BSLightingShaderProperty " + fileName + " No Texture found " + bslsp.nVer.fileName);
+				System.out.println("BSLightingShaderProperty " + fileName + " No Texture found for nif " + bslsp.nVer.fileName);
 			}
 
 			//NiSingleInterpController controller = (NiSingleInterpController) niToJ3dData.get(bslsp.controller);
 			//setUpTimeController(controller, niToJ3dData);
 
-			System.out.println("bound " + textureUnitName + " to " + texunit + " with " + fileName);
+			if (OUTPUT_BINDINGS)
+				System.out.println("bound " + textureUnitName + " to " + texunit + " with " + fileName);
+
 			allTextureUnitStates.add(tus);
 			uni1i(textureUnitName, texunit++);
 
@@ -1123,7 +1255,7 @@ public class NiGeometryAppearanceShader
 
 	private void bind(String textureUnitName, BSEffectShaderProperty bsesp, String fileName, int clamp)
 	{
-		if (programHasVar(textureUnitName))
+		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 
@@ -1135,7 +1267,7 @@ public class NiGeometryAppearanceShader
 			}
 			else
 			{
-				System.out.println("BSEffectShaderProperty " + fileName + " No Texture found " + bsesp.nVer.fileName);
+				System.out.println("BSEffectShaderProperty " + fileName + " No Texture found for nif " + bsesp.nVer.fileName);
 			}
 
 			//setUpTimeController(bsesp, niToJ3dData);

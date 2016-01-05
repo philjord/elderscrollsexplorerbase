@@ -108,6 +108,8 @@ void main( void )
 	vec4 baseMap = texture2D( BaseMap, offset );
 	vec4 normalMap = texture2D( NormalMap, offset );
 	vec4 specMap = texture2D( SpecularMap, offset );
+	//specMap.xyz = specMap.xzy;//swizzle to Java3d ref frame
+	//specMap.z = -specMap.z;//swizzle to Java3d ref frame
 	vec4 glowMap = texture2D( GlowMap, offset );
 	
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);

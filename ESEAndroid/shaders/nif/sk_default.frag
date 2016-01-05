@@ -59,7 +59,7 @@ void main( void )
 
 	vec4 baseMap = texture2D( BaseMap, offset );
 	vec4 normalMap = texture2D( NormalMap, offset );
-	
+
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
 	
 	

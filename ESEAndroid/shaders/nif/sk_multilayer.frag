@@ -101,7 +101,7 @@ void main( void )
 
 	vec4 baseMap = texture2D( BaseMap, offset );
 	vec4 normalMap = texture2D( NormalMap, offset );
-	
+	// not swizzled cos it breaks everything
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
 
 	// Sample the non-parallax offset alpha channel of the inner map

@@ -1,5 +1,8 @@
 
-Approach bethesda get rights to ip
+I should fork the java3d projects into my own area, then somehow fork them again across to java3d-and?
+
+
+Approach bethesda get rights to ip?
 
 kickstarter campaign, explorer, game, google cardboard game
 
@@ -23,7 +26,7 @@ make java3d not need awt, at all
 
 look at ftransform missing issue, need to pass gl_mvp matrix through
 
-think about jbullet stack alloc gear, maybe remove?
+think about jbullet stack alloc gear, maybe remove? asmdex apparently is the asm equivilent
 
 possibly make a bsa for the newer morrowind stuff, note they have shader in there too (HLSL but)
 
@@ -31,7 +34,7 @@ look at all the other shader, FOMM of oblivion, mojoshader etc
 
 
 GLSL code translation notes,
-SLSF2_Tree_Anim
+
 Note I really need to ensure all attributes are bound and loaded against and all uniforms are bound too
 
 I've used attribute for t and b seems fine
@@ -49,12 +52,37 @@ Background and skies
 F:\game media\Oblivion\meshes\dungeons\fortruins\exterior\ruinstonesexterior\runestoneext01glyph01.nif
 mine has a fat glyph
 
+my xyz is swizzle normal maps and spec maps must be swizzled in shaders! No just breaks stuff odd
+
 most oblivion armour uses the FFP
 
-Skyrim tree sahder for vertex colors
+Skyrim tree shader for vertex colors -SLSF2_Tree_Anim done in jonwd7 code
 
 particles are not using shaders
 
-outlining needs an outliner shader too
+outlining needs an outliner shader too or does it stay ffp
 
 set up time controllers for textures, I notice nifskope suggests only 2 possible controllers
+
+ShaderAttributeSetRetained is broken it only updates once so changing uniforms are not passed through anymore, hence water knows not the the time
+
+
+
+
+Note i can throw byte arrays at shaders and get float and half float in shader no bitstofloat needed
+I could swizzle axis in shader if i wanted too .
+
+
+
+Interesting links
+http://www.redbull.com/en/games/stories/1331742390993/shenmue-3-the-changes-it-needs-15-years-on
+
+http://stackoverflow.com/questions/9148795/android-opengl-texture-compression
+
+http://developer.android.com/reference/java/awt/font/package-summary.html
+
+http://www.codeproject.com/Articles/269318/An-Adventure-in-Porting-a-Java-Applet-to-Android-w
+
+https://github.com/puniverse/spaceships-demo/blob/master/build.gradle
+
+http://forum.jogamp.org/JOCL-on-the-ODROID-XU-Android-td4030220.html

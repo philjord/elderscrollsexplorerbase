@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/java3d-core-and"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="/jnifj3d"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/java3d/1.6.0-pre12/vecmath.jar"/>
 	<classpathentry kind="src" path="/jnif"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ElderScrollsExplorer"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/java3d-core-and"/>
+	<classpathentry kind="lib" path="/external_jars/external jars/java3d/1.6.0-pre12/j3dutils.jar" sourcepath="/java3d-utils"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
