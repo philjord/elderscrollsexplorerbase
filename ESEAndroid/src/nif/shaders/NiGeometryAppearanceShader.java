@@ -2,6 +2,7 @@ package nif.shaders;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.ImageComponent;
@@ -728,7 +729,7 @@ public class NiGeometryAppearanceShader
 		//TODO: my material version is doing craziness
 		//https://github.com/jonwd7/nifskope/commit/07ad381212d13e27e163faa96d0a51e377fe39a3 
 		// include teh tree anim one in all!
-		if (m == null || 1==1)
+		if (m == null || 1 == 1)
 		{
 			// setup blending
 			glProperty((NiAlphaProperty) props.get(NiAlphaProperty.class));
@@ -933,7 +934,7 @@ public class NiGeometryAppearanceShader
 				ShaderMaterial sm = (ShaderMaterial) m;
 				if (sm.bEmitEnabled != 0)
 					mat.setEmissiveColor(sm.cEmittanceColor.r, sm.cEmittanceColor.g, sm.cEmittanceColor.b);
-				
+
 				if (sm.bSpecularEnabled != 0)
 				{
 					mat.setShininess(sm.fSmoothness);
@@ -1223,6 +1224,8 @@ public class NiGeometryAppearanceShader
 		}
 	}
 
+	private static HashSet<String> warningsGiven = new HashSet<String>();
+
 	private void bind(String textureUnitName, BSLightingShaderProperty bslsp, String fileName, int clamp)
 	{
 		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
@@ -1237,7 +1240,11 @@ public class NiGeometryAppearanceShader
 			}
 			else
 			{
-				System.out.println("BSLightingShaderProperty " + fileName + " No Texture found for nif " + bslsp.nVer.fileName);
+				if (!warningsGiven.contains(fileName))
+				{
+					System.out.println("BSLightingShaderProperty " + fileName + " No Texture found for nif " + bslsp.nVer.fileName);
+					warningsGiven.add(fileName);
+				}
 			}
 
 			//NiSingleInterpController controller = (NiSingleInterpController) niToJ3dData.get(bslsp.controller);
