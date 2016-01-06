@@ -6,7 +6,7 @@
 	<classpathentry kind="src" path="/jnifj3d"/>
 	<classpathentry kind="src" path="/jnif"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ElderScrollsExplorer"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/java3d-utils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/java3d-utils-and"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/vecmath"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
