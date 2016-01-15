@@ -8,51 +8,37 @@ uniform sampler2D layerMap4;
 uniform sampler2D layerMap5;
 uniform sampler2D layerMap6;
 uniform sampler2D layerMap7;
+uniform sampler2D layerMap8;
  
-varying vec3 LightDir;
-varying vec3 ViewDir;
-
-varying vec3 N;
-
 varying vec4 A;
 varying vec4 C;
 varying vec4 D;
 
+uniform int layerCount;
+
+
 void main( void )
 {
 	vec4 baseMapTex = texture2D( baseMap, gl_TexCoord[0].st );
-	gl_FragColor.rgb = vec3(1,1,1);
-}
-void main2( void )
-{
-	vec4 baseMapTex = texture2D( baseMap, gl_TexCoord[0].st );
-
-	vec3 normal = N;
 	
-	vec3 L = normalize(LightDir);
-	vec3 E = normalize(ViewDir);
-	vec3 R = reflect(-L, normal);
-	vec3 H = normalize( L + E );
+	vec3 albedo = baseMapTex.rgb;		
 	
-	float NdotL = max( dot(normal, L), 0.0 );
-	float NdotH = max( dot(normal, H), 0.0 );
-	float EdotN = max( dot(normal, E), 0.0 );
-	float NdotNegL = max( dot(normal, -L), 0.0 );
+	if(layerCount>0)	albedo = (gl_TexCoord[1].s * texture2D( layerMap1, gl_TexCoord[0].st ).rgb) + ((1-gl_TexCoord[1].s)*albedo);
+	if(layerCount>1)	albedo = (gl_TexCoord[2].s * texture2D( layerMap2, gl_TexCoord[0].st ).rgb) + ((1-gl_TexCoord[2].s)*albedo);
+	if(layerCount>2)	albedo = (gl_TexCoord[3].s * texture2D( layerMap3, gl_TexCoord[0].st ).rgb) + ((1-gl_TexCoord[3].s)*albedo);
+	if(layerCount>3)	albedo = (gl_TexCoord[4].s * texture2D( layerMap4, gl_TexCoord[0].st ).rgb) + ((1-gl_TexCoord[4].s)*albedo);
+	if(layerCount>4)	albedo = (gl_TexCoord[5].s * texture2D( layerMap5, gl_TexCoord[0].st ).rgb) + ((1-gl_TexCoord[5].s)*albedo);
+	if(layerCount>5)	albedo = (gl_TexCoord[6].s * texture2D( layerMap6, gl_TexCoord[0].st ).rgb) + ((1-gl_TexCoord[6].s)*albedo);
+	if(layerCount>6)	albedo = (gl_TexCoord[7].s * texture2D( layerMap7, gl_TexCoord[0].st ).rgb) + ((1-gl_TexCoord[7].s)*albedo);
+	
+	
+	albedo = albedo * C.rgb;
+	
+	vec3 diffuse = A.rgb + D.rgb;
 
 	vec4 color;
-	vec3 albedo = baseMapTex.rgb * C.rgb;
-	vec3 diffuse = A.rgb + (D.rgb * NdotL);
+	color.rgb = albedo * diffuse ;
+	color.a = 1;
 
-	// Emissive
-	vec3 emissive = gl_FrontMaterial.emission.rgb;
-
-	// Specular
-	vec3 spec = gl_FrontMaterial.specular.rgb * pow(NdotH, 0.3*gl_FrontMaterial.shininess);
-	spec *= D.rgb;
-	
-	color.rgb = albedo * (diffuse + emissive) + spec.rgb;
-	color.a = C.a * baseMapTex.a;
-
-	//gl_FragColor = color;
-	gl_FragColor = baseMapTex;
+	gl_FragColor = color;	
 }
