@@ -1,4 +1,16 @@
 #version 120
+uniform mat4 glProjectionMatrix;
+uniform mat4 glModelViewMatrix;
+uniform mat3 glNormalMatrix;
+
+uniform vec4 glFrontMaterialdiffuse;
+
+uniform vec4 glLightModelambient;
+
+uniform vec4 glLightSource0position;
+uniform vec4 glLightSource0diffuse;
+
+varying vec2 glTexCoord0;
 
 varying vec4 A;
 varying vec4 C;
@@ -7,13 +19,11 @@ varying vec4 D;
 
 void main( void )
 {			
-	vec3 v = vec3(gl_ModelViewMatrix * gl_Vertex);
+	gl_Position = glProjectionMatrix * glModelViewMatrix * gl_Vertex;
 
-	A = gl_LightModel.ambient;
+	A = glLightModelambient;
 	C = gl_Color;
-	D = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse;
+	D = glLightSource0diffuse * glFrontMaterialdiffuse;
 
-   	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;   	
-	
-	gl_Position = ftransform();	
+   	glTexCoord0 = gl_MultiTexCoord0.st;   	
 }

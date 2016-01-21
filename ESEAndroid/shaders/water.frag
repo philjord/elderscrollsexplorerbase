@@ -6,13 +6,15 @@ uniform sampler2D envMap;
 
 varying vec3 lightDir;
 
+varying vec2 glTexCoord0;
+
 void main() 
 { 
      // used only when there is a cubemap to reflect (see below)
 	 //vec3 eyePos = vec3(gl_ProjectionMatrixInverse * vec4(0,0,1,0));
      //vec3 eye = normalize(eyePos - position);
      //vec3 r = reflect(eye, worldNormal);   
-     vec4 color = texture2D(envMap, gl_TexCoord[0].st);//textureCube(envMap, r);
+     vec4 color = texture2D(envMap, glTexCoord0.st);//textureCube(envMap, r);
      
      
      float intensity,at,af;

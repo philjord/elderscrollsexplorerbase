@@ -6,9 +6,11 @@ varying vec4 A;
 varying vec4 C;
 varying vec4 D;
 
+varying vec2 glTexCoord0;
+
 void main( void )
 {
-	vec4 baseMapTex = texture2D( baseMap, gl_TexCoord[0].st );
+	vec4 baseMapTex = texture2D( baseMap, glTexCoord0.st );
 	
 	vec3 albedo = baseMapTex.rgb;	
 	

@@ -1,3 +1,17 @@
+#version 120
+uniform mat4 glProjectionMatrix;
+uniform mat4 glModelViewMatrix;
+uniform mat3 glNormalMatrix;
+
+uniform vec4 glFrontMaterialdiffuse;
+
+uniform vec4 glLightModelambient;
+
+uniform vec4 glLightSource0position;
+uniform vec4 glLightSource0diffuse;
+
+varying vec2 glTexCoord0;
+
 const float pi = 3.14159;
 uniform float waterHeight;
 uniform float time;
@@ -59,28 +73,28 @@ void main() {
     pos.y = pos.y + waveHeight(pos.x, pos.z);
     position = pos.xyz / pos.w;
     worldNormal = waveNormal(pos.x, pos.z);
-    eyeNormal = gl_NormalMatrix * worldNormal;
-    gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
-    gl_Position = gl_ModelViewProjectionMatrix * pos;
+    eyeNormal = glNormalMatrix * worldNormal;
+    glTexCoord0 = gl_MultiTexCoord0.st;
+    gl_Position = glProjectionMatrix * glModelViewMatrix * pos;
     
     
     
     
-    lightDir = normalize(vec3(gl_LightSource[0].position));    
-    vec4 P = gl_ModelViewMatrix * gl_Vertex;
+    lightDir = normalize(vec3(glLightSource0position));    
+    vec4 P = glModelViewMatrix * gl_Vertex;
 	vec4 E = gl_ProjectionMatrixInverse * vec4(0,0,1,0);
 	vec3 I = P.xyz*E.w - E.xyz*P.w;
-	vec3 N = gl_NormalMatrix * gl_Normal;
+	vec3 N = glNormalMatrix * gl_Normal;
 	vec3 Nf = normalize(faceforward(N,I,N));
 	
 	
  	gl_FrontColor = gl_Color;
-	for (int i=0; i<gl_MaxLights; i++)
+/*	for (int i=0; i<gl_MaxLights; i++)
 	{
 		vec3 L = normalize(gl_LightSource[i].position.xyz*P.w -
 			P.xyz*gl_LightSource[i].position.w);
 		gl_FrontColor.xyz +=
 			gl_LightSource[i].ambient.xyz +
 			gl_LightSource[i].diffuse.xyz*max(dot(Nf,L),0.);
-	}    
+	}    */
 }

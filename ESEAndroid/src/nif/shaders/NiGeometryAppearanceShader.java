@@ -111,7 +111,7 @@ public class NiGeometryAppearanceShader
 		this.textureSource = textureSource;
 		this.niToJ3dData = niToJ3dData;
 
-		//ensure tangetns loaded to geometries
+		//ensure tangents loaded to geometries
 		J3dNiTriBasedGeom.TANGENTS_BITANGENTS = true;
 		J3dNiTriBasedGeom.INTERLEAVE = false;
 
@@ -156,6 +156,7 @@ public class NiGeometryAppearanceShader
 				return program.getName();
 		}
 
+		System.out.println("ARRRRRRRRRRRRRRRRRRRRRRGGGH FFP attempt " + niGeometry.nVer.fileName);
 		//null mean use fixed
 		return null;
 	}
@@ -174,86 +175,86 @@ public class NiGeometryAppearanceShader
 		BSShaderLightingProperty bsprop = (BSShaderLightingProperty) props.get(BSShaderLightingProperty.class);
 		BSLightingShaderProperty bslsp = props.getBSLightingShaderProperty();
 
-		if (texprop == null && bsprop == null && bslsp == null)
-			return false;
-
+		
 		int clamp = TexClampMode.WRAP_S_WRAP_T;
-
-		if (bslsp != null)
+		
+		if (texprop != null || bsprop != null || bslsp != null)
 		{
-			clamp = bslsp.TextureClampMode.mode;
+			if (bslsp != null)
+			{
+				clamp = bslsp.TextureClampMode.mode;
+			}
+
+			String textureUnitName = "BaseMap";
+			if (texprop != null)
+			{
+				bind(textureUnitName, texprop, fileName(texprop, 0), clamp);
+			}
+			else if (bsprop != null)
+			{
+				bind(textureUnitName, bsprop, fileName(bsprop, 0), clamp);
+			}
+			else if (bslsp != null)
+			{
+				bind(textureUnitName, bslsp, fileName(bslsp, 0), clamp);
+			}
+
+			textureUnitName = "NormalMap";
+			if (texprop != null)
+			{
+				String fname = fileName(texprop, 0);
+
+				if (fname.isEmpty())
+					return false;
+
+				int pos = fname.indexOf("_");
+
+				if (pos >= 0)
+					fname = fname.substring(0, pos) + "_n.dds";
+				else if ((pos = fname.lastIndexOf(".")) >= 0)
+					fname = fname.substring(0, pos) + "_n" + fname.substring(pos);
+
+				bind(textureUnitName, texprop, fname, clamp);
+			}
+			else if (bsprop != null)
+			{
+				bind(textureUnitName, bsprop, fileName(bsprop, 1), clamp);
+			}
+			else if (bslsp != null)
+			{
+				bind(textureUnitName, bslsp, fileName(bslsp, 1), clamp);
+			}
+
+			textureUnitName = "GlowMap";
+			if (texprop != null)
+			{
+				String fname = fileName(texprop, 0);
+
+				if (fname.isEmpty())
+					return false;
+
+				int pos = fname.indexOf("_");
+
+				if (pos >= 0)
+					fname = fname.substring(0, pos) + "_g.dds";
+				else if ((pos = fname.lastIndexOf(".")) >= 0)
+					fname = fname.substring(0, pos) + "_g" + fname.substring(pos);
+
+				bind(textureUnitName, texprop, fname, clamp);
+			}
+			else if (bsprop != null)
+			{
+				bind(textureUnitName, bsprop, fileName(bsprop, 2), clamp);
+			}
+			else if (bslsp != null)
+			{
+				ShaderMaterial sm = (ShaderMaterial) getMaterial(bslsp);
+				if (sm == null)
+					bind(textureUnitName, bslsp, fileName(bslsp, 2), clamp);
+				else
+					bind(textureUnitName, bslsp, fileName(bslsp, 5), clamp);
+			}
 		}
-
-		String textureUnitName = "BaseMap";
-		if (texprop != null)
-		{
-			bind(textureUnitName, texprop, fileName(texprop, 0), clamp);
-		}
-		else if (bsprop != null)
-		{
-			bind(textureUnitName, bsprop, fileName(bsprop, 0), clamp);
-		}
-		else if (bslsp != null)
-		{
-			bind(textureUnitName, bslsp, fileName(bslsp, 0), clamp);
-		}
-
-		textureUnitName = "NormalMap";
-		if (texprop != null)
-		{
-			String fname = fileName(texprop, 0);
-
-			if (fname.isEmpty())
-				return false;
-
-			int pos = fname.indexOf("_");
-
-			if (pos >= 0)
-				fname = fname.substring(0, pos) + "_n.dds";
-			else if ((pos = fname.lastIndexOf(".")) >= 0)
-				fname = fname.substring(0, pos) + "_n" + fname.substring(pos);
-
-			bind(textureUnitName, texprop, fname, clamp);
-		}
-		else if (bsprop != null)
-		{
-			bind(textureUnitName, bsprop, fileName(bsprop, 1), clamp);
-		}
-		else if (bslsp != null)
-		{
-			bind(textureUnitName, bslsp, fileName(bslsp, 1), clamp);
-		}
-
-		textureUnitName = "GlowMap";
-		if (texprop != null)
-		{
-			String fname = fileName(texprop, 0);
-
-			if (fname.isEmpty())
-				return false;
-
-			int pos = fname.indexOf("_");
-
-			if (pos >= 0)
-				fname = fname.substring(0, pos) + "_g.dds";
-			else if ((pos = fname.lastIndexOf(".")) >= 0)
-				fname = fname.substring(0, pos) + "_g" + fname.substring(pos);
-
-			bind(textureUnitName, texprop, fname, clamp);
-		}
-		else if (bsprop != null)
-		{
-			bind(textureUnitName, bsprop, fileName(bsprop, 2), clamp);
-		}
-		else if (bslsp != null)
-		{
-			ShaderMaterial sm = (ShaderMaterial) getMaterial(bslsp);
-			if (sm == null)
-				bind(textureUnitName, bslsp, fileName(bslsp, 2), clamp);
-			else
-				bind(textureUnitName, bslsp, fileName(bslsp, 5), clamp);
-		}
-
 		//with materials glowmap is in fact 5! and spec is now 2 not 2 and 7 as previous
 
 		String white = "shaders/nif/white.dds";
@@ -573,8 +574,8 @@ public class NiGeometryAppearanceShader
 			pa.setCullFace(PolygonAttributes.CULL_NONE);
 			if (em == null)
 			{
-				uni2f("uvScale", bslsp.UVScale.u, bslsp.UVScale.v);
-				uni2f("uvOffset", bslsp.UVOffSet.u, bslsp.UVOffSet.v);
+				uni2f("uvScale", bsesp.UVScale.u, bsesp.UVScale.v);
+				uni2f("uvOffset", bsesp.UVOffSet.u, bsesp.UVOffSet.v);
 			}
 			else
 			{
@@ -661,7 +662,7 @@ public class NiGeometryAppearanceShader
 					if (hasEnvMask)
 						bind("SpecularMap", bsesp, EnvMask, clamp);
 
-					textureUnitName = "CubeMap";
+					String textureUnitName = "CubeMap";
 					bind(textureUnitName, bsprop, fileName(bsprop, 2), clamp);
 				}
 				else
