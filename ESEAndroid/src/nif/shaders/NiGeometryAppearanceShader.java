@@ -10,23 +10,27 @@ import javax.media.j3d.ImageComponent2D;
 import javax.media.j3d.Material;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.RenderingAttributes;
-import javax.media.j3d.Shader;
 import javax.media.j3d.ShaderAppearance;
 import javax.media.j3d.ShaderAttributeSet;
 import javax.media.j3d.ShaderAttributeValue;
+import javax.media.j3d.Shape3D;
 import javax.media.j3d.Texture;
+import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.TextureCubeMap;
 import javax.media.j3d.TextureUnitState;
+import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransparencyAttributes;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector2f;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
 import nif.BgsmSource;
 import nif.NifVer;
+import nif.appearance.NiGeometryAppearanceFixed;
 import nif.compound.NifColor3;
 import nif.compound.NifMatrix33;
 import nif.compound.NifMatrix44;
@@ -36,6 +40,7 @@ import nif.enums.FaceDrawMode;
 import nif.enums.SkyrimShaderPropertyFlags1;
 import nif.enums.SkyrimShaderPropertyFlags2;
 import nif.enums.TexClampMode;
+import nif.j3d.J3dNiAVObject;
 import nif.j3d.J3dNiGeometry;
 import nif.j3d.J3dNiTriBasedGeom;
 import nif.j3d.NiToJ3dData;
@@ -62,7 +67,6 @@ import nif.niobject.bs.SkyShaderProperty;
 import nif.niobject.bs.TallGrassShaderProperty;
 import nif.niobject.bs.TileShaderProperty;
 import nif.niobject.bs.WaterShaderProperty;
-import nif.shaders.ShaderPrograms.Program;
 import utils.convert.NifOpenGLToJava3D;
 import utils.source.TextureSource;
 
@@ -81,18 +85,20 @@ import utils.source.TextureSource;
 public class NiGeometryAppearanceShader
 {
 	public static boolean OUTPUT_BINDINGS = false;
-	//private static WeakHashMap<NiProperty, NodeComponent> propertyLookup = new WeakHashMap<NiProperty, NodeComponent>();
 
-	//private static WeakHashMap<BSLightingShaderProperty, NodeComponent> bsLightingShaderPropertyLookup = new WeakHashMap<BSLightingShaderProperty, NodeComponent>();
-
-	private TextureSource textureSource;
-
+	private NiGeometry niGeometry;
 	private NiToJ3dData niToJ3dData;
+	private TextureSource textureSource;
+	private Shape3D shape;
+	private J3dNiAVObject target;
+
+	private PropertyList props;
 
 	private ShaderAppearance app = new ShaderAppearance();
 	private Material mat = new Material();
 	private RenderingAttributes ra = new RenderingAttributes();
 	private PolygonAttributes pa = new PolygonAttributes();
+	private Transform3D textureTransform = new Transform3D();
 	private TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NONE, 0f);
 
 	private GLSLShaderProgram2 shaderProgram = null;
@@ -102,14 +108,18 @@ public class NiGeometryAppearanceShader
 	private ArrayList<ShaderAttributeValue2> allShaderAttributeValues = new ArrayList<ShaderAttributeValue2>();
 	private ArrayList<TextureUnitState> allTextureUnitStates = new ArrayList<TextureUnitState>();
 
-	private Program selectedProgram;
-
 	private int texunit = 0;
 
-	public NiGeometryAppearanceShader(TextureSource textureSource, NiToJ3dData niToJ3dData)
+	public NiGeometryAppearanceShader(NiGeometry niGeometry, NiToJ3dData niToJ3dData, TextureSource textureSource, Shape3D shape,
+			J3dNiAVObject target)
 	{
-		this.textureSource = textureSource;
+		this.niGeometry = niGeometry;
 		this.niToJ3dData = niToJ3dData;
+		this.textureSource = textureSource;
+		this.shape = shape;
+		this.target = target;
+
+		props = new PropertyList(niGeometry.properties, niToJ3dData);
 
 		//ensure tangents loaded to geometries
 		J3dNiTriBasedGeom.TANGENTS_BITANGENTS = true;
@@ -135,24 +145,14 @@ public class NiGeometryAppearanceShader
 		return app;
 	}
 
-	public String setupShaderProgram(NiGeometry niGeometry, NiToJ3dData niToJ3dData, String hint)
+	public String setupShaderProgram()
 	{
 		ShaderPrograms.loadShaderPrograms();
-
-		PropertyList props = new PropertyList(niGeometry.properties, niToJ3dData);
-
-		if (hint != null)
-		{
-			ShaderPrograms.Program program = ShaderPrograms.programs.get(hint);
-
-			if (program != null && program.isStatusOk() && setupProgram(program, niGeometry, niToJ3dData, props))
-				return hint;
-		}
 
 		for (ShaderPrograms.Program program : ShaderPrograms.programs.values())
 		{
 			//System.out.println("program checked " + program);
-			if (program.isStatusOk() && setupProgram(program, niGeometry, niToJ3dData, props))
+			if (program.isStatusOk() && setupProgram(program))
 				return program.getName();
 		}
 
@@ -161,23 +161,27 @@ public class NiGeometryAppearanceShader
 		return null;
 	}
 
-	private boolean setupProgram(ShaderPrograms.Program prog, NiGeometry niGeometry, NiToJ3dData niToJ3dData, PropertyList props)
+	private boolean setupProgram(ShaderPrograms.Program prog)
 	{
-
 		if (!prog.conditions.eval(niGeometry, niToJ3dData, props))
 			return false;
 
-		this.selectedProgram = prog;
+		if (OUTPUT_BINDINGS)
+			System.out.println("using prog " + prog.getName());
 
-		// texturing
+		this.shaderProgram = prog.shaderProgram;
+
+		// note time controllers below need appearance set on the shape now
+		shape.setAppearance(app);
+
+		TextureAttributes textureAttributes = new TextureAttributes();
 
 		NiTexturingProperty texprop = (NiTexturingProperty) props.get(NiTexturingProperty.class);
 		BSShaderLightingProperty bsprop = (BSShaderLightingProperty) props.get(BSShaderLightingProperty.class);
 		BSLightingShaderProperty bslsp = props.getBSLightingShaderProperty();
 
-		
 		int clamp = TexClampMode.WRAP_S_WRAP_T;
-		
+
 		if (texprop != null || bsprop != null || bslsp != null)
 		{
 			if (bslsp != null)
@@ -276,16 +280,17 @@ public class NiGeometryAppearanceShader
 
 			if (sm == null)
 			{
-				uni2f("uvScale", bslsp.UVScale.u, bslsp.UVScale.v);
-				uni2f("uvOffset", bslsp.UVOffSet.u, bslsp.UVOffSet.v);
+				textureTransform.setScale(new Vector3d(bslsp.UVScale.u, bslsp.UVScale.v, 0));
+				textureTransform.setTranslation(new Vector3f(bslsp.UVOffSet.u, bslsp.UVOffSet.v, 0));
 			}
 			else
 			{
-				uni2f("uvScale", sm.fUScale, sm.fVScale);
-				uni2f("uvOffset", sm.fUOffset, sm.fVOffset);
+				textureTransform.setScale(new Vector3d(sm.fUScale, sm.fVScale, 0));
+				textureTransform.setTranslation(new Vector3f(sm.fUOffset, sm.fVOffset, 0));
 			}
 
-			//TODO: what the hell do I do here?? 
+			//TODO: need to hook these up to ModelView and Proj (though which of local and world is model?)
+			// or is view proj, world view and local model? check out nif code closely
 			//https://en.wikibooks.org/wiki/GLSL_Programming/Vertex_Transformations
 
 			Matrix4f viewMatrix = new Matrix4f();
@@ -544,6 +549,7 @@ public class NiGeometryAppearanceShader
 		BSEffectShaderProperty bsesp = (BSEffectShaderProperty) props.get(BSEffectShaderProperty.class);
 		if (bsesp != null)
 		{
+			//TODO: same issue as above which one is this!
 			Matrix4f worldMatrix = new Matrix4f();
 			worldMatrix.setIdentity();
 			uni4m("worldMatrix", worldMatrix);
@@ -570,17 +576,17 @@ public class NiGeometryAppearanceShader
 			if (em != null)
 				isDoubleSided = em.bTwoSided != 0;
 			uni1i("doubleSided", isDoubleSided);
-			//PJPJPJPJ
+
 			pa.setCullFace(PolygonAttributes.CULL_NONE);
 			if (em == null)
 			{
-				uni2f("uvScale", bsesp.UVScale.u, bsesp.UVScale.v);
-				uni2f("uvOffset", bsesp.UVOffSet.u, bsesp.UVOffSet.v);
+				textureTransform.setScale(new Vector3d(bsesp.UVScale.u, bsesp.UVScale.v, 0));
+				textureTransform.setTranslation(new Vector3f(bsesp.UVOffSet.u, bsesp.UVOffSet.v, 0));
 			}
 			else
 			{
-				uni2f("uvScale", em.fUScale, em.fVScale);
-				uni2f("uvOffset", em.fUOffset, em.fVOffset);
+				textureTransform.setScale(new Vector3d(em.fUScale, em.fVScale, 0));
+				textureTransform.setTranslation(new Vector3f(em.fUOffset, em.fVOffset, 0));
 			}
 
 			uni1i("hasSourceTexture", hasSourceTexture);
@@ -673,50 +679,30 @@ public class NiGeometryAppearanceShader
 			}
 		}
 
-		// Defaults for uniforms in older meshes
-		if (bsesp == null && bslsp == null)
-		{
-			uni2f("uvScale", 1.0f, 1.0f);
-			uni2f("uvOffset", 0.0f, 0.0f);
-		}
-
-		if (OUTPUT_BINDINGS)
-			System.out.println("using prog " + prog.getName());
-		//for (String name : prog.shaders.keySet())
-		//	System.out.println("shaderCode " + name + "\n" + prog.shaders.get(name).getShaderSource());
-
-		shaderProgram = new GLSLShaderProgram2();
-		shaderProgram.name = prog.getName();
-		shaderProgram.setShaders(prog.shaders.values().toArray(new Shader[] {}));
 		shaderAttributeSet = new ShaderAttributeSet();
 
-		if (programHasVar("tangent", 0))
-		{
-			shaderProgram.setVertexAttrNames(new String[] { "tangent", "binormal" });
-			if (OUTPUT_BINDINGS)
-				System.out.println("set attribute names, I hope the J3d* has also set them!");
-		}
-
-		String[] shaderAttrNames = new String[allShaderAttributeValues.size()];
-		int i = 0;
 		for (ShaderAttributeValue sav : allShaderAttributeValues)
 		{
 			if (OUTPUT_BINDINGS)
-				System.out.println("i= " + i + " " + sav.getAttributeName() + " " + sav.getValue());
-			shaderAttrNames[i++] = sav.getAttributeName();
+				System.out.println(sav.getAttributeName() + " " + sav.getValue());
 			shaderAttributeSet.put(sav);
 		}
 
-		shaderProgram.setShaderAttrNames(shaderAttrNames);
-
 		TextureUnitState[] tus = allTextureUnitStates.toArray(new TextureUnitState[] {});
-		if (OUTPUT_BINDINGS)
+
+		if (textureTransform.getBestType() != Transform3D.IDENTITY)
 		{
+			textureAttributes.setTextureTransform(textureTransform);
 			for (TextureUnitState tu : tus)
 			{
-				System.out.println("tu " + tu.getName());
+				if (OUTPUT_BINDINGS)
+				{
+					System.out.println("tu " + tu.getName());
+				}
+				tu.setTextureAttributes(textureAttributes);
 			}
 		}
+
 		app.setTextureUnitState(tus);
 		app.setShaderProgram(shaderProgram);
 		app.setShaderAttributeSet(shaderAttributeSet);
@@ -729,8 +715,8 @@ public class NiGeometryAppearanceShader
 
 		//TODO: my material version is doing craziness
 		//https://github.com/jonwd7/nifskope/commit/07ad381212d13e27e163faa96d0a51e377fe39a3 
-		// include teh tree anim one in all!
-		if (m == null || 1 == 1)
+		// include the tree anim one in all!
+		if (m == null)
 		{
 			// setup blending
 			glProperty((NiAlphaProperty) props.get(NiAlphaProperty.class));
@@ -794,6 +780,26 @@ public class NiGeometryAppearanceShader
 			glMaterialWireframe(m);
 		}
 
+		//Setting up controller must be done after the appearance is properly set up so the 
+		// controller can get at the pieces
+		if (texprop != null)
+		{
+			NiGeometryAppearanceFixed.setUpTimeController(texprop, niToJ3dData, textureSource, target);
+
+		}
+		if (bsprop != null)
+		{
+			NiGeometryAppearanceFixed.setUpTimeController(bsprop, niToJ3dData, textureSource, target);
+		}
+		if (bslsp != null)
+		{
+			NiGeometryAppearanceFixed.setUpTimeController(bslsp, niToJ3dData, textureSource, target);
+		}
+		if (bsesp != null)
+		{
+			NiGeometryAppearanceFixed.setUpTimeController(bsesp, niToJ3dData, textureSource, target);
+		}
+
 		return true;
 	}
 
@@ -849,18 +855,10 @@ public class NiGeometryAppearanceShader
 	{
 		if (nzp != null)
 		{
-			//TODO: bit tricky
-			/*	if (nzp.depthTest)
-				{
-					glEnable(GL_DEPTH_TEST);
-					glDepthFunc(nzp. depthFunc);
-				}
-				else
-				{
-					glDisable(GL_DEPTH_TEST);
-				}
-			
-				glDepthMask(nzp.depthMask ? GL_TRUE : GL_FALSE);*/
+			//See FO4 for testing
+			ra.setDepthBufferEnable((nzp.flags.flags & 0x01) != 0);
+			ra.setDepthBufferWriteEnable((nzp.flags.flags & 0x02) != 0);
+			ra.setDepthTestFunction(NifOpenGLToJava3D.convertStencilFunction(nzp.function.mode));
 		}
 	}
 
@@ -868,18 +866,11 @@ public class NiGeometryAppearanceShader
 	{
 		if (m != null)
 		{
-			//TODO: bit tricky
-			/*	if (nzp.depthTest)
-				{
-					glEnable(GL_DEPTH_TEST);
-					glDepthFunc(nzp. depthFunc);
-				}
-				else
-				{
-					glDisable(GL_DEPTH_TEST);
-				}
-			
-				glDepthMask(nzp.depthMask ? GL_TRUE : GL_FALSE);*/
+			//See FO4 for testing
+			ra.setDepthBufferEnable(true);// really? not sure
+			ra.setDepthBufferWriteEnable(m.bZBufferWrite != 0);
+			ra.setDepthTestFunction(NifOpenGLToJava3D.convertStencilFunction(m.bZBufferTest));
+
 		}
 	}
 
@@ -999,9 +990,9 @@ public class NiGeometryAppearanceShader
 	{
 		if (m != null && m.bAlphaBlend != 0)
 		{
-			ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+			ta.setTransparencyMode(TransparencyAttributes.BLENDED);			
 			ta.setSrcBlendFunction(NifOpenGLToJava3D.convertBlendMode(m.iAlphaSrc, true));
-			ta.setDstBlendFunction(NifOpenGLToJava3D.convertBlendMode(m.iAlphaSrc, false));
+			ta.setDstBlendFunction(NifOpenGLToJava3D.convertBlendMode(m.iAlphaDst, false));
 		}
 		else
 		{
@@ -1039,42 +1030,42 @@ public class NiGeometryAppearanceShader
 	// Sets a float
 	private void uni1f(String var, float x)
 	{
-		if (programHasVar(var, x))
+		if (shaderProgram.programHasVar(var, x))
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, new Float(x)));
 	}
 
 	// Sets a vec2 (two floats)
 	private void uni2f(String var, float x, float y)
 	{
-		if (programHasVar(var, x, 2))
+		if (shaderProgram.programHasVar(var, x, 2))
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, new Vector2f(x, y)));
 	}
 
 	// Sets a vec3 (three floats)
 	private void uni3f(String var, float x, float y, float z)
 	{
-		if (programHasVar(var, x, 3))
+		if (shaderProgram.programHasVar(var, x, 3))
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, new Vector3f(x, y, z)));
 	}
 
 	// Sets a vec4 (four floats)
 	private void uni4f(String var, float x, float y, float z, float w)
 	{
-		if (programHasVar(var, x, 4))
+		if (shaderProgram.programHasVar(var, x, 4))
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, new Vector4f(x, y, z, w)));
 	};
 
 	// Sets a boolean
 	private void uni1i(String var, boolean val)
 	{
-		if (programHasVar(var, 1))
+		if (shaderProgram.programHasVar(var, 1))
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, new Integer(val ? 1 : 0)));
 	};
 
 	// Sets an integer  
 	private void uni1i(String var, int val)
 	{
-		if (programHasVar(var, val))
+		if (shaderProgram.programHasVar(var, val))
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, new Integer(val)));
 	};
 
@@ -1086,7 +1077,7 @@ public class NiGeometryAppearanceShader
 
 	private void uni3m(String var, Matrix3f val)
 	{
-		if (programHasVar(var, 1.0f, 3))
+		if (shaderProgram.programHasVar(var, 1.0f, 3))
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, val));
 	};
 
@@ -1098,51 +1089,13 @@ public class NiGeometryAppearanceShader
 
 	private void uni4m(String var, Matrix4f val)
 	{
-		if (programHasVar(var, 1.0f, 4))
+		if (shaderProgram.programHasVar(var, 1.0f, 4))
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, val));
 	};
 
-	/**
-	 * Apparently shader attributes can only be set if the shader code declares them otherwise 
-	 * a type mismatch error comes back, who knew. Also problem happen if TUS get set with a name
-	 * so must check before, also shaders will compile away variables totally
-	 * @param var
-	 * @param val
-	 * @return
-	 */
-	private boolean programHasVar(String var)
-	{
-		for (SourceCodeShader2 s : selectedProgram.shaders.values())
-		{
-			if (s.shaderHasVar(var))
-				return true;
-		}
-		return false;
-	}
-
-	private boolean programHasVar(String var, Object val)
-	{
-		for (SourceCodeShader2 s : selectedProgram.shaders.values())
-		{
-			if (s.shaderHasVar(var, val.getClass().getSimpleName()))
-				return true;
-		}
-		return false;
-	}
-
-	private boolean programHasVar(String var, Object val, int arrSize)
-	{
-		for (SourceCodeShader2 s : selectedProgram.shaders.values())
-		{
-			if (s.shaderHasVar(var, val.getClass().getSimpleName(), arrSize))
-				return true;
-		}
-		return false;
-	}
-
 	private void bindCube(String textureUnitName, BSLightingShaderProperty bslsp, String fileName)
 	{
-		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
+		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
@@ -1174,7 +1127,7 @@ public class NiGeometryAppearanceShader
 
 	private void bind(String textureUnitName, NiTexturingProperty ntp, String fileName, int clamp)
 	{
-		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
+		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 
@@ -1203,7 +1156,7 @@ public class NiGeometryAppearanceShader
 
 	private void bind(String textureUnitName, BSShaderLightingProperty bsprop, String fileName, int clamp)
 	{
-		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
+		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 
@@ -1229,7 +1182,7 @@ public class NiGeometryAppearanceShader
 
 	private void bind(String textureUnitName, BSLightingShaderProperty bslsp, String fileName, int clamp)
 	{
-		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
+		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 
@@ -1263,7 +1216,7 @@ public class NiGeometryAppearanceShader
 
 	private void bind(String textureUnitName, BSEffectShaderProperty bsesp, String fileName, int clamp)
 	{
-		if (programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
+		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
 

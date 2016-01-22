@@ -9,6 +9,8 @@ uniform vec4 glLightModelambient;
 uniform vec4 glLightSource0position;
 uniform vec4 glLightSource0diffuse;
 
+uniform mat4 textureTransform;
+
 varying vec2 glTexCoord0;
 
 varying vec3 LightDir;
@@ -24,7 +26,7 @@ varying vec4 D;
 void main( void )
 {
 	gl_Position = glProjectionMatrix * glModelViewMatrix * gl_Vertex;
-	glTexCoord0 = gl_MultiTexCoord0.st;
+	glTexCoord0 = (textureTransform * gl_MultiTexCoord0).st;
 
 	N = normalize(glNormalMatrix * gl_Normal);
 		
@@ -37,9 +39,4 @@ void main( void )
 	C = gl_Color;
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;	
 	
-	//if(gl_ModelViewMatrix[0][0]==0.14449786)
-	//if(glModelViewMatrix[0][0]==0.14449784)
-	//A.r=1;
-	//else
-	//A.r=0.1;
 }

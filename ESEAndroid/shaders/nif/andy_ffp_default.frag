@@ -1,11 +1,14 @@
 #version 120
 
-varying vec2 glTexCoord0;
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+
+
 
 uniform sampler2D BaseMap;
 
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
+varying vec2 glTexCoord0;
 
 varying vec3 LightDir;
 varying vec3 ViewDir;
@@ -21,6 +24,24 @@ varying vec4 D;
 void main( void )
 {
 	vec4 baseMap = texture2D( BaseMap, glTexCoord0.st );
+	
+	if(alphaTestEnabled==0)
+	{
+		if(alphaTestFunction==512)
+			discard;
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;
+		else if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;
+	}
 
 	vec3 normal = N;
 	

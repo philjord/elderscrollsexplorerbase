@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 
 import javax.media.j3d.Shader;
@@ -27,9 +28,14 @@ import nif.niobject.bs.BSShaderPPLightingProperty;
 import nif.niobject.bs.BSSubIndexTriShape;
 import nif.niobject.bs.BSTriShape;
 import nif.niobject.particle.NiPSysData;
+import nif.shaders.ShaderPrograms.Program;
 
 public class ShaderPrograms
 {
+
+	// this is where the new ones go!
+	public static final String[] VERTEX_ATTRIBUTE_NAMES = new String[] { "tangent", "binormal" };
+
 	private static HashMap<String, FileShader> allFileShaders;
 	// programs MUST be checked in order!
 	public static LinkedHashMap<String, Program> programs;
@@ -91,7 +97,7 @@ public class ShaderPrograms
 
 	static class FileShader
 	{
-		private SourceCodeShader2 sourceCodeShader;
+		private GLSLSourceCodeShader sourceCodeShader;
 		private String name;
 		private boolean status = false;
 
@@ -120,9 +126,10 @@ public class ShaderPrograms
 
 				fr.close();
 
-				sourceCodeShader = new SourceCodeShader2(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
+				sourceCodeShader = new GLSLSourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
 				sourceCodeShader.name = file.getName();
 				status = true;
+
 			}
 			catch (IOException e)
 			{
@@ -135,7 +142,8 @@ public class ShaderPrograms
 
 	static class Program
 	{
-		HashMap<String, SourceCodeShader2> shaders = new HashMap<String, SourceCodeShader2>();
+		public GLSLShaderProgram2 shaderProgram = new GLSLShaderProgram2();
+		public ArrayList<GLSLSourceCodeShader> shaders = new ArrayList<GLSLSourceCodeShader>();
 		private String name;
 
 		private boolean status = false;
@@ -146,6 +154,8 @@ public class ShaderPrograms
 		public Program(String name2)
 		{
 			this.name = name2;
+			shaderProgram.name = name;
+
 		}
 
 		public String toString()
@@ -155,6 +165,7 @@ public class ShaderPrograms
 
 		boolean load(File file, HashMap<String, FileShader> allShaders) throws Exception
 		{
+
 			BufferedReader bfr = null;
 			try
 			{
@@ -181,7 +192,7 @@ public class ShaderPrograms
 							if (shader != null)
 							{
 								if (shader.status)
-									shaders.put(shader.name, shader.sourceCodeShader);
+									shaders.add(shader.sourceCodeShader);
 								else
 									throw new Exception(file + " program depends on shader " + s + " which was not compiled successful");
 							}
@@ -269,6 +280,9 @@ public class ShaderPrograms
 				System.err.println("texcords not loaded as expected in file " + file);
 			}
 
+			Shader[] shaderArray = shaders.toArray(new Shader[] {});
+			shaderProgram.setShaders(shaderArray);
+
 			status = true;
 			return true;
 		}
@@ -282,6 +296,7 @@ public class ShaderPrograms
 		{
 			return name;
 		}
+
 	}
 
 	static interface Condition
@@ -396,7 +411,6 @@ public class ShaderPrograms
 
 		}
 
-		
 		public boolean eval(NiGeometry niGeometry, NiToJ3dData niToJ3dData, PropertyList props)
 		{
 

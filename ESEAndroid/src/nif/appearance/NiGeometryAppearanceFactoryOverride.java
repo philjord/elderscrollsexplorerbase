@@ -26,16 +26,12 @@ public class NiGeometryAppearanceFactoryOverride implements NiGeometryAppearance
 	public Appearance configureAppearance(NiGeometry niGeometry, NiToJ3dData niToJ3dData, TextureSource textureSource, Shape3D shape,
 			J3dNiAVObject target)
 	{
-		NiGeometryAppearanceShader niGeometryAppearanceShader = new NiGeometryAppearanceShader(textureSource, niToJ3dData);
-		String progName = niGeometryAppearanceShader.setupShaderProgram(niGeometry, niToJ3dData, null);
+		NiGeometryAppearanceShader niGeometryAppearanceShader = new NiGeometryAppearanceShader(niGeometry, niToJ3dData, textureSource,
+				shape, target);
+		String progName = niGeometryAppearanceShader.setupShaderProgram();
 		if (progName != null)
 		{
-			Appearance app = niGeometryAppearanceShader.getAppearance();
-			// note time controllers below need appearance set on the shape now
-			//TODO: set the time controllers too!
-			shape.setAppearance(app);
-
-			return app;
+			return niGeometryAppearanceShader.getAppearance();
 		}
 		else
 		{

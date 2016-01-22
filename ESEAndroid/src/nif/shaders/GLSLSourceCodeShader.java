@@ -1,16 +1,35 @@
 package nif.shaders;
 
+import java.util.HashSet;
+
 import javax.media.j3d.SourceCodeShader;
 
-public class SourceCodeShader2 extends SourceCodeShader
+public class GLSLSourceCodeShader extends SourceCodeShader
 {
-	public SourceCodeShader2(int shadingLanguage, int shaderType, String shaderSource)
+	public HashSet<String> shaderUniformNames = new HashSet<String>();
+	public HashSet<String> shaderVertexAttributeNames = new HashSet<String>();
+
+	public String name = "";
+
+	public GLSLSourceCodeShader(int shadingLanguage, int shaderType, String shaderSource)
 	{
 		super(shadingLanguage, shaderType, shaderSource);
 		this.shaderSource = shaderSource;
-	}
 
-	public String name = "";
+		//attempt to extract attribute names very poorly
+		String[] declarations = shaderSource.split(";");
+		for (String codeLine : declarations)
+		{
+			if (codeLine.trim().startsWith("uniform"))
+			{
+				shaderUniformNames.add(codeLine.substring(codeLine.indexOf(" ", codeLine.indexOf(" ") + 1) + 1));
+			}
+			else if (codeLine.trim().startsWith("attribute"))
+			{
+				shaderVertexAttributeNames.add(codeLine.substring(codeLine.indexOf(" ", codeLine.indexOf(" ") + 1) + 1));
+			}
+		}
+	}
 
 	public String toString()
 	{
