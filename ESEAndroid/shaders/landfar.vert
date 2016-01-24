@@ -1,4 +1,7 @@
 #version 120
+
+attribute vec4 glVertex;
+
 uniform mat4 glProjectionMatrix;
 uniform mat4 glModelViewMatrix;
 uniform mat3 glNormalMatrix;
@@ -19,11 +22,14 @@ varying vec4 D;
 
 void main( void )
 {			
-	gl_Position = glProjectionMatrix * glModelViewMatrix * gl_Vertex;
+	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;
 
 	A = glLightModelambient;
 	C = gl_Color;
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;
 
-   	glTexCoord0 = gl_MultiTexCoord0.st;   	
+   	glTexCoord0 = gl_MultiTexCoord0.st; 
+   	
+   	
+   	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 	  	
 }

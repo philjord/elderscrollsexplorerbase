@@ -1,5 +1,7 @@
 #version 120
 
+attribute vec4 glVertex;
+
 uniform mat4 glProjectionMatrix;
 uniform mat4 glModelViewMatrix;
 uniform mat3 glNormalMatrix;
@@ -30,7 +32,7 @@ varying float layer7alpha;
 
 void main( void )
 {			
-	gl_Position = glProjectionMatrix * glModelViewMatrix * gl_Vertex;
+	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;
 
 	A = glLightModelambient;
 	C = gl_Color;
@@ -45,5 +47,8 @@ void main( void )
 	if(layerCount>3)	layer3alpha = gl_MultiTexCoord4.s;
 	if(layerCount>4)	layer4alpha = gl_MultiTexCoord5.s;
 	if(layerCount>5)	layer5alpha = gl_MultiTexCoord6.s;
-	if(layerCount>6)	layer6alpha = gl_MultiTexCoord7.s;		 
+	if(layerCount>6)	layer6alpha = gl_MultiTexCoord7.s;	
+	
+	
+	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 		 
 }

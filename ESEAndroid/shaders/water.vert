@@ -1,4 +1,6 @@
 #version 120
+attribute vec4 glVertex;
+
 uniform mat4 glProjectionMatrix;
 uniform mat4 glModelViewMatrix;
 uniform mat3 glNormalMatrix;
@@ -69,7 +71,7 @@ vec3 waveNormal(float x, float z) {
 }
 
 void main() {
-    vec4 pos = gl_Vertex;
+    vec4 pos = glVertex;
     pos.y = pos.y + waveHeight(pos.x, pos.z);
     position = pos.xyz / pos.w;
     worldNormal = waveNormal(pos.x, pos.z);
@@ -81,7 +83,7 @@ void main() {
     
     
     lightDir = normalize(vec3(glLightSource0position));    
-    vec4 P = glModelViewMatrix * gl_Vertex;
+    vec4 P = glModelViewMatrix * glVertex;
 	vec4 E = gl_ProjectionMatrixInverse * vec4(0,0,1,0);
 	vec3 I = P.xyz*E.w - E.xyz*P.w;
 	vec3 N = glNormalMatrix * gl_Normal;
@@ -97,4 +99,6 @@ void main() {
 			gl_LightSource[i].ambient.xyz +
 			gl_LightSource[i].diffuse.xyz*max(dot(Nf,L),0.);
 	}    */
+	
+	//if(glVertex != gl_Vertex) gl_FrontColor = vec4(1,0,1,1); 	
 }

@@ -1,3 +1,12 @@
+#version 120 
+//#version 120 is not optional, trouble otherwise
+
+attribute vec4 glVertex;                
+//attribute vec3 glNormal;     
+//attribute vec4 glVertexColor;                
+//attribute vec2 glMultiTexCoord0; 
+
+
 uniform mat4 glProjectionMatrix;
 uniform mat4 glModelViewMatrix;
 uniform mat3 glNormalMatrix;
@@ -25,12 +34,14 @@ varying vec4 D;
 
 void main( void )
 {
-	gl_Position = glProjectionMatrix * glModelViewMatrix * gl_Vertex;
-	glTexCoord0 = (textureTransform * gl_MultiTexCoord0).st;
+	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;
+	
+	glTexCoord0 = (textureTransform * gl_MultiTexCoord0).st;	
+	//glTexCoord0 = (textureTransform * glMultiTexCoord0).st;
 
 	N = normalize(glNormalMatrix * gl_Normal);
 		
-	vec3 v = vec3(glModelViewMatrix * gl_Vertex);
+	vec3 v = vec3(glModelViewMatrix * glVertex);
 
 	ViewDir = -v.xyz;
 	LightDir = glLightSource0position.xyz;
@@ -39,4 +50,6 @@ void main( void )
 	C = gl_Color;
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;	
 	
+	
+	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 	
 }
