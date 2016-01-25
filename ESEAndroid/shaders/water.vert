@@ -8,6 +8,7 @@ uniform mat4 glModelViewMatrix;
 uniform mat3 glNormalMatrix;
 
 uniform vec4 glFrontMaterialdiffuse;
+uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
 
@@ -28,6 +29,11 @@ varying vec3 position;
 varying vec3 worldNormal;
 varying vec3 eyeNormal;
 varying vec3 lightDir;
+
+
+varying vec4 A;
+varying vec4 C;
+varying vec4 D;
 
 float wave(int i, float x, float z) {
     float frequency = 2*pi/wavelength[i];
@@ -89,8 +95,13 @@ void main() {
 	vec3 N = glNormalMatrix * gl_Normal;
 	vec3 Nf = normalize(faceforward(N,I,N));
 	
-	
- 	gl_FrontColor = gl_Color;
+	A = glLightModelambient;
+	if( ignoreVertexColors != 0) 
+		C = glFrontMaterialdiffuse; 
+	else
+		C = glColor;
+	D = glLightSource0diffuse * glFrontMaterialdiffuse;		
+
 /*	for (int i=0; i<gl_MaxLights; i++)
 	{
 		vec3 L = normalize(gl_LightSource[i].position.xyz*P.w -
@@ -99,7 +110,5 @@ void main() {
 			gl_LightSource[i].ambient.xyz +
 			gl_LightSource[i].diffuse.xyz*max(dot(Nf,L),0.);
 	}    */
-	
-	//if(glVertex != gl_Vertex) gl_FrontColor = vec4(1,0,1,1); 	
-	//if(glColor != gl_Color) gl_FrontColor = vec4(1,0,1,1);  	
+	 	
 }

@@ -8,23 +8,25 @@ varying vec3 lightDir;
 
 varying vec2 glTexCoord0;
 
+varying vec4 A;
+varying vec4 C;
+varying vec4 D;
+
 void main() 
 { 
      // used only when there is a cubemap to reflect (see below)
 	 //vec3 eyePos = vec3(gl_ProjectionMatrixInverse * vec4(0,0,1,0));
      //vec3 eye = normalize(eyePos - position);
      //vec3 r = reflect(eye, worldNormal);   
-     vec4 color = texture2D(envMap, glTexCoord0.st);//textureCube(envMap, r);
-     
+     vec4 color = texture2D(envMap, glTexCoord0.st);//textureCube(envMap, r);     
      
      float intensity,at,af;
      vec3 ct,cf;
      intensity = max(dot(lightDir,normalize(eyeNormal)),0.0); 
-     cf = intensity * (gl_FrontMaterial.diffuse).rgb +
-                  gl_FrontMaterial.ambient.rgb;
-     af = gl_FrontMaterial.diffuse.a;	 
+     cf = intensity * D.rgb + A.rgb;
+     af = D.a;	 
      
-     ct = color.rgb;
+     ct = color.rgb * C.rgb;
      at = color.a;
      gl_FragColor = vec4(ct * cf, at * af);
 }

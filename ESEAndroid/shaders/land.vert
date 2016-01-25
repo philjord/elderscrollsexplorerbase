@@ -8,6 +8,7 @@ uniform mat4 glModelViewMatrix;
 uniform mat3 glNormalMatrix;
 
 uniform vec4 glFrontMaterialdiffuse;
+uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
 
@@ -36,7 +37,10 @@ void main( void )
 	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;
 
 	A = glLightModelambient;
-	C = gl_Color;
+	if( ignoreVertexColors != 0 ) 
+		C = glFrontMaterialdiffuse; 
+	else 
+		C = glColor;
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;
 
    	glTexCoord0 = gl_MultiTexCoord0.st;   	
@@ -48,9 +52,5 @@ void main( void )
 	if(layerCount>3)	layer3alpha = gl_MultiTexCoord4.s;
 	if(layerCount>4)	layer4alpha = gl_MultiTexCoord5.s;
 	if(layerCount>5)	layer5alpha = gl_MultiTexCoord6.s;
-	if(layerCount>6)	layer6alpha = gl_MultiTexCoord7.s;	
-	
-	
-	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 	
-	//if(glColor != gl_Color) C = vec4(1,0,1,1);  		 
+	if(layerCount>6)	layer6alpha = gl_MultiTexCoord7.s;	 		 
 }
