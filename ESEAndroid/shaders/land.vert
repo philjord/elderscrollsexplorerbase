@@ -1,6 +1,7 @@
 #version 120
 
 attribute vec4 glVertex;
+attribute vec4 glColor;
 
 uniform mat4 glProjectionMatrix;
 uniform mat4 glModelViewMatrix;
@@ -50,5 +51,6 @@ void main( void )
 	if(layerCount>6)	layer6alpha = gl_MultiTexCoord7.s;	
 	
 	
-	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 		 
+	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 	
+	//if(glColor != gl_Color) C = vec4(1,0,1,1);  		 
 }

@@ -1,9 +1,9 @@
 #version 120 
 //#version 120 is not optional, trouble otherwise
 
-attribute vec4 glVertex;                
+attribute vec4 glVertex;         
+attribute vec4 glColor;       
 //attribute vec3 glNormal;     
-//attribute vec4 glVertexColor;                
 //attribute vec2 glMultiTexCoord0; 
 
 
@@ -37,7 +37,6 @@ void main( void )
 	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;
 	
 	glTexCoord0 = (textureTransform * gl_MultiTexCoord0).st;	
-	//glTexCoord0 = (textureTransform * glMultiTexCoord0).st;
 
 	N = normalize(glNormalMatrix * gl_Normal);
 		
@@ -51,5 +50,6 @@ void main( void )
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;	
 	
 	
-	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 	
+	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1);
+	//if(glColor != gl_Color) C = vec4(1,0,1,1);  	
 }

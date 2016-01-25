@@ -1,7 +1,9 @@
 #version 120
 attribute vec4 glVertex;
+attribute vec4 glColor;
 
 uniform mat4 glProjectionMatrix;
+uniform mat4 glProjectionMatrixInverse;
 uniform mat4 glModelViewMatrix;
 uniform mat3 glNormalMatrix;
 
@@ -78,13 +80,11 @@ void main() {
     eyeNormal = glNormalMatrix * worldNormal;
     glTexCoord0 = gl_MultiTexCoord0.st;
     gl_Position = glProjectionMatrix * glModelViewMatrix * pos;
-    
-    
-    
+        
     
     lightDir = normalize(vec3(glLightSource0position));    
     vec4 P = glModelViewMatrix * glVertex;
-	vec4 E = gl_ProjectionMatrixInverse * vec4(0,0,1,0);
+	vec4 E = glProjectionMatrixInverse * vec4(0,0,1,0);
 	vec3 I = P.xyz*E.w - E.xyz*P.w;
 	vec3 N = glNormalMatrix * gl_Normal;
 	vec3 Nf = normalize(faceforward(N,I,N));
@@ -101,4 +101,5 @@ void main() {
 	}    */
 	
 	//if(glVertex != gl_Vertex) gl_FrontColor = vec4(1,0,1,1); 	
+	//if(glColor != gl_Color) gl_FrontColor = vec4(1,0,1,1);  	
 }

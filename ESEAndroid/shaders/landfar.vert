@@ -1,6 +1,7 @@
 #version 120
 
 attribute vec4 glVertex;
+attribute vec4 glColor;
 
 uniform mat4 glProjectionMatrix;
 uniform mat4 glModelViewMatrix;
@@ -31,5 +32,6 @@ void main( void )
    	glTexCoord0 = gl_MultiTexCoord0.st; 
    	
    	
-   	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 	  	
+   	//if(glVertex != gl_Vertex) C = vec4(1,0,1,1); 
+   	//if(glColor != gl_Color) C = vec4(1,0,1,1);  		  	
 }
