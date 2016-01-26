@@ -4,8 +4,6 @@ uniform int alphaTestEnabled;
 uniform int alphaTestFunction;
 uniform float alphaTestValue;
 
-
-
 uniform sampler2D BaseMap;
 
 varying vec2 glTexCoord0;
@@ -19,6 +17,10 @@ varying vec4 A;
 varying vec4 C;
 varying vec4 D;
 
+
+varying vec3 emissive;
+varying vec3 specular;
+varying float shininess;
 
 
 void main( void )
@@ -61,14 +63,12 @@ void main( void )
 	vec3 albedo = baseMap.rgb * C.rgb;
 	vec3 diffuse = A.rgb + (D.rgb * NdotL);
 
-	// Emissive
-	vec3 emissive = gl_FrontMaterial.emission.rgb;
 
 	// Specular
-	vec3 spec = gl_FrontMaterial.specular.rgb * pow(NdotH, 0.3*gl_FrontMaterial.shininess);
+	vec3 spec = specular * pow(NdotH, 0.3*shininess);
 	spec *= D.rgb;
 	
-	color.rgb = albedo * (diffuse + emissive) + spec.rgb;
+	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.a = C.a * baseMap.a;
 
 	gl_FragColor = color;

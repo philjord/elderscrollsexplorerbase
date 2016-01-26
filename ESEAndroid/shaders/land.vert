@@ -2,9 +2,18 @@
 
 attribute vec4 glVertex;
 attribute vec4 glColor;
+attribute vec2 glMultiTexCoord0; 
+attribute vec2 glMultiTexCoord1; 
+attribute vec2 glMultiTexCoord2; 
+attribute vec2 glMultiTexCoord3; 
+attribute vec2 glMultiTexCoord4; 
+attribute vec2 glMultiTexCoord5; 
+attribute vec2 glMultiTexCoord6; 
+attribute vec2 glMultiTexCoord7; 
 
 uniform mat4 glProjectionMatrix;
 uniform mat4 glModelViewMatrix;
+uniform mat4 glModelViewProjectionMatrix;
 uniform mat3 glNormalMatrix;
 
 uniform vec4 glFrontMaterialdiffuse;
@@ -18,6 +27,7 @@ uniform vec4 glLightSource0diffuse;
 varying vec2 glTexCoord0;
 
 uniform int layerCount;
+
 
 varying vec4 A;
 varying vec4 C;
@@ -34,7 +44,7 @@ varying float layer7alpha;
 
 void main( void )
 {			
-	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;
+	gl_Position = glModelViewProjectionMatrix * glVertex;
 
 	A = glLightModelambient;
 	if( ignoreVertexColors != 0 ) 
@@ -43,14 +53,18 @@ void main( void )
 		C = glColor;
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;
 
-   	glTexCoord0 = gl_MultiTexCoord0.st;   	
+   	glTexCoord0 = glMultiTexCoord0.st;   	
 		
+		//TODO: I should preload 1- alpha int vec2 t
 	//these are just opacity values stored in s, t is 0
-	if(layerCount>0)	layer0alpha = gl_MultiTexCoord1.s;
-	if(layerCount>1)	layer1alpha = gl_MultiTexCoord2.s;
-	if(layerCount>2)	layer2alpha = gl_MultiTexCoord3.s;
-	if(layerCount>3)	layer3alpha = gl_MultiTexCoord4.s;
-	if(layerCount>4)	layer4alpha = gl_MultiTexCoord5.s;
-	if(layerCount>5)	layer5alpha = gl_MultiTexCoord6.s;
-	if(layerCount>6)	layer6alpha = gl_MultiTexCoord7.s;	 		 
+	if(layerCount>0)	layer0alpha = glMultiTexCoord1.s;
+	if(layerCount>1)	layer1alpha = glMultiTexCoord2.s;
+	if(layerCount>2)	layer2alpha = glMultiTexCoord3.s;
+	if(layerCount>3)	layer3alpha = glMultiTexCoord4.s;
+	if(layerCount>4)	layer4alpha = glMultiTexCoord5.s;
+	if(layerCount>5)	layer5alpha = glMultiTexCoord6.s;
+	if(layerCount>6)	layer6alpha = glMultiTexCoord7.s;	
+	
+	 	
+		 
 }

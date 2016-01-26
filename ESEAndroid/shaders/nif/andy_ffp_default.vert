@@ -3,15 +3,19 @@
 
 attribute vec4 glVertex;         
 attribute vec4 glColor;       
-//attribute vec3 glNormal;     
-//attribute vec2 glMultiTexCoord0; 
+attribute vec3 glNormal;     
+attribute vec2 glMultiTexCoord0; 
 
 
 uniform mat4 glProjectionMatrix;
 uniform mat4 glModelViewMatrix;
+uniform mat4 glModelViewProjectionMatrix;
 uniform mat3 glNormalMatrix;
 
 uniform vec4 glFrontMaterialdiffuse;
+uniform vec3 glFrontMaterialemission;
+uniform vec3 glFrontMaterialspecular;
+uniform float glFrontMaterialshininess;
 uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
@@ -32,14 +36,17 @@ varying vec4 A;
 varying vec4 C;
 varying vec4 D;
 
+varying vec3 emissive;
+varying vec3 specular;
+varying float shininess;
 
 void main( void )
 {
-	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;
+	gl_Position = glModelViewProjectionMatrix * glVertex;
 	
-	glTexCoord0 = (textureTransform * gl_MultiTexCoord0).st;	
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,0)).st;	
 
-	N = normalize(glNormalMatrix * gl_Normal);
+	N = normalize(glNormalMatrix * glNormal);
 		
 	vec3 v = vec3(glModelViewMatrix * glVertex);
 
@@ -52,4 +59,9 @@ void main( void )
 	else 
 		C = glColor;
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;		
+	
+	emissive = glFrontMaterialemission;
+	specular = glFrontMaterialspecular;
+	shininess = glFrontMaterialshininess;
+	
 }
