@@ -1,5 +1,13 @@
 #version 120
 
+uniform mat4 viewMatrix;
+
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 uniform sampler2D BaseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D SpecularMap;
@@ -19,9 +27,6 @@ uniform float alpha;
 
 uniform vec3 tintColor;
 
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
-
 uniform int hasEmit;
 uniform int hasSoftlight;
 uniform int hasBacklight;
@@ -34,9 +39,6 @@ uniform int hasTintColor;
 
 uniform float lightingEffect1;
 uniform float lightingEffect2;
-
-uniform mat4 viewMatrix;
-uniform mat4 viewMatrixInverse;
 
 varying vec3 v;
 
@@ -83,9 +85,26 @@ vec3 overlay( vec3 ba, vec3 bl )
 
 void main( void )
 {
-	vec2 offset = gl_TexCoord[0].st * uvScale + uvOffset;
+	vec2 offset = glTexCoord0.st;
 
 	vec4 baseMap = texture2D( BaseMap, offset );
+	if(alphaTestEnabled != 0)
+	{				
+	 	if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;			
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;		
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;		
+		else if(alphaTestFunction==512)//never	
+			discard;			
+	}
 	vec4 normalMap = texture2D( NormalMap, offset );
 
 	vec3 normal = normalMap.rgb * 2.0 - 1.0;

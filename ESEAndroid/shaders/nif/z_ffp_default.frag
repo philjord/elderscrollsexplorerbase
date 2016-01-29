@@ -1,5 +1,11 @@
 #version 120
 
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 uniform sampler2D BaseMap;
 
 varying vec3 LightDir;
@@ -12,9 +18,34 @@ varying vec4 C;
 varying vec4 D;
 
 
+varying vec3 emissive;
+varying vec3 specular;
+varying float shininess;
+
+
 void main( void )
 {
-	vec4 baseMap = texture2D( BaseMap, gl_TexCoord[0].st );
+	vec4 baseMap = texture2D( BaseMap, glTexCoord0.st );
+	
+	//web says the keyword discard in a shader is bad
+	//I could just gl_FragColor=vec(0,0,0,0); return;
+	if(alphaTestEnabled != 0)
+	{				
+	 	if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;			
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;		
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;		
+		else if(alphaTestFunction==512)//never	
+			discard;			
+	}
 
 	vec3 normal = N;
 	
@@ -32,14 +63,12 @@ void main( void )
 	vec3 albedo = baseMap.rgb * C.rgb;
 	vec3 diffuse = A.rgb + (D.rgb * NdotL);
 
-	// Emissive
-	vec3 emissive = gl_FrontMaterial.emission.rgb;
 
 	// Specular
-	vec3 spec = gl_FrontMaterial.specular.rgb * pow(NdotH, 0.3*gl_FrontMaterial.shininess);
+	vec3 spec = specular * pow(NdotH, 0.3*shininess);
 	spec *= D.rgb;
 	
-	color.rgb = albedo * (diffuse + emissive) + spec.rgb;
+	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.a = C.a * baseMap.a;
 
 	gl_FragColor = color;

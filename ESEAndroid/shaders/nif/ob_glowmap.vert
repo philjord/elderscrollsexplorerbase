@@ -1,3 +1,25 @@
+#version 120
+
+attribute vec4 glVertex;         
+attribute vec3 glNormal;     
+attribute vec2 glMultiTexCoord0; 
+
+
+uniform mat4 glModelViewMatrix;
+uniform mat4 glModelViewProjectionMatrix;
+uniform mat3 glNormalMatrix;
+
+uniform vec4 glFrontMaterialdiffuse;
+uniform int ignoreVertexColors;
+
+uniform vec4 glLightModelambient;
+
+uniform vec4 glLightSource0position;
+uniform vec4 glLightSource0diffuse;
+
+uniform mat4 textureTransform;
+//End of FFP inputs
+varying vec2 glTexCoord0;
 
 attribute vec3 tangent;
 attribute vec3 binormal;
@@ -13,25 +35,27 @@ varying vec3 t;
 varying vec3 b;
 varying vec3 v;
 
+
 void main( void )
 {
-	gl_Position = ftransform();
-	gl_TexCoord[0] = gl_MultiTexCoord0;
+	gl_Position = glModelViewProjectionMatrix * glVertex;
 	
-	N = normalize(gl_NormalMatrix * gl_Normal);
-	t = normalize(gl_NormalMatrix * tangent);
-	b = normalize(gl_NormalMatrix * binormal);
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,0)).st;	
+	
+	N = normalize(glNormalMatrix * glNormal);
+	t = normalize(glNormalMatrix * tangent);
+	b = normalize(glNormalMatrix * binormal);
 	
 	// NOTE: b<->t 
-	mat3 tbnMatrix = mat3(b.x, t.x, N.x,
+	mat3 tbnMatrix = mat3(b.x, t.x, N.x, 
                           b.y, t.y, N.y,
                           b.z, t.z, N.z);
 						  
-	v = vec3(gl_ModelViewMatrix * gl_Vertex);
+	v = vec3(glModelViewMatrix * glVertex);
 	
 	ViewDir = tbnMatrix * -v.xyz;
-	LightDir = tbnMatrix * gl_LightSource[0].position.xyz;
+	LightDir = tbnMatrix * glLightSource0position.xyz;
 	
-	ColorEA = gl_FrontMaterial.ambient * gl_LightModel.ambient;
-	ColorD = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
+	ColorEA = glFrontMaterialemission + glLightModelambient * A;
+	ColorD = glFrontMaterialdiffuse * D;
 }

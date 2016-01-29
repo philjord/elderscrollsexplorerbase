@@ -1,5 +1,14 @@
 #version 120
 
+uniform mat4 worldMatrix;
+uniform mat4 glModelViewMatrixInverse;
+
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 uniform sampler2D BaseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D LightMask;
@@ -16,9 +25,6 @@ uniform float glowMult;
 
 uniform float alpha;
 
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
-
 uniform int hasEmit;
 uniform int hasSoftlight;
 uniform int hasBacklight;
@@ -30,8 +36,6 @@ uniform float lightingEffect1;
 uniform float lightingEffect2;
 
 uniform float envReflection;
-
-uniform mat4 worldMatrix;
 
 varying vec3 LightDir;
 varying vec3 ViewDir;
@@ -64,9 +68,26 @@ vec3 toGrayscale(vec3 color)
 
 void main( void )
 {
-	vec2 offset = gl_TexCoord[0].st * uvScale + uvOffset;
+	vec2 offset = glTexCoord0.st;
 
 	vec4 baseMap = texture2D( BaseMap, offset );
+	if(alphaTestEnabled != 0)
+	{				
+	 	if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;			
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;		
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;		
+		else if(alphaTestFunction==512)//never	
+			discard;			
+	}
 	vec4 normalMap = texture2D( NormalMap, offset );
 	
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
@@ -84,7 +105,7 @@ void main( void )
 
 	vec3 reflected = reflect( -E, normal );
 	vec3 reflectedVS = b * reflected.x + t * reflected.y + N * reflected.z;
-	vec3 reflectedWS = vec3( worldMatrix * (gl_ModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
+	vec3 reflectedWS = vec3( worldMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
 
 
 	vec4 color;

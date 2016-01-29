@@ -71,6 +71,19 @@ import utils.convert.NifOpenGLToJava3D;
 import utils.source.TextureSource;
 
 /**
+ Note I should update everything
+ 
+ Shaders usage by nifskop
+ Abraxo_Clean = fo4_env
+ BloodBugButtRed.nif = fo4_env
+ most props are env
+ 
+ 
+ interiors/brain/deadneuron01 effectshader
+ interface/INTMenuFogParticles effectshader
+ 
+ 
+ 
  this will build an appearance up out of a NiGeometry that can be used by a real j3dnigeometry 
  It is based on the nifskope 2.0 renderer code from jonwd7
   
@@ -203,6 +216,8 @@ public class NiGeometryAppearanceShader
 				bind(textureUnitName, bslsp, fileName(bslsp, 0), clamp);
 			}
 
+			//http://wiki.polycount.com/wiki/Normal_Map_Technical_Details
+			// I think my format is bum
 			textureUnitName = "NormalMap";
 			if (texprop != null)
 			{
@@ -289,11 +304,17 @@ public class NiGeometryAppearanceShader
 				textureTransform.setTranslation(new Vector3f(sm.fUOffset, sm.fVOffset, 0));
 			}
 
-			//TODO: need to hook these up to ModelView and Proj (though which of local and world is model?)
-			// or is view proj, world view and local model? check out nif code closely
-			//https://en.wikibooks.org/wiki/GLSL_Programming/Vertex_Transformations
+			//http://www.swiftless.com/tutorials/opengl4/3-opengl-4-matrices.html
+			// the above say worldMatrix is view and local is model
+			// others suggest and usage suggests world=model
+			// renderer.cpp says local=model for sure
+			// as projection does not exist I say view is proj
+			// translation is:
+			// viewMatrix = glProjectionMatrix
+			// localMatrix = modelMatrix (no inverse)
+			// worldMatrix = viewMatrix (no inverse)
 
-			Matrix4f viewMatrix = new Matrix4f();
+		/*	Matrix4f viewMatrix = new Matrix4f();
 			viewMatrix.setIdentity();
 			uni4m("viewMatrix", viewMatrix);
 			viewMatrix.invert();
@@ -306,9 +327,9 @@ public class NiGeometryAppearanceShader
 			worldMatrix.setIdentity();
 			uni4m("worldMatrix", worldMatrix);
 			worldMatrix.invert();
-			uni4m("worldMatrixInverse", worldMatrix);
+			uni4m("worldMatrixInverse", worldMatrix);*/
 
-			//sk_env.frag and sk_multilayer.frag and now fo4_env.frag too  uses the worldMatrix  
+			//sk_env.frag and sk_multilayer.frag and  fo4_env.frag fo4_effectshader  uses the worldMatrix  
 			//sk_msn.frag uses  viewMatrix (msn stand for model space normal mapping)
 
 			boolean hasGreyScaleColor = bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Greyscale_To_PaletteColor);
@@ -537,11 +558,21 @@ public class NiGeometryAppearanceShader
 			// apparently the The vertex colors are used as well, just not the alpha component when
 			// SF_Vertex_Animation is present
 			// http://niftools.sourceforge.net/forum/viewtopic.php?f=10&t=3276
-			if (bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Tree_Anim))
+			boolean isVertexAlphaAnimation = bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Tree_Anim);
+			uni1i("isVertexAlphaAnimation", isVertexAlphaAnimation);
+			if (isVertexAlphaAnimation)
 			{
+				//System.out.println("SLSF2_Tree_Anim using shader "+shaderProgram);
 				//hand through the isTreeAnim flag so the shader can ignore alpha
 				//textureAttributes.setTextureMode(TextureAttributes.COMBINE);
 				//textureAttributes.setCombineAlphaMode(TextureAttributes.COMBINE_REPLACE);
+				//ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
+				//if ( isVertexAlphaAnimation ) {
+				//	for ( int i = 0; i < colors.count(); i++ )
+				//		colors[i].setRGBA( colors[i].red(), colors[i].green(), colors[i].blue(), 1 );
+				//}
+				//the glColors need to ignore the alpha component
+				
 			}
 
 		}
@@ -677,7 +708,13 @@ public class NiGeometryAppearanceShader
 				}
 
 			}
+			
+			boolean isVertexAlphaAnimation = bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Tree_Anim);
+			uni1i("isVertexAlphaAnimation", isVertexAlphaAnimation);
+		
 		}
+		
+		
 
 		shaderAttributeSet = new ShaderAttributeSet();
 
@@ -706,6 +743,7 @@ public class NiGeometryAppearanceShader
 		app.setTextureUnitState(tus);
 		app.setShaderProgram(shaderProgram);
 		app.setShaderAttributeSet(shaderAttributeSet);
+ 
 
 		BSMaterial m = null;
 		if (bslsp != null)
@@ -960,6 +998,9 @@ public class NiGeometryAppearanceShader
 
 		if (nap != null && nap.alphaTestEnabled())
 		{
+			//screen door enables alpha testing
+			ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
+			
 			// I think the PolygonAttributes.CULL_NONE should be applied to anything
 			// with an alphaTestEnabled(), flat_lod trees from skyrim prove it
 			// obviously transparent stuff can be seen from the back quite often
@@ -982,7 +1023,7 @@ public class NiGeometryAppearanceShader
 				ra.setAlphaTestValue(threshold);
 			}
 		}
-		// do NOT disable no alpha test still enables transparent textures
+		// do NOT disable alpha test is in addition to transparent textures
 
 	}
 

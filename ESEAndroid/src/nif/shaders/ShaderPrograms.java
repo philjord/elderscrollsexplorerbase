@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 
 import javax.media.j3d.Shader;
@@ -28,14 +27,9 @@ import nif.niobject.bs.BSShaderPPLightingProperty;
 import nif.niobject.bs.BSSubIndexTriShape;
 import nif.niobject.bs.BSTriShape;
 import nif.niobject.particle.NiPSysData;
-import nif.shaders.ShaderPrograms.Program;
 
 public class ShaderPrograms
 {
-
-	// this is where the new ones go!
-	public static final String[] VERTEX_ATTRIBUTE_NAMES = new String[] { "tangent", "binormal" };
-
 	private static HashMap<String, FileShader> allFileShaders;
 	// programs MUST be checked in order!
 	public static LinkedHashMap<String, Program> programs;
@@ -76,6 +70,9 @@ public class ShaderPrograms
 					return a.replace("_", "!").compareTo(b.replace("_", "!"));
 				}
 			});
+
+			// defaults go last to give other chance to load
+			LinkedHashMap<String, Program> defaultprograms = new LinkedHashMap<String, Program>();
 			for (String name : fileArray)
 			{
 				if (name.endsWith(".prog"))
@@ -84,7 +81,10 @@ public class ShaderPrograms
 					try
 					{
 						program.load(new File(dir, name), allFileShaders);
-						programs.put(name, program);
+						if (name.contains("default"))
+							defaultprograms.put(name, program);
+						else
+							programs.put(name, program);
 					}
 					catch (Exception e)
 					{
@@ -92,6 +92,8 @@ public class ShaderPrograms
 					}
 				}
 			}
+
+			programs.putAll(defaultprograms);
 		}
 	}
 
@@ -125,6 +127,16 @@ public class ShaderPrograms
 				}
 
 				fr.close();
+
+				ArrayList<String> problems = GLSLSourceCodeShader.testForFFP(shaderCode);
+				if (problems.size() > 0)
+				{
+					System.out.println("Shader file appears to be FFP style " + file.getAbsolutePath());
+					for (String problem : problems)
+					{
+						System.out.println(problem);
+					}
+				}
 
 				sourceCodeShader = new GLSLSourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
 				sourceCodeShader.name = file.getName();
@@ -413,7 +425,6 @@ public class ShaderPrograms
 
 		public boolean eval(NiGeometry niGeometry, NiToJ3dData niToJ3dData, PropertyList props)
 		{
-
 			if (left.equalsIgnoreCase("HEADER/Version"))
 			{
 				return compare(niGeometry.nVer.LOAD_VER, Integer.decode(right)) ^ invert;

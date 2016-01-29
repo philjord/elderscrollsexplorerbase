@@ -1,3 +1,26 @@
+#version 120
+
+attribute vec4 glVertex;         
+attribute vec3 glNormal;     
+attribute vec2 glMultiTexCoord0; 
+
+
+uniform mat4 glModelViewMatrix;
+uniform mat4 glModelViewProjectionMatrix;
+uniform mat3 glNormalMatrix;
+
+uniform vec4 glFrontMaterialdiffuse;
+uniform vec4 glFrontMaterialambient;
+uniform int ignoreVertexColors;
+
+uniform vec4 glLightModelambient;
+
+uniform vec4 glLightSource0position;
+uniform vec4 glLightSource0diffuse;
+
+uniform mat4 textureTransform;
+//End of FFP inputs
+varying vec2 glTexCoord0;
 
 attribute vec3 tangent;
 attribute vec3 binormal;
@@ -20,17 +43,21 @@ vec3 tspace( vec3 v )
 
 void main( void )
 {
-	gl_Position = ftransform();
-	gl_TexCoord[0] = gl_MultiTexCoord0;
+	gl_Position = glModelViewProjectionMatrix * glVertex;
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,0)).st;	
 	
-	normal = normalize(gl_NormalMatrix * gl_Normal);
-	tangent = normalize(gl_NormalMatrix * tangent);
-	binormal = normalize(gl_NormalMatrix * binormal);
+	normal = normalize(glNormalMatrix * glNormal);
+	tangent = normalize(glNormalMatrix * tangent);
+	binormal = normalize(glNormalMatrix * binormal);
 	
-	ViewDir = tspace( ( gl_ModelViewMatrix * gl_Vertex ).xyz );
-	LightDir = tspace( gl_LightSource[0].position.xyz ); // light 0 is directional
-	HalfVector = tspace( gl_LightSource[0].halfVector.xyz );
+	ViewDir = tspace( ( glModelViewMatrix * glVertex ).xyz );
+	LightDir = tspace( glLightSource0position.xyz ); // light 0 is directional
+	HalfVector = ( glModelViewMatrix * glVertex ).xyz - glLightSource0position.xyz;
 	
-	ColorEA = gl_Color + gl_FrontMaterial.ambient * gl_LightModel.ambient;
-	ColorD = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
+	if(ignoreVertexColors != 0)
+		ColorEA = glFrontMaterialdiffuse + glFrontMaterialambient * glLightModelambient;
+	else
+		ColorEA = glColor + glFrontMaterialambient * glLightModelambient;
+	
+	ColorD = glFrontMaterialdiffuse * glLightSource0.diffuse;
 }

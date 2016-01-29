@@ -1,5 +1,11 @@
 #version 120
 
+uniform vec4 glFrontMaterialspecular;
+uniform float glFrontMaterialshininess;
+uniform vec4 glLightSource0specular;
+
+varying vec2 glTexCoord0;
+
 uniform sampler2D BaseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D GlowMap;
@@ -13,8 +19,8 @@ varying vec4 ColorD;
 
 void main( void )
 {
-	float offset = 0.015 - texture2D( BaseMap, gl_TexCoord[0].st ).a * 0.03;
-	vec2 texco = gl_TexCoord[0].st + normalize( ViewDir ).xy * offset;
+	float offset = 0.015 - texture2D( BaseMap, glTexCoord0.st ).a * 0.03;
+	vec2 texco = glTexCoord0.st + normalize( ViewDir ).xy * offset;
 	
 	vec4 color = ColorEA;
 	color += texture2D( GlowMap, texco );
@@ -28,7 +34,7 @@ void main( void )
 	{
 		color += ColorD * NdotL;
 		float NdotHV = max( dot( normal.rgb, normalize( HalfVector ) ), 0.0 );
-		color += normal.a * gl_FrontMaterial.specular * gl_LightSource[0].specular * pow( NdotHV, gl_FrontMaterial.shininess );
+		color += normal.a * glFrontMaterialspecular * glLightSource0specular * pow( NdotHV, glFrontMaterialshininess );
 	}
 	
 	color = min( color, 1.0 );

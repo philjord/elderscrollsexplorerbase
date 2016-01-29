@@ -1,5 +1,13 @@
 #version 120
 
+uniform vec4 glLightSource0specular;
+
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 uniform sampler2D BaseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D LightMask;
@@ -11,9 +19,6 @@ uniform float specGlossiness;
 
 uniform vec3 glowColor;
 uniform float glowMult;
-
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
 
 uniform int hasEmit;
 uniform int hasSoftlight;
@@ -52,9 +57,26 @@ vec3 toGrayscale(vec3 color)
 
 void main( void )
 {
-	vec2 offset = gl_TexCoord[0].st * uvScale + uvOffset;
+	vec2 offset = glTexCoord0.st;
 
 	vec4 baseMap = texture2D( BaseMap, offset );
+	if(alphaTestEnabled != 0)
+	{				
+	 	if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;			
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;		
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;		
+		else if(alphaTestFunction==512)//never	
+			discard;			
+	}
 	vec4 normalMap = texture2D( NormalMap, offset );
 	
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
@@ -86,7 +108,7 @@ void main( void )
 	if ( NdotL > 0.0 && specStrength > 0.0 ) {
 		float RdotE = max( dot(R, E), 0.0 );
 		if ( RdotE > 0.0 ) {
-			spec = normalMap.a * gl_LightSource[0].specular.r * specStrength * pow(RdotE, 0.8*specGlossiness);
+			spec = normalMap.a * glLightSource0specular.r * specStrength * pow(RdotE, 0.8*specGlossiness);
 			color.rgb += spec * specColor;
 		}
 	}

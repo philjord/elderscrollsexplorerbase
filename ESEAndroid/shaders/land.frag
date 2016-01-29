@@ -34,13 +34,13 @@ void main( void )
 	
 	vec3 albedo = baseMapTex.rgb;		
 	
-	if(layerCount>0)	albedo = (layer0alpha * texture2D( layerMap1, glTexCoord0.st ).rgb) + ((1-layer0alpha)*albedo);
-	if(layerCount>1)	albedo = (layer1alpha * texture2D( layerMap2, glTexCoord0.st ).rgb) + ((1-layer1alpha)*albedo);
-	if(layerCount>2)	albedo = (layer2alpha * texture2D( layerMap3, glTexCoord0.st ).rgb) + ((1-layer2alpha)*albedo);
-	if(layerCount>3)	albedo = (layer3alpha * texture2D( layerMap4, glTexCoord0.st ).rgb) + ((1-layer3alpha)*albedo);
-	if(layerCount>4)	albedo = (layer4alpha * texture2D( layerMap5, glTexCoord0.st ).rgb) + ((1-layer4alpha)*albedo);
-	if(layerCount>5)	albedo = (layer5alpha * texture2D( layerMap6, glTexCoord0.st ).rgb) + ((1-layer5alpha)*albedo);
-	if(layerCount>6)	albedo = (layer6alpha * texture2D( layerMap7, glTexCoord0.st ).rgb) + ((1-layer6alpha)*albedo);
+	if(layerCount>0)	albedo = mix(albedo, texture2D( layerMap1, glTexCoord0.st ).rgb, layer0alpha);
+	if(layerCount>1)	albedo = mix(albedo, texture2D( layerMap2, glTexCoord0.st ).rgb, layer1alpha);
+	if(layerCount>2)	albedo = mix(albedo, texture2D( layerMap3, glTexCoord0.st ).rgb, layer2alpha);
+	if(layerCount>3)	albedo = mix(albedo, texture2D( layerMap4, glTexCoord0.st ).rgb, layer3alpha);
+	if(layerCount>4)	albedo = mix(albedo, texture2D( layerMap5, glTexCoord0.st ).rgb, layer4alpha);
+	if(layerCount>5)	albedo = mix(albedo, texture2D( layerMap6, glTexCoord0.st ).rgb, layer5alpha);
+	if(layerCount>6)	albedo = mix(albedo, texture2D( layerMap7, glTexCoord0.st ).rgb, layer6alpha);
 	
 	
 	albedo = albedo * C.rgb;

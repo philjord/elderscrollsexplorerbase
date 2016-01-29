@@ -1,5 +1,11 @@
 #version 120
 
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 uniform sampler2D SourceTexture;
 uniform sampler2D GreyscaleMap;
 
@@ -19,9 +25,6 @@ uniform int hasWeaponBlood;
 uniform vec4 glowColor;
 uniform float glowMult;
 
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
-
 uniform vec4 falloffParams;
 uniform float falloffDepth;
 
@@ -40,8 +43,24 @@ vec4 colorLookup( float x, float y ) {
 
 void main( void )
 {
-	vec4 baseMap = texture2D( SourceTexture, gl_TexCoord[0].st * uvScale + uvOffset );
-	
+	vec4 baseMap = texture2D( SourceTexture, glTexCoord0.st );
+	if(alphaTestEnabled != 0)
+	{				
+	 	if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;			
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;		
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;		
+		else if(alphaTestFunction==512)//never	
+			discard;			
+	}
 	vec4 color;
 
 	vec3 normal = N;

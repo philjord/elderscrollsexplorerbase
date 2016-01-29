@@ -1,5 +1,16 @@
 #version 120
 
+uniform vec4 glLightModelambient;
+
+uniform vec4 glLightSource0specular;
+uniform vec4 glLightSource0diffuse;
+
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 uniform sampler2D BaseMap;
 uniform sampler2D NormalMap;
 uniform sampler2D GlowMap;
@@ -13,9 +24,6 @@ uniform float glowMult;
 uniform vec3 specColor;
 uniform float specStrength;
 uniform float specGlossiness;
-
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
 
 uniform int hasSoftlight;
 uniform int hasBacklight;
@@ -44,9 +52,26 @@ vec3 tonemap(vec3 x)
 
 void main( void )
 {
-	vec2 offset = gl_TexCoord[0].st * uvScale + uvOffset;
+	vec2 offset = glTexCoord0.st;
 	
 	vec4 baseMap = texture2D( BaseMap, offset );
+	if(alphaTestEnabled != 0)
+	{				
+	 	if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;			
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;		
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;		
+		else if(alphaTestFunction==512)//never	
+			discard;			
+	}
 	vec4 nmap = texture2D( NormalMap, offset );
 	
 	vec4 color;
@@ -78,7 +103,7 @@ void main( void )
 		// TODO: Attenuation?
 		
 		if ( RdotE > 0.0 ) {
-			spec = nmap.a * gl_LightSource[0].specular.r * specStrength * pow(RdotE, 0.8*specGlossiness);
+			spec = nmap.a * glLightSource0specular.r * specStrength * pow(RdotE, 0.8*specGlossiness);
 			color.rgb += spec * specColor;
 		}
 	}
@@ -100,7 +125,7 @@ void main( void )
 	if ( bool(hasRimlight) ) {
 		rim = vec3(( 1.0 - NdotL ) * ( 1.0 - max(dot(normal, E), 0.0)));
 		//rim = smoothstep( 0.0, 1.0, rim );
-		rim = mask.rgb * pow(rim, vec3(lightingEffect2)) * gl_LightSource[0].diffuse.rgb * vec3(0.66);
+		rim = mask.rgb * pow(rim, vec3(lightingEffect2)) * glLightSource0diffuse.rgb * vec3(0.66);
 		rim *= smoothstep( -0.5, 1.0, facing );
 		color.rgb += rim;
 	}
@@ -113,16 +138,16 @@ void main( void )
 		soft = smoothstep( -1.0, 1.0, soft );
 
 		// TODO: Very approximate, kind of arbitrary. There is surely a more correct way.
-		soft *= mask.rgb * pow(soft, vec3(4.0/(lightingEffect1*lightingEffect1))); // * gl_LightSource[0].ambient.rgb;
+		soft *= mask.rgb * pow(soft, vec3(4.0/(lightingEffect1*lightingEffect1))); // * glLightSource0ambient.rgb;
 		//soft *= smoothstep( -1.0, 0.0, soft );
-		//soft = mix( soft, color.rgb, gl_LightSource[0].ambient.rgb );
+		//soft = mix( soft, color.rgb, glLightSource0ambient.rgb );
 		
 		//soft = smoothstep( 0.0, 1.0, soft );
-		soft *= gl_LightSource[0].diffuse.rgb * gl_LightSource[0].ambient.rgb + (0.01 * lightingEffect1*lightingEffect1);
+		soft *= glLightSource0diffuse.rgb * glLightModelambient.rgb + (0.01 * lightingEffect1*lightingEffect1);
 
 		//soft = clamp( soft, 0.0, 0.5 );
 		//soft *= smoothstep( -0.5, 1.0, facing );
-		//soft = mix( soft, color.rgb, gl_LightSource[0].diffuse.rgb );
+		//soft = mix( soft, color.rgb, glLightSource0diffuse.rgb );
 		color.rgb += baseMap.rgb * soft;
 	}
 	

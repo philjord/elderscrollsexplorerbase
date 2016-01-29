@@ -1,5 +1,5 @@
 
-comment normal+parallax mapping, vertex colors -> emissive
+# normal+parallax mapping, vertex colors -> emissive
 
 check NiTexturingProperty/Apply Mode == 4
 check NiTriBasedGeom/Has Shader == 0

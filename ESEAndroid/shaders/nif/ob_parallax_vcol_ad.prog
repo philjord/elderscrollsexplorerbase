@@ -1,5 +1,4 @@
-
-comment normal+parallax mapping, vertex colors -> ambient&diffuse
+# normal+parallax mapping, vertex colors -> ambient&diffuse
 
 check NiTexturingProperty/Apply Mode == 4
 check NiTriBasedGeom/Has Shader == 0

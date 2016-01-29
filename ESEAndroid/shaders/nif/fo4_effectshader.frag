@@ -1,5 +1,14 @@
 #version 120
 
+uniform mat4 glModelViewMatrixInverse;
+uniform mat4 viewMatrix;
+
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 uniform sampler2D SourceTexture;
 uniform sampler2D GreyscaleMap;
 uniform samplerCube CubeMap;
@@ -26,16 +35,11 @@ uniform int hasWeaponBlood;
 uniform vec4 glowColor;
 uniform float glowMult;
 
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
-
 uniform vec4 falloffParams;
 uniform float falloffDepth;
 
 uniform float lightingInfluence;
 uniform float envReflection;
-
-uniform mat4 worldMatrix;
 
 varying vec3 LightDir;
 varying vec3 ViewDir;
@@ -56,9 +60,27 @@ vec4 colorLookup( float x, float y ) {
 
 void main( void )
 {
-	vec2 offset = gl_TexCoord[0].st * uvScale + uvOffset;
+
+	vec2 offset = glTexCoord0.st;
 	
 	vec4 baseMap = texture2D( SourceTexture, offset );
+	if(alphaTestEnabled != 0)
+	{				
+	 	if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;			
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;		
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;		
+		else if(alphaTestFunction==512)//never	
+			discard;			
+	}
 	vec4 normalMap = texture2D( NormalMap, offset );
 	vec4 specMap = texture2D( SpecularMap, offset );
 	
@@ -83,7 +105,7 @@ void main( void )
 
 	vec3 reflected = reflect( V, normal );
 	vec3 reflectedVS = t * reflected.x + b * reflected.y + N * reflected.z;
-	vec3 reflectedWS = vec3( worldMatrix * (gl_ModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
+	vec3 reflectedWS = vec3( viewMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
 	
 	// Falloff
 	float falloff = 1.0;

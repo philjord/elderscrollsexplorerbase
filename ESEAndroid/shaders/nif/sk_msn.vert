@@ -1,3 +1,25 @@
+#version 120
+
+attribute vec4 glVertex;         
+attribute vec4 glColor;       
+attribute vec2 glMultiTexCoord0; 
+
+
+uniform mat4 glModelViewMatrix;
+uniform mat4 glModelViewProjectionMatrix;
+
+uniform vec4 glFrontMaterialdiffuse;
+uniform int ignoreVertexColors;
+
+uniform vec4 glLightModelambient;
+
+uniform vec4 glLightSource0position;
+uniform vec4 glLightSource0diffuse;
+
+uniform mat4 textureTransform;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 varying vec3 LightDir;
 varying vec3 ViewDir;
 
@@ -10,15 +32,19 @@ varying vec4 D;
 
 void main( void )
 {
-	gl_Position = ftransform();
-	gl_TexCoord[0] = gl_MultiTexCoord0;
+	gl_Position = glModelViewProjectionMatrix * glVertex;
 	
-	v = vec3(gl_ModelViewMatrix * gl_Vertex);
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,0)).st;
+							  
+	v = vec3(glModelViewMatrix * glVertex);
 
 	ViewDir = -v.xyz;
-	LightDir = gl_LightSource[0].position.xyz;
-
-	A = gl_LightModel.ambient;
-	C = gl_Color;
-	D = gl_LightSource[0].diffuse;
+	LightDir = glLightSource0position.xyz;
+	
+	A = glLightModelambient;
+	if( ignoreVertexColors != 0) 
+		C = glFrontMaterialdiffuse; 
+	else 
+		C = glColor;
+	D = glLightSource0diffuse;
 }

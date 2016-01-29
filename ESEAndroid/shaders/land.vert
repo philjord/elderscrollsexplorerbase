@@ -55,8 +55,7 @@ void main( void )
 
    	glTexCoord0 = glMultiTexCoord0.st;   	
 		
-		//TODO: I should preload 1- alpha int vec2 t
-	//these are just opacity values stored in s, t is 0
+	 
 	if(layerCount>0)	layer0alpha = glMultiTexCoord1.s;
 	if(layerCount>1)	layer1alpha = glMultiTexCoord2.s;
 	if(layerCount>2)	layer2alpha = glMultiTexCoord3.s;

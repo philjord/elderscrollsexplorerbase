@@ -3,7 +3,7 @@
 checkgroup begin or
 	# Fallout 3 and later
 	checkgroup begin and
-		check HEADER/Version >= 0x14020007
+		check HEADER/Version >= 0x0A000102
 		check HEADER/User Version >= 11
 	checkgroup end
 

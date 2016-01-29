@@ -1,5 +1,15 @@
 #version 120
 
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 glModelViewMatrixInverse;
+
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
+//End of FFP inputs
+varying vec2 glTexCoord0;
+
 uniform sampler2D BaseMap;
 uniform sampler2D NormalMap;
 //uniform sampler2D LightMask;
@@ -21,8 +31,6 @@ uniform float glowMult;
 
 uniform float alpha;
 
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
 
 uniform int hasEmit;
 uniform int hasSoftlight;
@@ -52,6 +60,7 @@ varying vec4 D;
 varying vec3 N;
 varying vec3 t;
 varying vec3 b;
+
 
 
 float G1V(float NdotV, float k)
@@ -99,8 +108,8 @@ vec3 toGrayscale(vec3 color)
 	return vec3(dot(vec3(0.3, 0.59, 0.11), color));
 }
 
-vec4 colorLookup( float x, float y ) {
-	
+vec4 colorLookup( float x, float y ) 
+{	
 	return texture2D( GreyscaleMap, vec2( clamp(x, 0.0, 1.0), clamp(y, 0.0, 1.0)) );
 }
 
@@ -111,10 +120,31 @@ float scale( float f, float min, float max )
 
 void main( void )
 {
-	vec2 offset = gl_TexCoord[0].st * uvScale + uvOffset;
 
-	vec4 baseMap = texture2D( BaseMap, offset );
-	vec4 normalMap = texture2D( NormalMap, offset );	
+	vec2 offset = glTexCoord0.st;
+
+	vec4 baseMap = texture2D( BaseMap, offset );	
+ if(alphaTestEnabled != 0)
+	{				
+	 	if(alphaTestFunction==516)//>
+			if(baseMap.a<=alphaTestValue)discard;			
+		else if(alphaTestFunction==518)//>=
+			if(baseMap.a<alphaTestValue)discard;		
+		else if(alphaTestFunction==514)//==
+			if(baseMap.a!=alphaTestValue)discard;
+		else if(alphaTestFunction==517)//!=
+			if(baseMap.a==alphaTestValue)discard;
+		else if(alphaTestFunction==513)//<
+			if(baseMap.a>=alphaTestValue)discard;
+		else if(alphaTestFunction==515)//<=
+			if(baseMap.a>alphaTestValue)discard;		
+		else if(alphaTestFunction==512)//never	
+			discard;			
+	}
+	//http://tech-artists.org/wiki/Normal_map_compression
+	//https://www.opengl.org/discussion_boards/showthread.php/167670-DXT5n
+	// looks like the new image format from the ba2 files
+	vec4 normalMap = texture2D( NormalMap, offset );
 	vec4 specMap = texture2D( SpecularMap, offset );
 	
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
@@ -135,7 +165,7 @@ void main( void )
 
 	vec3 reflected = reflect( V, normal );
 	vec3 reflectedVS = t * reflected.x + b * reflected.y + N * reflected.z;
-	vec3 reflectedWS = vec3( worldMatrix * (gl_ModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
+	vec3 reflectedWS = vec3( viewMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
 
 
 	vec4 color;
