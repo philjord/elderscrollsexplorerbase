@@ -1,7 +1,7 @@
 #version 120
 
 
-uniform mat4 worldMatrix
+uniform mat4 worldMatrix;
 uniform mat4 glModelViewMatrixInverse;
 
 uniform int alphaTestEnabled;
@@ -41,8 +41,6 @@ uniform vec2 innerScale;
 uniform float innerThickness;
 uniform float outerRefraction;
 uniform float outerReflection;
-
-uniform mat4 worldMatrix;
 
 varying vec3 LightDir;
 varying vec3 ViewDir;
@@ -104,7 +102,7 @@ vec3 ParallaxOffsetAndDepth( vec2 vTexCoord, vec2 vInnerScale, vec3 vViewTS, vec
 
 void main( void )
 {
-	vec2 offset = glTexCoord0.st * uvScale + uvOffset;
+	vec2 offset = glTexCoord0.st;
 
 	vec4 baseMap = texture2D( BaseMap, offset );
 	if(alphaTestEnabled != 0)
