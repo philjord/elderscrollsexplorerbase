@@ -113,9 +113,10 @@ vec3 toGrayscale(vec3 color)
 	return vec3(dot(vec3(0.3, 0.59, 0.11), color));
 }
 
-vec4 colorLookup( float x, float y ) {
-	
-	return texture2D( GreyscaleMap, vec2( clamp(x, 0.0, 1.0), clamp(y, 0.0, 1.0)) );
+vec4 colorLookup( float x, float y ) 
+{	
+	//BTDX store these as BGRA so deswizzle to RGBA
+	return  texture2D( GreyscaleMap, vec2( clamp(x, 0.0, 1.0), clamp(y, 0.0, 1.0)) ).bgra;
 }
 
 float scale( float f, float min, float max )
@@ -125,6 +126,7 @@ float scale( float f, float min, float max )
 
 void main( void )
 {
+
 	vec2 offset = glTexCoord0.st;
 
 	vec4 baseMap = texture2D( BaseMap, offset );
@@ -147,8 +149,12 @@ void main( void )
 			discard;			
 	}
 	
-	vec4 normalMap = texture2D( NormalMap, offset );
-	vec4 specMap = texture2D( SpecularMap, offset );
+	//swizzle the alpha and green  
+	vec4 normalMap = vec4( texture2D( NormalMap, offset ).ag * 2.0 - 1.0, 0.0, 0.0 );
+	//re-create the z  
+	normalMap.z = sqrt( 1.0 - dot( normalMap.xy,normalMap.xy ) ); 
+	vec2 specMap = texture2D( SpecularMap, offset ).ag; 
+	
 	vec4 glowMap = texture2D( GlowMap, offset );
 	
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);

@@ -110,7 +110,8 @@ vec3 toGrayscale(vec3 color)
 
 vec4 colorLookup( float x, float y ) 
 {	
-	return texture2D( GreyscaleMap, vec2( clamp(x, 0.0, 1.0), clamp(y, 0.0, 1.0)) );
+	//BTDX store these as BGRA so deswizzle to RGBA
+	return  texture2D( GreyscaleMap, vec2( clamp(x, 0.0, 1.0), clamp(y, 0.0, 1.0)) ).bgra;
 }
 
 float scale( float f, float min, float max )
@@ -120,11 +121,11 @@ float scale( float f, float min, float max )
 
 void main( void )
 {
-
 	vec2 offset = glTexCoord0.st;
 
 	vec4 baseMap = texture2D( BaseMap, offset );	
- if(alphaTestEnabled != 0)
+	
+	if(alphaTestEnabled != 0)
 	{				
 	 	if(alphaTestFunction==516)//>
 			if(baseMap.a<=alphaTestValue)discard;			
@@ -141,11 +142,16 @@ void main( void )
 		else if(alphaTestFunction==512)//never	
 			discard;			
 	}
-	//http://tech-artists.org/wiki/Normal_map_compression
-	//https://www.opengl.org/discussion_boards/showthread.php/167670-DXT5n
-	// looks like the new image format from the ba2 files
-	vec4 normalMap = texture2D( NormalMap, offset );
-	vec4 specMap = texture2D( SpecularMap, offset );
+	
+	//swizzle the alpha and green  
+	vec4 normalMap = vec4( texture2D( NormalMap, offset ).ag * 2.0 - 1.0, 0.0, 0.0 );
+	//re-create the z  
+	normalMap.z = sqrt( 1.0 - dot( normalMap.xy,normalMap.xy ) ); 
+
+	// spec only use 2 value r and g below (r is gloss, g is spec)
+	//https://www.reddit.com/r/FalloutMods/comments/3uaq1l/fo4_lets_talk_about_texture_creation_editing/
+	vec2 specMap = texture2D( SpecularMap, offset ).ag ; 
+	 
 	
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
 	if ( !gl_FrontFacing && bool(doubleSided) ) {
@@ -173,7 +179,6 @@ void main( void )
 	vec3 diffuse = A.rgb + (D.rgb * NdotL);
 	if ( bool(greyscaleColor) ) {
 		vec4 luG = colorLookup( baseMap.g, C.g * paletteScale );
-
 		albedo = luG.rgb;
 	}
 	
