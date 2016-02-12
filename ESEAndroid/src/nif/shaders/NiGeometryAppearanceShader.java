@@ -187,6 +187,12 @@ public class NiGeometryAppearanceShader
 		// note time controllers below need appearance set on the shape now
 		shape.setAppearance(app);
 
+		// Render polygon fill slightly behind alpha transparency and wireframe
+		//glEnable( GL_POLYGON_OFFSET_FILL );
+		//glPolygonOffset( 1.0f, 2.0f );
+		// to put the above it I would need to undo it in the alpha section, not entirely sure
+		// but where are decals?
+
 		TextureAttributes textureAttributes = new TextureAttributes();
 
 		NiTexturingProperty texprop = (NiTexturingProperty) props.get(NiTexturingProperty.class);
@@ -314,20 +320,20 @@ public class NiGeometryAppearanceShader
 			// localMatrix = modelMatrix (no inverse)
 			// worldMatrix = viewMatrix (no inverse)
 
-		/*	Matrix4f viewMatrix = new Matrix4f();
-			viewMatrix.setIdentity();
-			uni4m("viewMatrix", viewMatrix);
-			viewMatrix.invert();
-			uni4m("viewMatrixInverse", viewMatrix);
-
-			//uni4m( "localMatrix", mesh.localTrans().toMatrix4() );
-			//uni4m( "localMatrixInverse", mesh.localTrans().toMatrix4().inverted() );
-
-			Matrix4f worldMatrix = new Matrix4f();
-			worldMatrix.setIdentity();
-			uni4m("worldMatrix", worldMatrix);
-			worldMatrix.invert();
-			uni4m("worldMatrixInverse", worldMatrix);*/
+			/*	Matrix4f viewMatrix = new Matrix4f();
+				viewMatrix.setIdentity();
+				uni4m("viewMatrix", viewMatrix);
+				viewMatrix.invert();
+				uni4m("viewMatrixInverse", viewMatrix);
+			
+				//uni4m( "localMatrix", mesh.localTrans().toMatrix4() );
+				//uni4m( "localMatrixInverse", mesh.localTrans().toMatrix4().inverted() );
+			
+				Matrix4f worldMatrix = new Matrix4f();
+				worldMatrix.setIdentity();
+				uni4m("worldMatrix", worldMatrix);
+				worldMatrix.invert();
+				uni4m("worldMatrixInverse", worldMatrix);*/
 
 			//sk_env.frag and sk_multilayer.frag and  fo4_env.frag fo4_effectshader  uses the worldMatrix  
 			//sk_msn.frag uses  viewMatrix (msn stand for model space normal mapping)
@@ -459,8 +465,11 @@ public class NiGeometryAppearanceShader
 					isDoubleSided = sm.bTwoSided != 0;
 				uni1i("doubleSided", isDoubleSided);
 
-				//PJPJPJPJ
-				pa.setCullFace(PolygonAttributes.CULL_NONE);
+				if (isDoubleSided)
+				{
+					pa.setCullFace(PolygonAttributes.CULL_NONE);
+					pa.setBackFaceNormalFlip(true);
+				}
 
 				if (sm == null)
 				{
@@ -572,7 +581,7 @@ public class NiGeometryAppearanceShader
 				//		colors[i].setRGBA( colors[i].red(), colors[i].green(), colors[i].blue(), 1 );
 				//}
 				//the glColors need to ignore the alpha component
-				
+
 			}
 
 		}
@@ -608,7 +617,12 @@ public class NiGeometryAppearanceShader
 				isDoubleSided = em.bTwoSided != 0;
 			uni1i("doubleSided", isDoubleSided);
 
-			pa.setCullFace(PolygonAttributes.CULL_NONE);
+			if (isDoubleSided)
+			{
+				pa.setCullFace(PolygonAttributes.CULL_NONE);
+				pa.setBackFaceNormalFlip(true);
+			}
+
 			if (em == null)
 			{
 				textureTransform.setScale(new Vector3d(bsesp.UVScale.u, bsesp.UVScale.v, 0));
@@ -708,13 +722,11 @@ public class NiGeometryAppearanceShader
 				}
 
 			}
-			
+
 			boolean isVertexAlphaAnimation = bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Tree_Anim);
 			uni1i("isVertexAlphaAnimation", isVertexAlphaAnimation);
-		
+
 		}
-		
-		
 
 		shaderAttributeSet = new ShaderAttributeSet();
 
@@ -743,66 +755,25 @@ public class NiGeometryAppearanceShader
 		app.setTextureUnitState(tus);
 		app.setShaderProgram(shaderProgram);
 		app.setShaderAttributeSet(shaderAttributeSet);
- 
 
-		BSMaterial m = null;
-		if (bslsp != null)
-			m = getMaterial(bslsp);
-		if (bsesp != null)
-			m = getMaterial(bsesp);
+		// BSESP/BSLSP do not always need an NiAlphaProperty, and appear to override it at times
+		boolean translucent = (bslsp != null)
+				&& (bslsp.Alpha < 1.0f || bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Refraction));
+		translucent |= (bsesp != null) && props.get(NiAlphaProperty.class) == null && bsesp.EmissiveColor.a < 1.0f;
 
-		//TODO: my material version is doing craziness
-		//https://github.com/jonwd7/nifskope/commit/07ad381212d13e27e163faa96d0a51e377fe39a3 
-		// include the tree anim one in all!
+		BSMaterial m = bslsp != null ? getMaterial(bslsp) : bsesp != null ? getMaterial(bsesp) : null;
 		if (m == null)
 		{
-			// setup blending
+			// setup alpha
 			glProperty((NiAlphaProperty) props.get(NiAlphaProperty.class));
-			// BSESP/BSLSP do not always need an NiAlphaProperty, and appear to override it at times
-
-			boolean translucent = (bslsp != null)
-					&& (bslsp.Alpha < 1.0f || bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Refraction));
-			translucent |= (bsesp != null) && props.get(NiAlphaProperty.class) == null && bsesp.EmissiveColor.a < 1.0f;
-
-			if (translucent)
-			{
-				ta.setTransparency(0.1f);
-				ta.setTransparencyMode(TransparencyAttributes.BLENDED);
-			}
-
 			// setup material
-
 			glProperty((NiMaterialProperty) props.get(NiMaterialProperty.class), (NiSpecularProperty) props.get(NiSpecularProperty.class));
-
 			// setup z buffer
-
 			glProperty((NiZBufferProperty) props.get(NiZBufferProperty.class));
-
-			boolean depthTest = true;
-			depthTest |= (bslsp != null) && bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_ZBuffer_Test);
-			depthTest |= (bsesp != null) && bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_ZBuffer_Test);
-
-			if (!depthTest)
-			{
-				ra.setDepthBufferEnable(false);
-			}
-
-			boolean depthWrite = true;
-			depthWrite |= (bslsp != null) && bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
-			depthWrite |= (bsesp != null) && bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
-			if (!depthWrite || translucent)
-			{
-				ra.setDepthBufferWriteEnable(false);
-			}
-
 			// setup stencil
-
 			glProperty((NiStencilProperty) props.get(NiStencilProperty.class));
-
 			// wireframe ?
-
 			glProperty((NiWireframeProperty) props.get(NiWireframeProperty.class));
-
 		}
 		else
 		{
@@ -818,12 +789,53 @@ public class NiGeometryAppearanceShader
 			glMaterialWireframe(m);
 		}
 
+		boolean depthTest = true;
+		depthTest |= (bslsp != null) && bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_ZBuffer_Test);
+		depthTest |= (bsesp != null) && bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_ZBuffer_Test);
+
+		if (!depthTest)
+		{
+			ra.setDepthBufferEnable(false);
+		}
+
+		boolean depthWrite = true;
+		depthWrite |= (bslsp != null) && bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
+		depthWrite |= (bsesp != null) && bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
+		if (!depthWrite || translucent)
+		{
+			//TODO: is this the equivalent of glDepthMask( GL_FALSE );
+			ra.setDepthBufferWriteEnable(false);
+		}
+
+		//override alpha prop and material
+		if (translucent)
+		{
+			ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+			ta.setSrcBlendFunction(TransparencyAttributes.BLEND_SRC_ALPHA);
+			ta.setDstBlendFunction(TransparencyAttributes.BLEND_ONE_MINUS_SRC_ALPHA);
+
+			// If mesh is alpha tested, override threshold (but not istestenabled notice)
+			ra.setAlphaTestFunction(RenderingAttributes.GREATER);
+			ra.setAlphaTestValue(0.1f);
+		}
+
+		//PJs decalling business
+		boolean isDecal = false;
+		isDecal |= (bslsp != null) && (bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Decal)
+				|| bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Dynamic_Decal));
+		isDecal |= (bsesp != null) && (bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Decal)
+				|| bsesp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Dynamic_Decal));
+		if (isDecal)
+		{
+			pa.setPolygonOffset(0.02f);
+			pa.setPolygonOffsetFactor(0.04f);
+		}
+
 		//Setting up controller must be done after the appearance is properly set up so the 
 		// controller can get at the pieces
 		if (texprop != null)
 		{
 			NiGeometryAppearanceFixed.setUpTimeController(texprop, niToJ3dData, textureSource, target);
-
 		}
 		if (bsprop != null)
 		{
@@ -985,87 +997,65 @@ public class NiGeometryAppearanceShader
 
 	private void glProperty(NiAlphaProperty nap)
 	{
-		if (nap != null && nap.alphaBlendingEnable())
+
+		if (nap != null)
 		{
-			ta.setTransparencyMode(TransparencyAttributes.BLENDED);
-			ta.setSrcBlendFunction(NifOpenGLToJava3D.convertBlendMode(nap.sourceBlendMode(), true));
-			ta.setDstBlendFunction(NifOpenGLToJava3D.convertBlendMode(nap.destinationBlendMode(), false));
+			glProperty(nap.alphaBlendingEnable(), nap.sourceBlendMode(), nap.destinationBlendMode(), nap.alphaTestEnabled(),
+					nap.alphaTestMode(), nap.threshold);
 		}
 		else
 		{
-			ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
+			glProperty(false, 0, 0, false, 0, 0);
 		}
-
-		if (nap != null && nap.alphaTestEnabled())
-		{
-			//screen door enables alpha testing
-			ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
-			
-			// I think the PolygonAttributes.CULL_NONE should be applied to anything
-			// with an alphaTestEnabled(), flat_lod trees from skyrim prove it
-			// obviously transparent stuff can be seen from the back quite often
-			// F:\game media\Fallout3\meshes\creatures\alien\alien.nif suggests not these?
-			//pa.setCullFace(PolygonAttributes.CULL_NONE);
-			//pa.setBackFaceNormalFlip(true);
-
-			int alphaTestMode = NifOpenGLToJava3D.convertAlphaTestMode(nap.alphaTestMode());
-			//Test of greater with threshold of 0 is in fact no alpha, and due to sorting issue better to turn off
-			//TODO: test this correct for F:\game media\Fallout3\meshes\creatures\alien\alien.nif
-			if (alphaTestMode == RenderingAttributes.GREATER && nap.threshold == 0)
-			{
-				ta.setTransparencyMode(TransparencyAttributes.NONE);
-			}
-			else
-			{
-				ra.setAlphaTestFunction(alphaTestMode);
-
-				float threshold = ((nap.threshold) / 255f);// threshold range of 255 to 0 confirmed empirically
-				ra.setAlphaTestValue(threshold);
-			}
-		}
-		// do NOT disable alpha test is in addition to transparent textures
-
 	}
 
 	private void glPropertyAlpha(BSMaterial m)
 	{
-		if (m != null && m.bAlphaBlend != 0)
+		//Notice material only uses GREATER for alpha test function
+		if (m != null)
 		{
-			ta.setTransparencyMode(TransparencyAttributes.BLENDED);			
-			ta.setSrcBlendFunction(NifOpenGLToJava3D.convertBlendMode(m.iAlphaSrc, true));
-			ta.setDstBlendFunction(NifOpenGLToJava3D.convertBlendMode(m.iAlphaDst, false));
+			glProperty(m.bAlphaBlend != 0, m.iAlphaSrc, m.iAlphaDst, m.bAlphaTest != 0, NiAlphaProperty.GL_GREATER, m.iAlphaTestRef);
+			if (m.bDecal != 0)
+			{
+				pa.setPolygonOffset(0.02f);
+				pa.setPolygonOffsetFactor(0.04f);
+			}
 		}
 		else
 		{
-			ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
+			glProperty(false, 0, 0, false, 0, 0);
 		}
 
-		if (m != null && m.bAlphaTest != 0)
+	}
+
+	private void glProperty(boolean alphaBlendingEnable, int sourceBlendMode, int destinationBlendMode, boolean alphaTestEnabled,
+			int alphaTestMode, float threshold)
+	{
+		if (alphaBlendingEnable)
 		{
+			ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+			ta.setSrcBlendFunction(NifOpenGLToJava3D.convertBlendMode(sourceBlendMode, true));
+			ta.setDstBlendFunction(NifOpenGLToJava3D.convertBlendMode(destinationBlendMode, false));
+
 			// I think the PolygonAttributes.CULL_NONE should be applied to anything
 			// with an alphaTestEnabled(), flat_lod trees from skyrim prove it
 			// obviously transparent stuff can be seen from the back quite often
-			// F:\game media\Fallout3\meshes\creatures\alien\alien.nif suggests not these?
+			// TODO: this is about right?
 			//pa.setCullFace(PolygonAttributes.CULL_NONE);
 			//pa.setBackFaceNormalFlip(true);
-
-			int alphaTestMode = NifOpenGLToJava3D.convertAlphaTestMode(m.bAlphaTest);
-			//Test of greater with threshold of 0 is in fact no alpha, and due to sorting issue better to turn off
-			//TODO: test this correct for F:\game media\Fallout3\meshes\creatures\alien\alien.nif
-			if (alphaTestMode == RenderingAttributes.GREATER && m.iAlphaTestRef == 0)
-			{
-				ta.setTransparencyMode(TransparencyAttributes.NONE);
-			}
-			else
-			{
-				ra.setAlphaTestFunction(alphaTestMode);
-
-				float threshold = ((m.iAlphaTestRef) / 255f);// threshold range of 255 to 0 confirmed empirically
-				ra.setAlphaTestValue(threshold);
-			}
 		}
-		// do NOT disable no alpha test still enables transparent textures
+		else
+		{
+			//screen door puts things in the second pass, but I see the ordering problem either way
+			//PJ-what? I might want no blend, but alpha test
+			ta.setTransparencyMode(TransparencyAttributes.NONE);
+		}
 
+		if (alphaTestEnabled)
+		{
+			ra.setAlphaTestFunction(NifOpenGLToJava3D.convertAlphaTestMode(alphaTestMode));			
+			ra.setAlphaTestValue((threshold) / 255f);// threshold range of 255 to 0 confirmed empirically
+		}
 	}
 
 	// Sets a float

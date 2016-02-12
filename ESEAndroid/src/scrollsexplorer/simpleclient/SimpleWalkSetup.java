@@ -252,6 +252,12 @@ public class SimpleWalkSetup
 
 	}
 
+	public void closingTime()
+	{
+		cameraPanel.stopRendering();
+
+	}
+
 	/**
 	 * Only for listening to shutdown
 	 * @return
@@ -661,11 +667,11 @@ public class SimpleWalkSetup
 			System.out.println("J display jbullet debug");*/
 		}
 
-		public void keyPressed(com.jogamp.newt.event.KeyEvent e)
+		public void keyPressed(KeyEvent e)
 		{
-			if (e.getKeyCode() == com.jogamp.newt.event.KeyEvent.VK_ESCAPE)
+			if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
 			{
-				System.out.println("Need a new exit dialog system");
+				//System.out.println("Need a new exit dialog system");
 				/*if (!exitDialogPane3D.isVisible())
 				{
 					//unlock mouse to interact
@@ -679,24 +685,24 @@ public class SimpleWalkSetup
 					setMouseLock(true);
 				}*/
 			}
-			else if (e.getKeyCode() == com.jogamp.newt.event.KeyEvent.VK_H)
+			else if (e.getKeyCode() == KeyEvent.VK_H)
 			{
 				toggleHavok();
 			}
-			else if (e.getKeyCode() == com.jogamp.newt.event.KeyEvent.VK_L)
+			else if (e.getKeyCode() == KeyEvent.VK_L)
 			{
 				toggleVisual();
 			}
-			else if (e.getKeyCode() == com.jogamp.newt.event.KeyEvent.VK_F)
+			else if (e.getKeyCode() == KeyEvent.VK_F)
 			{
 				freefly = !freefly;
 				setFreeFly(freefly);
 			}
-			else if (e.getKeyCode() == com.jogamp.newt.event.KeyEvent.VK_J)
+			else if (e.getKeyCode() == KeyEvent.VK_J)
 			{
 				physicsSystem.setDisplayDebug(true);
 			}
-			else if (e.getKeyCode() == com.jogamp.newt.event.KeyEvent.VK_TAB)
+			else if (e.getKeyCode() == KeyEvent.VK_TAB)
 			{
 				if (newtMouseInputListener.hasGLWindow())
 				{
@@ -712,7 +718,7 @@ public class SimpleWalkSetup
 				}
 
 			}
-			else if (e.getKeyCode() == com.jogamp.newt.event.KeyEvent.VK_I)
+			else if (e.getKeyCode() == KeyEvent.VK_I)
 			{
 				// simpleInventorySystem has a listener for the mouse lock
 				System.out.println("Need a new inventory system");
@@ -720,7 +726,7 @@ public class SimpleWalkSetup
 		}
 
 		@Override
-		public void keyReleased(com.jogamp.newt.event.KeyEvent arg0)
+		public void keyReleased(KeyEvent arg0)
 		{
 
 		}

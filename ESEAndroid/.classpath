@@ -21,5 +21,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Tools"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/jogamp/jar/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/jogamp/jar/jogl-all.jar" sourcepath="C:/Users/phil/git/jogl"/>
+	<classpathentry kind="lib" path="/external_jars/external jars/lwjglnative.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
