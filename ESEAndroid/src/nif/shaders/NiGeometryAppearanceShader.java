@@ -222,8 +222,6 @@ public class NiGeometryAppearanceShader
 				bind(textureUnitName, bslsp, fileName(bslsp, 0), clamp);
 			}
 
-			//http://wiki.polycount.com/wiki/Normal_Map_Technical_Details
-			// I think my format is bum
 			textureUnitName = "NormalMap";
 			if (texprop != null)
 			{

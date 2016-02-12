@@ -216,13 +216,12 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							public void keyPressed(KeyEvent e)
 							{
 								if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-								{
-									closingTime();
+								{									
 									simpleWalkSetup.closingTime();
+									closingTime();
 									System.exit(0);
 								}
 							}
-
 						});
 
 						// I could use the j3dcellfactory now? with the cached cell records?
