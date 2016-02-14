@@ -20,6 +20,7 @@ import com.jogamp.newt.event.KeyListener;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import esmj3d.j3d.BethRenderSettings;
+import nif.appearance.NiGeometryAppearanceFactoryShader;
 import nifbullet.NavigationProcessorBullet;
 import nifbullet.NavigationProcessorBullet.NbccProvider;
 import nifbullet.cha.NBControlledChar;
@@ -232,6 +233,8 @@ public class SimpleWalkSetup
 				//JOptionPane.showMessageDialog(null, error.toString(), "ShaderError", JOptionPane.ERROR_MESSAGE);
 			}
 		});
+		
+		NiGeometryAppearanceFactoryShader.setAsDefault();
 
 		/*
 		

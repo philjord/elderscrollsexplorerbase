@@ -7,19 +7,14 @@ import nif.j3d.J3dNiAVObject;
 import nif.j3d.NiToJ3dData;
 import nif.niobject.NiGeometry;
 import nif.shaders.NiGeometryAppearanceShader;
+import tools3d.utils.AppearanceFactory;
 import utils.source.TextureSource;
 
-public class NiGeometryAppearanceFactoryOverride implements NiGeometryAppearance
+public class NiGeometryAppearanceFactoryShader implements NiGeometryAppearance
 {
-	private static NiGeometryAppearanceFactoryOverride NiGeomteryAppearanceFactory = null;
-
-	public static NiGeometryAppearance getNiGeometryAppearance()
+	public static void setAsDefault()
 	{
-		if (NiGeomteryAppearanceFactory == null)
-		{
-			NiGeomteryAppearanceFactory = new NiGeometryAppearanceFactoryOverride();
-		}
-		return NiGeomteryAppearanceFactory;
+		AppearanceFactory.currentAppearanceFactory = new NiGeometryAppearanceFactoryShader();
 	}
 
 	@Override
