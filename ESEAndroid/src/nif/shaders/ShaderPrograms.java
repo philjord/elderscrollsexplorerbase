@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -40,61 +42,91 @@ public class ShaderPrograms
 		{
 			programs = new LinkedHashMap<String, Program>();
 			allFileShaders = new HashMap<String, FileShader>();
-			File dir = new File("shaders/nif");
 
-			for (String name : dir.list())
+			// need to load via jar or file system, it depends
+			BufferedReader fin = null;
+			try
 			{
-				if (name.endsWith(".vert"))
+				String source = "shaders/nif/ProgramFilesList.txt";
+				InputStream inputStream = ShaderPrograms.class.getResourceAsStream("/" + source);
+				if (inputStream != null)
 				{
-					FileShader shader = new FileShader(name, Shader.SHADER_TYPE_VERTEX);
-					shader.load(new File(dir, name));
-					allFileShaders.put(name, shader);
+					fin = new BufferedReader(new InputStreamReader(inputStream));
 				}
-			}
-
-			for (String name : dir.list())
-			{
-				if (name.endsWith(".frag"))
+				else
 				{
-					FileShader shader = new FileShader(name, Shader.SHADER_TYPE_FRAGMENT);
-					shader.load(new File(dir, name));
-					allFileShaders.put(name, shader);
+					fin = new BufferedReader(new FileReader(new File(source)));
 				}
-			}
 
-			//Programs must stay in file order and filesystems think _ is early
-			String[] fileArray = dir.list();
-			Arrays.sort(fileArray, new Comparator<String>() {
-				public int compare(String a, String b)
+				String name = fin.readLine();
+				while (name != null)
 				{
-					return a.replace("_", "!").compareTo(b.replace("_", "!"));
-				}
-			});
-
-			// defaults go last to give other chance to load
-			LinkedHashMap<String, Program> defaultprograms = new LinkedHashMap<String, Program>();
-			for (String name : fileArray)
-			{
-				if (name.endsWith(".prog"))
-				{
-					Program program = new Program(name);
-					try
+					if (!name.trim().startsWith("#") && name.trim().endsWith(".prog"))
 					{
-						program.load(new File(dir, name), allFileShaders);
-						if (name.contains("default"))
-							defaultprograms.put(name, program);
-						else
+						Program program = new Program(name);
+						try
+						{
+							program.load(name);
 							programs.put(name, program);
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
+						}
 					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-					}
+
+					name = fin.readLine();
+				}
+
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			finally
+			{
+				try
+				{
+					if (fin != null)
+						fin.close();
+				}
+				catch (IOException e)
+				{
 				}
 			}
 
-			programs.putAll(defaultprograms);
 		}
+	}
+
+	private static FileShader getShader(String source)
+	{
+		FileShader shader = allFileShaders.get(source);
+
+		if (shader == null)
+		{
+			try
+			{
+				if (source.endsWith(".vert"))
+				{
+					shader = new FileShader(source, Shader.SHADER_TYPE_VERTEX);
+					shader.load(source);
+					allFileShaders.put(source, shader);
+				}
+
+				if (source.endsWith(".frag"))
+				{
+					shader = new FileShader(source, Shader.SHADER_TYPE_FRAGMENT);
+					shader.load(source);
+					allFileShaders.put(source, shader);
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return shader;
+
 	}
 
 	static class FileShader
@@ -111,27 +143,33 @@ public class ShaderPrograms
 			type = t;
 		}
 
-		boolean load(File file)
+		boolean load(String source)
 		{
+			BufferedReader bfr = null;
 			try
 			{
-
-				BufferedReader fr = new BufferedReader(new FileReader(file));
+				InputStream inputStream = ShaderPrograms.class.getResourceAsStream("/shaders/nif/" + source);
+				if (inputStream != null)
+				{
+					bfr = new BufferedReader(new InputStreamReader(inputStream));
+				}
+				else
+				{
+					bfr = new BufferedReader(new FileReader(new File("shaders/nif/" + source)));
+				}
 
 				String shaderCode = "";
-				String line = fr.readLine();
+				String line = bfr.readLine();
 				while (line != null)
 				{
 					shaderCode += line + "\n";
-					line = fr.readLine();
+					line = bfr.readLine();
 				}
-
-				fr.close();
 
 				ArrayList<String> problems = GLSLSourceCodeShader.testForFFP(shaderCode);
 				if (problems.size() > 0)
 				{
-					System.out.println("Shader file appears to be FFP style " + file.getAbsolutePath());
+					System.out.println("Shader file appears to be FFP style " + source);
 					for (String problem : problems)
 					{
 						System.out.println(problem);
@@ -139,13 +177,24 @@ public class ShaderPrograms
 				}
 
 				sourceCodeShader = new GLSLSourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
-				sourceCodeShader.name = file.getName();
+				sourceCodeShader.name = source;
 				status = true;
 
 			}
 			catch (IOException e)
 			{
 				e.printStackTrace();
+			}
+			finally
+			{
+				try
+				{
+					if (bfr != null)
+						bfr.close();
+				}
+				catch (IOException e)
+				{
+				}
 			}
 
 			return true;
@@ -175,13 +224,21 @@ public class ShaderPrograms
 			return "Program from " + name + " " + status;
 		}
 
-		boolean load(File file, HashMap<String, FileShader> allShaders) throws Exception
+		boolean load(String source) throws Exception
 		{
 
 			BufferedReader bfr = null;
 			try
 			{
-				bfr = new BufferedReader(new FileReader(file));
+				InputStream inputStream = ShaderPrograms.class.getResourceAsStream("/shaders/nif/" + source);
+				if (inputStream != null)
+				{
+					bfr = new BufferedReader(new InputStreamReader(inputStream));
+				}
+				else
+				{
+					bfr = new BufferedReader(new FileReader(new File("shaders/nif/" + source)));
+				}
 
 				ArrayList<ConditionGroup> chkgrps = new ArrayList<ConditionGroup>();
 				chkgrps.add(conditions);
@@ -199,18 +256,19 @@ public class ShaderPrograms
 						for (int i = 1; i < list.length; i++)
 						{
 							String s = list[i];
-							FileShader shader = allShaders.get(s);
+
+							FileShader shader = ShaderPrograms.getShader(s);
 
 							if (shader != null)
 							{
 								if (shader.status)
 									shaders.add(shader.sourceCodeShader);
 								else
-									throw new Exception(file + " program depends on shader " + s + " which was not compiled successful");
+									throw new Exception(source + " program depends on shader " + s + " which was not compiled successful");
 							}
 							else
 							{
-								throw new Exception(file + " program depends on shader " + s + " which is not found");
+								throw new Exception(source + " program depends on shader " + s + " which is not found");
 							}
 						}
 
@@ -230,11 +288,11 @@ public class ShaderPrograms
 							if (chkgrps.size() > 1)
 								chkgrps.remove(chkgrps.size() - 1);
 							else
-								throw new Exception("mismatching checkgroup end tag in " + file);
+								throw new Exception("mismatching checkgroup end tag in " + source);
 						}
 						else
 						{
-							throw new Exception("expected begin or end after checkgroup in " + file);
+							throw new Exception("expected begin or end after checkgroup in " + source);
 						}
 					}
 					else if (line.startsWith("check"))
@@ -260,13 +318,13 @@ public class ShaderPrograms
 						String id = list[1].toLowerCase();
 
 						if (id.length() == 0)
-							throw new Exception("malformed texcoord tag in " + file);
+							throw new Exception("malformed texcoord tag in " + source);
 
 						if (!id.equals("tangents") && !id.equals("bitangents") && TexturingPropertygetId(id) < 0)
-							throw new Exception("texcoord tag refers to unknown texture id '" + id + "' in " + file);
+							throw new Exception("texcoord tag refers to unknown texture id '" + id + "' in " + source);
 
 						if (texcoords.containsKey(unit))
-							throw new Exception("texture unit " + unit + " is assigned twiced in " + file);
+							throw new Exception("texture unit " + unit + " is assigned twiced in " + source);
 
 						texcoords.put(unit, id);
 					}
@@ -280,8 +338,14 @@ public class ShaderPrograms
 			}
 			finally
 			{
-				if (bfr != null)
-					bfr.close();
+				try
+				{
+					if (bfr != null)
+						bfr.close();
+				}
+				catch (IOException e)
+				{
+				}
 			}
 
 			//Quick test to ensure texcoords are fixed, recall sk_msn has the last 2 commented out
@@ -289,7 +353,7 @@ public class ShaderPrograms
 					(texcoords.size() > 1 && !texcoords.get(1).equals("tangents")) || //
 					(texcoords.size() > 2 && !texcoords.get(2).equals("bitangents")))
 			{
-				System.err.println("texcords not loaded as expected in file " + file);
+				System.err.println("texcords not loaded as expected in file " + source);
 			}
 
 			Shader[] shaderArray = shaders.toArray(new Shader[] {});
