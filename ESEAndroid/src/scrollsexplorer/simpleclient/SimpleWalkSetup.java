@@ -28,7 +28,7 @@ import scrollsexplorer.IDashboard;
 import scrollsexplorer.simpleclient.mouseover.ActionableMouseOverHandler;
 import scrollsexplorer.simpleclient.mouseover.AdminMouseOverHandler;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
-import tools.ddstexture.DDSTextureLoader;
+import tools.compressedtexture.dds.DDSTextureLoader;
 import tools3d.camera.CameraPanel;
 import tools3d.camera.HMDCamDolly;
 import tools3d.camera.HMDCameraPanel;
