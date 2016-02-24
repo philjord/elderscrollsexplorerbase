@@ -7,6 +7,9 @@ import javax.media.j3d.SourceCodeShader;
 
 public class GLSLSourceCodeShader extends SourceCodeShader
 {
+	
+	
+	
 	public HashSet<String> shaderUniformNames = new HashSet<String>();
 	public HashSet<String> shaderVertexAttributeNames = new HashSet<String>();
 
@@ -15,7 +18,8 @@ public class GLSLSourceCodeShader extends SourceCodeShader
 	public GLSLSourceCodeShader(int shadingLanguage, int shaderType, String shaderSource)
 	{
 		super(shadingLanguage, shaderType, shaderSource);
-		this.shaderSource = shaderSource;
+		this.shaderSource = shaderSource;		
+		
 
 		//attempt to extract attribute names very poorly
 		//start by discarding everything before //End of FFP inputs

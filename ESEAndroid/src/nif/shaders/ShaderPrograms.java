@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -29,6 +27,7 @@ import nif.niobject.bs.BSShaderPPLightingProperty;
 import nif.niobject.bs.BSSubIndexTriShape;
 import nif.niobject.bs.BSTriShape;
 import nif.niobject.particle.NiPSysData;
+import tools3d.utils.ShaderSourceIO;
 
 public class ShaderPrograms
 {
@@ -145,57 +144,21 @@ public class ShaderPrograms
 
 		boolean load(String source)
 		{
-			BufferedReader bfr = null;
-			try
+			String shaderCode = ShaderSourceIO.getTextFileAsString("shaders/nif/" + source);			 
+
+			ArrayList<String> problems = GLSLSourceCodeShader.testForFFP(shaderCode);
+			if (problems.size() > 0)
 			{
-				InputStream inputStream = ShaderPrograms.class.getResourceAsStream("/shaders/nif/" + source);
-				if (inputStream != null)
+				System.out.println("Shader file appears to be FFP style " + source);
+				for (String problem : problems)
 				{
-					bfr = new BufferedReader(new InputStreamReader(inputStream));
-				}
-				else
-				{
-					bfr = new BufferedReader(new FileReader(new File("shaders/nif/" + source)));
-				}
-
-				String shaderCode = "";
-				String line = bfr.readLine();
-				while (line != null)
-				{
-					shaderCode += line + "\n";
-					line = bfr.readLine();
-				}
-
-				ArrayList<String> problems = GLSLSourceCodeShader.testForFFP(shaderCode);
-				if (problems.size() > 0)
-				{
-					System.out.println("Shader file appears to be FFP style " + source);
-					for (String problem : problems)
-					{
-						System.out.println(problem);
-					}
-				}
-
-				sourceCodeShader = new GLSLSourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
-				sourceCodeShader.name = source;
-				status = true;
-
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			finally
-			{
-				try
-				{
-					if (bfr != null)
-						bfr.close();
-				}
-				catch (IOException e)
-				{
+					System.out.println(problem);
 				}
 			}
+
+			sourceCodeShader = new GLSLSourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
+			sourceCodeShader.name = source;
+			status = true;
 
 			return true;
 		}
