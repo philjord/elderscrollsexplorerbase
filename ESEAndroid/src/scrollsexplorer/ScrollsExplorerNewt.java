@@ -35,7 +35,8 @@ import utils.source.TextureSource;
 
 public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, LocationUpdateListener
 {
-	private DashboardNewt dashboardNewt = new DashboardNewt();
+	//I think this auto installs itself 
+	public DashboardNewt dashboardNewt = new DashboardNewt();
 
 	private SimpleBethCellManager simpleBethCellManager;
 
@@ -63,30 +64,29 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 			BethRenderSettings.addUpdateListener(this);
 
+			simpleWalkSetup.getAvatarLocation().addAvatarLocationListener(this);
+
+			for (GameConfig gameConfig : GameConfig.allGameConfigs)
+			{
+				System.out.println("checking against " + gameConfig.gameName);
+				if (gameConfig.gameName.equals(gameToLoad))
+				{
+					System.out.println("Found game to load! " + gameConfig.gameName);
+					if (hasESMAndBSAFiles(gameConfig))
+					{
+						setSelectedGameConfig(gameConfig);
+					}
+					else
+					{
+						System.out.println("But it's not setup correctly!");
+					}
+					break;
+				}
+			}
 		}
 		catch (IOException e1)
 		{
 			e1.printStackTrace();
-		}
-
-		simpleWalkSetup.getAvatarLocation().addAvatarLocationListener(this);
-
-		for (GameConfig gameConfig : GameConfig.allGameConfigs)
-		{
-			System.out.println("checking against " + gameConfig.gameName);
-			if (gameConfig.gameName.equals(gameToLoad))
-			{
-				System.out.println("Found game to load! " + gameConfig.gameName);
-				if (hasESMAndBSAFiles(gameConfig))
-				{
-					setSelectedGameConfig(gameConfig);
-				}
-				else
-				{
-					System.out.println("But it's not setup correctly!");
-				}
-				break;
-			}
 		}
 
 	}
@@ -206,7 +206,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							public void windowDestroyed(WindowEvent e)
 							{
 								System.out.println("X buttons works now");
-								closingTime();								
+								closingTime();
 								System.exit(0);
 							}
 
@@ -216,7 +216,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							public void keyPressed(KeyEvent e)
 							{
 								if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-								{									
+								{
 									simpleWalkSetup.closingTime();
 									closingTime();
 									System.exit(0);

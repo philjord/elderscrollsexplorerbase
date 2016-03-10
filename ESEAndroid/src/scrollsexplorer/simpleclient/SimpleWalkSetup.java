@@ -17,6 +17,7 @@ import javax.vecmath.Vector3f;
 import com.jogamp.newt.Window;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
+import com.jogamp.newt.opengl.GLWindow;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import esmj3d.j3d.BethRenderSettings;
@@ -122,6 +123,8 @@ public class SimpleWalkSetup
 
 	private DirectionalLight dirLight = null;
 
+	private GLWindow gl_window;
+
 	//Can't use as threading causes massive trouble for scene loading
 	//	private StructureUpdateBehavior structureUpdateBehavior;
 
@@ -135,6 +138,12 @@ public class SimpleWalkSetup
 
 	public SimpleWalkSetup(String frameName)
 	{
+		this(frameName, null);
+	}
+
+	public SimpleWalkSetup(String frameName, GLWindow gl_window)
+	{
+		this.gl_window = gl_window;
 		//kick off with a universe ***************************
 		universe = new VisualPhysicalUniverse();
 
@@ -233,7 +242,7 @@ public class SimpleWalkSetup
 				//JOptionPane.showMessageDialog(null, error.toString(), "ShaderError", JOptionPane.ERROR_MESSAGE);
 			}
 		});
-		
+
 		NiGeometryAppearanceFactoryShader.setAsDefault();
 
 		/*
@@ -392,7 +401,12 @@ public class SimpleWalkSetup
 			//if HMD fails or not HMD
 			if (cameraPanel == null)
 			{
-				cameraPanel = new CameraPanel(universe);
+
+				if (gl_window == null)
+					cameraPanel = new CameraPanel(universe);
+				else
+					cameraPanel = new CameraPanel(universe, gl_window);
+				
 				// and the dolly it rides on
 				HeadCamDolly headCamDolly = new HeadCamDolly(avatarCollisionInfo);
 				cameraPanel.setDolly(headCamDolly);

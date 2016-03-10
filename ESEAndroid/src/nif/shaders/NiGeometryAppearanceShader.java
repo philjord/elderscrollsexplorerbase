@@ -1051,7 +1051,7 @@ public class NiGeometryAppearanceShader
 
 		if (alphaTestEnabled)
 		{
-			ra.setAlphaTestFunction(NifOpenGLToJava3D.convertAlphaTestMode(alphaTestMode));			
+			ra.setAlphaTestFunction(NifOpenGLToJava3D.convertAlphaTestMode(alphaTestMode));
 			ra.setAlphaTestValue((threshold) / 255f);// threshold range of 255 to 0 confirmed empirically
 		}
 	}
@@ -1129,6 +1129,7 @@ public class NiGeometryAppearanceShader
 			TextureUnitState tus = new TextureUnitState();
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
+				
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 
 				ImageComponent[] ics = tex.getImages();
@@ -1141,12 +1142,12 @@ public class NiGeometryAppearanceShader
 
 				tus.setTexture(tcm);
 				tus.setName(fileName);
+				
 			}
 			else
 			{
 				System.out.println("bindCube BSLightingShaderProperty " + fileName + " No Texture found for nif " + bslsp.nVer.fileName);
 			}
-
 			//setUpTimeController(ntp, niToJ3dData);	
 
 			allTextureUnitStates.add(tus);
@@ -1159,7 +1160,6 @@ public class NiGeometryAppearanceShader
 		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
-
 			//TODO: jonwd7 suggest texture slot is the decaling place, see his fixed pipeline
 			// also these should go through as shader uniforms I reckon
 			//textureAttributes.setTextureMode(ntp.isApplyReplace() ? TextureAttributes.REPLACE
@@ -1167,19 +1167,25 @@ public class NiGeometryAppearanceShader
 
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
+
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 				tus.setTexture(tex);
 				tus.setName(fileName);
+
 			}
 			else
 			{
-				System.out.println("NiTexturingProperty " + fileName + " No Texture found for nif " + ntp.nVer.fileName);
+				if (!warningsGiven.contains(fileName))
+				{
+					System.out.println("NiTexturingProperty " + fileName + " No Texture found for nif " + ntp.nVer.fileName);
+					warningsGiven.add(fileName);
+				}
 			}
-
 			//setUpTimeController(ntp, niToJ3dData);	
 
 			allTextureUnitStates.add(tus);
 			uni1i(textureUnitName, texunit++);
+
 		}
 	}
 
@@ -1188,22 +1194,28 @@ public class NiGeometryAppearanceShader
 		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
-
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
+
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 				tus.setTexture(tex);
 				tus.setName(fileName);
+
 			}
 			else
 			{
-				System.out.println("BSShaderLightingProperty " + fileName + " No Texture found for nif " + bsprop.nVer.fileName);
+				if (!warningsGiven.contains(fileName))
+				{
+					System.out.println("BSShaderLightingProperty " + fileName + " No Texture found for nif " + bsprop.nVer.fileName);
+					warningsGiven.add(fileName);
+				}
 			}
 
 			//setUpTimeController(bslsp, niToJ3dData);
 
 			allTextureUnitStates.add(tus);
 			uni1i(textureUnitName, texunit++);
+
 		}
 	}
 
@@ -1214,12 +1226,13 @@ public class NiGeometryAppearanceShader
 		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
-
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
+
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 				tus.setTexture(tex);
 				tus.setName(fileName);
+
 			}
 			else
 			{
@@ -1248,22 +1261,27 @@ public class NiGeometryAppearanceShader
 		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
-
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
+
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 				tus.setTexture(tex);
 				tus.setName(fileName);
+
 			}
 			else
 			{
-				System.out.println("BSEffectShaderProperty " + fileName + " No Texture found for nif " + bsesp.nVer.fileName);
+				if (!warningsGiven.contains(fileName))
+				{
+					System.out.println("BSEffectShaderProperty " + fileName + " No Texture found for nif " + bsesp.nVer.fileName);
+					warningsGiven.add(fileName);
+				}
 			}
-
 			//setUpTimeController(bsesp, niToJ3dData);
 
 			allTextureUnitStates.add(tus);
 			uni1i(textureUnitName, texunit++);
+
 		}
 	}
 
