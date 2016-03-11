@@ -55,6 +55,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	{
 		//Setting to emulate Android requirements
 		ArchiveFile.USE_FILE_MAPS = false;
+		ESMManager.USE_FILE_MAPS = false;
 		BethRenderSettings.setFarLoadGridCount(0);
 
 		try
