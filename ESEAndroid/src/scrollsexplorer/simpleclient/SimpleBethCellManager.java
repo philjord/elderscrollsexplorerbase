@@ -37,7 +37,7 @@ public class SimpleBethCellManager implements InstRECOStore
 
 	public static BethInteriorPhysicalBranch currentBethInteriorPhysicalBranch;
 
-	private SimpleWalkSetup simpleWalkSetup;
+	private SimpleWalkSetupInterface simpleWalkSetup;
 
 	private AvatarLocation avatarLocation;
 
@@ -54,7 +54,7 @@ public class SimpleBethCellManager implements InstRECOStore
 	// gate keeper of expensive change cell id call
 	private boolean canChangeCell = true;
 
-	public SimpleBethCellManager(SimpleWalkSetup simpleWalkSetup2)
+	public SimpleBethCellManager(SimpleWalkSetupInterface simpleWalkSetup2)
 	{
 		this.simpleWalkSetup = simpleWalkSetup2;
 		this.avatarLocation = simpleWalkSetup2.getAvatarLocation();

@@ -86,7 +86,7 @@ vec3 F_Schlick( vec3 f0, float f90, float u )
 
 float Fr_DisneyDiffuse( float NdotV, float NdotL, float LdotH, float linearRoughness )
 {
-    float  energyBias   = mix( 0, 0.5, linearRoughness );
+    float  energyBias   = mix( 0.0, 0.5, linearRoughness );
     float  energyFactor = mix( 1.0, 1.0 / 1.51, linearRoughness );
     float  fd90         = energyBias + 2.0 * LdotH * LdotH * linearRoughness;
     vec3   f0           = vec3( 1.0 );

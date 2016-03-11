@@ -49,7 +49,7 @@ void main( void )
 
 	vec4 color;
 	color.rgb = albedo * diffuse ;
-	color.a = 1;
+	color.a = 1.0;
 
 	gl_FragColor = color;	
 }

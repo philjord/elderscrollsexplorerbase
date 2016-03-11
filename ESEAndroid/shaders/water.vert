@@ -39,7 +39,7 @@ varying vec4 C;
 varying vec4 D;
 
 float wave(int i, float x, float z) {
-    float frequency = 2*pi/wavelength[i];
+    float frequency = 2.0*pi/wavelength[i];
     float phase = speed[i] * frequency;
     float theta = dot(direction[i], vec2(x, z));
     return amplitude[i] * sin(theta * frequency + time * phase);
@@ -55,7 +55,7 @@ float waveHeight(float x, float z) {
 }
 
 float dWavedx(int i, float x, float z) {
-    float frequency = 2*pi/wavelength[i];
+    float frequency = 2.0*pi/wavelength[i];
     float phase = speed[i] * frequency;
     float theta = dot(direction[i], vec2(x, z));
     float A = amplitude[i] * direction[i].x * frequency;
@@ -63,7 +63,7 @@ float dWavedx(int i, float x, float z) {
 }
 
 float dWavedz(int i, float x, float z) {
-    float frequency = 2*pi/wavelength[i];
+    float frequency = 2.0*pi/wavelength[i];
     float phase = speed[i] * frequency;
     float theta = dot(direction[i], vec2(x, z));
     float A = amplitude[i] * direction[i].y * frequency;
@@ -93,7 +93,7 @@ void main() {
     
     lightDir = normalize(vec3(glLightSource0position));    
     vec4 P = glModelViewMatrix * glVertex;
-	vec4 E = glProjectionMatrixInverse * vec4(0,0,1,0);
+	vec4 E = glProjectionMatrixInverse * vec4(0.0,0.0,1.0,0.0);
 	vec3 I = P.xyz*E.w - E.xyz*P.w;
 	vec3 N = glNormalMatrix * glNormal;
 	vec3 Nf = normalize(faceforward(N,I,N));

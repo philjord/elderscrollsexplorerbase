@@ -68,5 +68,5 @@ void main( void )
 	D = glLightSource0diffuse;
 	
 	if( bool(isVertexAlphaAnimation) )
-		C.a = 1;
+		C.a = 1.0;
 }

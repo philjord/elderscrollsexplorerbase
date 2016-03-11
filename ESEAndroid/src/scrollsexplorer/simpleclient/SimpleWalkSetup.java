@@ -59,7 +59,7 @@ import utils.source.MeshSource;
  * @author philip
  *
  */
-public class SimpleWalkSetup
+public class SimpleWalkSetup implements SimpleWalkSetupInterface
 {
 	public static boolean HMD_MODE = true;
 
@@ -264,21 +264,29 @@ public class SimpleWalkSetup
 
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#closingTime()
+	 */
+	@Override
 	public void closingTime()
 	{
 		cameraPanel.stopRendering();
 
 	}
 
-	/**
-	 * Only for listening to shutdown
-	 * @return
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getWindow()
 	 */
+	@Override
 	public Window getWindow()
 	{
 		return cameraPanel.getCanvas3D2D().getGLWindow();
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#changeLocation(javax.vecmath.Quat4f, javax.vecmath.Vector3f)
+	 */
+	@Override
 	public void changeLocation(Quat4f rot, Vector3f trans)
 	{
 		System.out.println("Moving to " + trans);
@@ -288,6 +296,10 @@ public class SimpleWalkSetup
 		getAvatarLocation().setRotation(rot);
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#warp(javax.vecmath.Vector3f)
+	 */
+	@Override
 	public void warp(Vector3f origin)
 	{
 		if (physicsSystem != null && physicsSystem.getNBControlledChar() != null)
@@ -297,18 +309,30 @@ public class SimpleWalkSetup
 
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setGlobalAmbLightLevel(float)
+	 */
+	@Override
 	public void setGlobalAmbLightLevel(float f)
 	{
 		Color3f alColor = new Color3f(f, f, f);
 		ambLight.setColor(alColor);
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setGlobalDirLightLevel(float)
+	 */
+	@Override
 	public void setGlobalDirLightLevel(float f)
 	{
 		Color3f dirColor = new Color3f(f, f, f);
 		dirLight.setColor(dirColor);
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#configure(utils.source.MeshSource, scrollsexplorer.simpleclient.SimpleBethCellManager)
+	 */
+	@Override
 	public void configure(MeshSource meshSource, SimpleBethCellManager simpleBethCellManager)
 	{
 		// set up and run the physics system************************************************
@@ -451,6 +475,10 @@ public class SimpleWalkSetup
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#resetGraphicsSetting()
+	 */
+	@Override
 	public void resetGraphicsSetting()
 	{
 		/*		GraphicsSettings gs = ScreenResolution.organiseResolution(Preferences.userNodeForPackage(SimpleWalkSetup.class), frame, false,
@@ -461,6 +489,10 @@ public class SimpleWalkSetup
 				}*/
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setEnabled(boolean)
+	 */
+	@Override
 	public void setEnabled(boolean enable)
 	{
 		if (enable != enabled)
@@ -491,6 +523,10 @@ public class SimpleWalkSetup
 
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setFreeFly(boolean)
+	 */
+	@Override
 	public void setFreeFly(boolean ff)
 	{
 		if (physicsSystem.getNBControlledChar() != null)
@@ -500,21 +536,37 @@ public class SimpleWalkSetup
 		keyNavigationInputNewt.setAllowVerticalMovement(ff);
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getPhysicsSystem()
+	 */
+	@Override
 	public PhysicsSystem getPhysicsSystem()
 	{
 		return physicsSystem;
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getVisualBranch()
+	 */
+	@Override
 	public BranchGroup getVisualBranch()
 	{
 		return visualGroup;
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getPhysicalBranch()
+	 */
+	@Override
 	public BranchGroup getPhysicalBranch()
 	{
 		return physicsGroup;
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#toggleHavok()
+	 */
+	@Override
 	public void toggleHavok()
 	{
 		showHavok = !showHavok;
@@ -528,6 +580,10 @@ public class SimpleWalkSetup
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#toggleVisual()
+	 */
+	@Override
 	public void toggleVisual()
 	{
 		showVisual = !showVisual;
@@ -544,6 +600,10 @@ public class SimpleWalkSetup
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setVisualDisplayed(boolean)
+	 */
+	@Override
 	public void setVisualDisplayed(boolean newShowVisual)
 	{
 		if (newShowVisual && visualGroup.getParent() == null)
@@ -561,27 +621,47 @@ public class SimpleWalkSetup
 		showVisual = newShowVisual;
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getAvatarLocation()
+	 */
+	@Override
 	public AvatarLocation getAvatarLocation()
 	{
 		return avatarLocation;
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setPhysicsEnabled(boolean)
+	 */
+	@Override
 	public void setPhysicsEnabled(boolean enable)
 	{
 		physicsSystem.getPhysicsLocaleDynamics().setSkipStepSim(!enable);
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getAvatarCollisionInfo()
+	 */
+	@Override
 	public AvatarCollisionInfo getAvatarCollisionInfo()
 	{
 		return avatarCollisionInfo;
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getViewingPlatform()
+	 */
+	@Override
 	public ViewingPlatform getViewingPlatform()
 	{
 		// this won't work for the HMD version for now, as it it 2 platforms
 		return (ViewingPlatform) cameraPanel.getDolly();
 	}
 
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setAzerty(boolean)
+	 */
+	@Override
 	public void setAzerty(boolean a)
 	{
 		if (a)
@@ -606,7 +686,11 @@ public class SimpleWalkSetup
 		}
 	}
 
-	private void setMouseLock(boolean mouseLock)
+	/* (non-Javadoc)
+	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setMouseLock(boolean)
+	 */
+	@Override
+	public void setMouseLock(boolean mouseLock)
 	{
 		if (!mouseLock)
 		{

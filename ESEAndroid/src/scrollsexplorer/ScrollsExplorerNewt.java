@@ -24,6 +24,7 @@ import nativeLinker.LWJGLLinker;
 import nif.BgsmSource;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
 import scrollsexplorer.simpleclient.SimpleWalkSetup;
+import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
 import tools.io.ConfigLoader;
 import tools3d.utils.YawPitch;
 import tools3d.utils.loader.PropertyCodec;
@@ -41,7 +42,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 	private SimpleBethCellManager simpleBethCellManager;
 
-	private SimpleWalkSetup simpleWalkSetup;
+	private SimpleWalkSetupInterface simpleWalkSetup;
 
 	private MediaSources mediaSources;
 
@@ -266,7 +267,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		return simpleBethCellManager;
 	}
 
-	public SimpleWalkSetup getSimpleWalkSetup()
+	public SimpleWalkSetupInterface getSimpleWalkSetup()
 	{
 		return simpleWalkSetup;
 	}
