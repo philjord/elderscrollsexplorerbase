@@ -61,8 +61,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	// TODO: on change don't dump gross until we forcable need a different one
 	public static BethLodManager bethLodManager;
 
-	private BethRenderSettings.UpdateListener listener = new BethRenderSettings.UpdateListener()
-	{
+	private BethRenderSettings.UpdateListener listener = new BethRenderSettings.UpdateListener() {
 		public void renderSettingsUpdated()
 		{
 			updateFromCurrent();
@@ -119,8 +118,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			j3dCELLPersistent = j3dCellFactory.makeBGWRLDPersistent(worldFormId, false);
 			addChild((J3dCELLGeneral) j3dCELLPersistent);
 
-			QueuingThread.CallBack nearCallBack = new QueuingThread.CallBack()
-			{
+			QueuingThread.CallBack nearCallBack = new QueuingThread.CallBack() {
 				public void run(Object parameter)
 				{
 					updateNear((Point3f) parameter);
@@ -133,8 +131,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			nearUpdateThread.setDaemon(true);
 			nearUpdateThread.start();
 
-			QueuingThread.CallBack grossCallBack = new QueuingThread.CallBack()
-			{
+			QueuingThread.CallBack grossCallBack = new QueuingThread.CallBack() {
 				public void run(Object parameter)
 				{
 					updateGross((Point3f) parameter);
@@ -203,7 +200,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		}
 	}
 
-	private void updateGross(float charX, float charY)
+	private static void updateGross(float charX, float charY)
 	{
 		bethLodManager.updateGross(charX, charY);
 	}
@@ -211,8 +208,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	private void updateNear(Point3f p)
 	{
 		//in case of warp fix up the old but ignore new?
-		Point3f currentCharPoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
-		if (currentCharPoint.distance(p) < BethRenderSettings.getFarLoadGridCount())
+		//Point3f currentCharPoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
+		
+		//TODO: this is garbage! dist is in meters, grids are in grids, near+far is max view distance, not far alone?
+		// what was this trying to do here anyway?
+	//	if (currentCharPoint.distance(p) < BethRenderSettings.getFarLoadGridCount())
 		{
 			IDashboard.dashboard.setNearLoading(1);
 			if (j3dCELLPersistent != null)
@@ -316,10 +316,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		// Note simple system used, as no lands invloved here
 		Rectangle bounds = Beth32LodManager.getBounds(charX, charY, BethRenderSettings.getFarLoadGridCount());
 
+		 
 		final int lowX = bounds.x;
 		final int lowY = bounds.y;
-		final int highX = bounds.x + +bounds.width;
-		final int highY = bounds.y + bounds.height;
+		final int highX = bounds.x + bounds.width;
+		final int highY = bounds.y + bounds.height;		 
 
 		// lets remove those loaded fars not in the range
 		Iterator<Point> keys = loadedFars.keySet().iterator();
@@ -343,7 +344,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				loadedFars.remove(key);
 			}
 		}
-
+			
 		for (int x = lowX; x <= highX; x++)
 		{
 			for (int y = lowY; y <= highY; y++)

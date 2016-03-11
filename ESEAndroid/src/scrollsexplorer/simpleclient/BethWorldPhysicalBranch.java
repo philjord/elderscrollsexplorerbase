@@ -91,9 +91,11 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 				public void run(Object parameter)
 				{
 					//enusre we are nearby (character hasn't warped)
-					Point3f currentCharPoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
+					//Point3f currentCharPoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
 					Point3f p = (Point3f) parameter;
-					if (currentCharPoint.distance(p) < BethRenderSettings.getFarLoadGridCount())
+					
+					//TODO: see visual branch about this nonsense here
+					//if (currentCharPoint.distance(p) < BethRenderSettings.getFarLoadGridCount())
 					{
 						update(p.x, -p.z);
 

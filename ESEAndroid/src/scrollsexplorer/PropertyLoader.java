@@ -18,11 +18,19 @@ public class PropertyLoader
 
 	public static void load() throws IOException
 	{
-		String filePath = System.getProperty("user.home") + fileSep + "philjord";
+		load(null);
+	}
+
+	public static void load(String root) throws IOException
+	{
+		if (root == null)
+			root = System.getProperty("user.home") + fileSep + "philjord";
+
+		String filePath = root;
 		File dirFile = new File(filePath);
 		if (!dirFile.exists())
 			dirFile.mkdirs();
-		filePath = filePath + fileSep + "ElderScrollsExploerer.ini";
+		filePath = filePath + fileSep + "ElderScrollsExplorer.ini";
 		propFile = new File(filePath);
 		properties = new Properties();
 		if (propFile.exists())
@@ -35,11 +43,19 @@ public class PropertyLoader
 
 	public static void save()
 	{
+		//android needs different gear, I smell an interface
+		//http://developer.android.com/guide/topics/data/data-storage.html#pref
 		try
 		{
-			FileOutputStream out = new FileOutputStream(propFile);
-			properties.store(out, "ElderScrollsExplorer Properties");
-			out.close();
+			if (!propFile.exists())
+				propFile.createNewFile();
+
+			if (propFile.exists())
+			{
+				FileOutputStream out = new FileOutputStream(propFile);
+				properties.store(out, "ElderScrollsExplorer Properties");
+				out.close();
+			}
 		}
 		catch (Throwable exc)
 		{

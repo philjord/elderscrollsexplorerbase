@@ -12,6 +12,7 @@ import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 
+import archive.ArchiveFile;
 import archive.BSArchiveSet;
 import bsa.source.BsaMeshSource;
 import bsa.source.BsaSoundSource;
@@ -52,6 +53,9 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 	public ScrollsExplorerNewt(String gameToLoad)
 	{
+		//Setting to emulate Android requirements
+		ArchiveFile.USE_FILE_MAPS = false;
+		BethRenderSettings.setFarLoadGridCount(0);
 
 		try
 		{
