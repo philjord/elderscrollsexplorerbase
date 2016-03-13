@@ -157,7 +157,7 @@ public class PhysicsSystem implements NbccProvider
 		//System.out.println("load request for cell " + cell.getName());
 		// add the items
 		for (J3dRECOInst instReco : cell.getJ3dRECOs().values())
-		{
+		{			
 			physicsLocaleDynamics.createRECO(instReco);
 		}
 		// use the arraylist of insts are teh keys for add

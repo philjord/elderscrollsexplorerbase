@@ -9,6 +9,7 @@ import esmj3d.j3d.cell.J3dICellFactory;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmmanager.common.data.record.Record;
 import esmmanager.common.data.record.Subrecord;
+import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 
 public class BethInteriorVisualBranch extends BranchGroup
 {
@@ -19,7 +20,8 @@ public class BethInteriorVisualBranch extends BranchGroup
 
 	private J3dCELLGeneral interiorCELLDistant;
 
-	public BethInteriorVisualBranch(int interiorCellFormId, String cellFormName, J3dICellFactory j3dCellFactory)
+	public BethInteriorVisualBranch(int interiorCellFormId, String cellFormName, J3dICellFactory j3dCellFactory,
+			PhysicsSystem clientPhysicsSystem)
 	{
 		this.setName("BethInteriorVisualBranch" + cellFormName);
 
@@ -32,6 +34,13 @@ public class BethInteriorVisualBranch extends BranchGroup
 		addChild((J3dCELLGeneral) j3dCELLPersistent);
 		interiorCELLTemporary = j3dCellFactory.makeBGInteriorCELLTemporary(interiorCellFormId, false);
 		addChild(interiorCELLTemporary);
+
+		if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+		{
+			clientPhysicsSystem.cellChanged(interiorCellFormId, (J3dCELLGeneral) j3dCELLPersistent);
+			clientPhysicsSystem.loadJ3dCELL(interiorCELLTemporary);
+		}
+
 		interiorCELLDistant = j3dCellFactory.makeBGInteriorCELLDistant(interiorCellFormId, false);
 		addChild(interiorCELLDistant);
 

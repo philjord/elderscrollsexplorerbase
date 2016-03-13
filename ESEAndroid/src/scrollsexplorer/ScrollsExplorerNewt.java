@@ -65,6 +65,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 			simpleWalkSetup = new SimpleWalkSetup("SimpleBethCellManager");
 			simpleWalkSetup.setAzerty(false);
+			
 
 			simpleBethCellManager = new SimpleBethCellManager(simpleWalkSetup);
 
@@ -201,6 +202,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 						simpleWalkSetup.configure(meshSource, simpleBethCellManager);
 						simpleWalkSetup.setEnabled(false);
+						simpleWalkSetup.getWindow().setFullscreen(true);
 
 						//FIXME: stops working once fully running, but responds up to that point
 						// that is to say the button no longer sends anything through

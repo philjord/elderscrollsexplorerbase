@@ -3,6 +3,7 @@ package scrollsexplorer.simpleclient;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
@@ -16,6 +17,7 @@ import esmj3d.j3d.cell.Beth32LodManager;
 import esmj3d.j3d.cell.Beth32_4LodManager;
 import esmj3d.j3d.cell.BethLodManager;
 import esmj3d.j3d.cell.BethNoLodManager;
+import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICELLPersistent;
 import esmj3d.j3d.cell.J3dICellFactory;
@@ -26,6 +28,7 @@ import esmmanager.common.data.record.Subrecord;
 import javaawt.Point;
 import javaawt.Rectangle;
 import scrollsexplorer.IDashboard;
+import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools.QueuingThread;
 import tools3d.utils.scenegraph.LocationUpdateListener;
 import tools3d.utils.scenegraph.StructureUpdateBehavior;
@@ -38,6 +41,9 @@ import tools3d.utils.scenegraph.StructureUpdateBehavior;
  */
 public class BethWorldVisualBranch extends BranchGroup implements LocationUpdateListener
 {
+
+	public static boolean LOAD_PHYS_FROM_VIS = true;
+
 	private int worldFormId;
 
 	private J3dICELLPersistent j3dCELLPersistent;
@@ -58,6 +64,8 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	private J3dICellFactory j3dCellFactory;
 
+	private PhysicsSystem clientPhysicsSystem;
+
 	// TODO: on change don't dump gross until we forcable need a different one
 	public static BethLodManager bethLodManager;
 
@@ -68,8 +76,9 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		}
 	};
 
-	public BethWorldVisualBranch(int worldFormId, J3dICellFactory j3dCellFactory)
+	public BethWorldVisualBranch(int worldFormId, J3dICellFactory j3dCellFactory, PhysicsSystem clientPhysicsSystem)
 	{
+		this.clientPhysicsSystem = clientPhysicsSystem;
 		this.setName("BethWorldVisualBranch" + worldFormId);
 		this.worldFormId = worldFormId;
 		this.j3dCellFactory = j3dCellFactory;
@@ -117,6 +126,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			//load the general children of this wrld space
 			j3dCELLPersistent = j3dCellFactory.makeBGWRLDPersistent(worldFormId, false);
 			addChild((J3dCELLGeneral) j3dCELLPersistent);
+
+			if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+			{
+				clientPhysicsSystem.cellChanged(worldFormId, (J3dCELLGeneral) j3dCELLPersistent);
+			}
 
 			QueuingThread.CallBack nearCallBack = new QueuingThread.CallBack() {
 				public void run(Object parameter)
@@ -181,6 +195,26 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		if (j3dCELLPersistent != null)
 		{
 			j3dCELLPersistent.getGridSpaces().update(p.x, -p.z, bethLodManager);
+
+			if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+			{
+				Rectangle bounds = BethWorldVisualBranch.bethLodManager.getGridBounds(p.z, p.z, BethRenderSettings.getNearLoadGridCount());
+
+				// because j3dcellpersistent is in a lower project I have to do this here, bum			
+				List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds);
+				List<GridSpace> gridsToAdd = j3dCELLPersistent.getGridSpaces().getGridSpacesToAdd(bounds);
+
+				for (GridSpace gridSpace : gridsToRemove)
+				{
+					clientPhysicsSystem.unloadJ3dGridSpace(gridSpace);
+				}
+
+				for (GridSpace gridSpace : gridsToAdd)
+				{
+					clientPhysicsSystem.loadJ3dGridSpace(gridSpace);
+				}
+			}
+
 		}
 		Point3f updatePoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
 		updateNear(updatePoint);
@@ -209,15 +243,35 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	{
 		//in case of warp fix up the old but ignore new?
 		//Point3f currentCharPoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
-		
+
 		//TODO: this is garbage! dist is in meters, grids are in grids, near+far is max view distance, not far alone?
 		// what was this trying to do here anyway?
-	//	if (currentCharPoint.distance(p) < BethRenderSettings.getFarLoadGridCount())
+		//	if (currentCharPoint.distance(p) < BethRenderSettings.getFarLoadGridCount())
 		{
 			IDashboard.dashboard.setNearLoading(1);
 			if (j3dCELLPersistent != null)
 			{
 				j3dCELLPersistent.getGridSpaces().update(p.x, -p.z, bethLodManager);
+
+				if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+				{
+					Rectangle bounds = BethWorldVisualBranch.bethLodManager.getGridBounds(p.z, p.z,
+							BethRenderSettings.getNearLoadGridCount());
+
+					// because j3dcellpersistent is in a lower project I have to do this here, bum			
+					List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds);
+					List<GridSpace> gridsToAdd = j3dCELLPersistent.getGridSpaces().getGridSpacesToAdd(bounds);
+
+					for (GridSpace gridSpace : gridsToRemove)
+					{
+						clientPhysicsSystem.unloadJ3dGridSpace(gridSpace);
+					}
+
+					for (GridSpace gridSpace : gridsToAdd)
+					{
+						clientPhysicsSystem.loadJ3dGridSpace(gridSpace);
+					}
+				}
 			}
 
 			updateNear(p.x, -p.z);
@@ -253,6 +307,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			if (bg != null)
 			{
 				structureUpdateBehavior.remove(this, bg);
+
+				if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+				{
+					clientPhysicsSystem.unloadJ3dCELL((J3dCELLGeneral) bg);
+				}
 			}
 			synchronized (loadedNears)
 			{
@@ -285,6 +344,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 						{
 							bg.compile();// better to be done not on the j3d thread?
 							structureUpdateBehavior.add(this, bg);
+
+							if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+							{
+								clientPhysicsSystem.loadJ3dCELL(bg);
+							}
 						}
 
 						// now get rid of any fars that have the same keys loaded in
@@ -293,6 +357,10 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 						{
 							structureUpdateBehavior.remove(this, bg);
 							loadedFars.remove(key);
+							if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+							{
+								clientPhysicsSystem.unloadJ3dCELL(bg);
+							}
 						}
 					}
 				}
@@ -316,11 +384,10 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		// Note simple system used, as no lands invloved here
 		Rectangle bounds = Beth32LodManager.getBounds(charX, charY, BethRenderSettings.getFarLoadGridCount());
 
-		 
 		final int lowX = bounds.x;
 		final int lowY = bounds.y;
 		final int highX = bounds.x + bounds.width;
-		final int highY = bounds.y + bounds.height;		 
+		final int highY = bounds.y + bounds.height;
 
 		// lets remove those loaded fars not in the range
 		Iterator<Point> keys = loadedFars.keySet().iterator();
@@ -344,7 +411,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				loadedFars.remove(key);
 			}
 		}
-			
+
 		for (int x = lowX; x <= highX; x++)
 		{
 			for (int y = lowY; y <= highY; y++)

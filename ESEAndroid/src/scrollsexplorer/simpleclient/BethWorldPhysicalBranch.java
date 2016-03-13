@@ -53,8 +53,7 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 
 	private PhysicsSystem clientPhysicsSystem;
 
-	private BethRenderSettings.UpdateListener listener = new BethRenderSettings.UpdateListener()
-	{
+	private BethRenderSettings.UpdateListener listener = new BethRenderSettings.UpdateListener() {
 		public void renderSettingsUpdated()
 		{
 			updateFromCurrent();
@@ -86,14 +85,13 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 			clientPhysicsSystem.cellChanged(worldFormId, (J3dCELLGeneral) j3dCELLPersistent);
 			//this persistent is just a super cluster of vague things, not related to position at all
 
-			QueuingThread.CallBack callBack = new QueuingThread.CallBack()
-			{
+			QueuingThread.CallBack callBack = new QueuingThread.CallBack() {
 				public void run(Object parameter)
 				{
 					//enusre we are nearby (character hasn't warped)
 					//Point3f currentCharPoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
 					Point3f p = (Point3f) parameter;
-					
+
 					//TODO: see visual branch about this nonsense here
 					//if (currentCharPoint.distance(p) < BethRenderSettings.getFarLoadGridCount())
 					{
@@ -115,13 +113,14 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 		}
 		else
 		{
-			j3dCELLPersistent = j3dCellFactory.makeBGInteriorCELLPersistent(worldFormId, true);
+			System.out.println("WHATAA!!! why is this " + this + " being used for interior!");
+			/*j3dCELLPersistent = j3dCellFactory.makeBGInteriorCELLPersistent(worldFormId, false);
 			addChild((J3dCELLGeneral) j3dCELLPersistent);
 			clientPhysicsSystem.cellChanged(worldFormId, (J3dCELLGeneral) j3dCELLPersistent);
 
-			j3dCELLTemporary = j3dCellFactory.makeBGInteriorCELLTemporary(worldFormId, true);
+			j3dCELLTemporary = j3dCellFactory.makeBGInteriorCELLTemporary(worldFormId, false);
 			addChild(j3dCELLTemporary);
-			clientPhysicsSystem.loadJ3dCELL(j3dCELLTemporary);
+			clientPhysicsSystem.loadJ3dCELL(j3dCELLTemporary);*/
 
 		}
 	}
@@ -239,7 +238,7 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 		if (!loadedNears.containsKey(key))
 		{
 			//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
-			j3dCELLTemporary = j3dCellFactory.makeBGWRLDTemporary(worldFormId, x, y, true);
+			j3dCELLTemporary = j3dCellFactory.makeBGWRLDTemporary(worldFormId, x, y, false);
 			synchronized (loadedNears)
 			{
 				loadedNears.put(key, j3dCELLTemporary);

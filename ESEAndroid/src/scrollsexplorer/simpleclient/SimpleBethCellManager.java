@@ -197,8 +197,7 @@ public class SimpleBethCellManager implements InstRECOStore
 		if (canChangeCell)
 		{
 			// use a new thread as generally the Awt thread is coming in and better to let it go
-			Thread thread = new Thread()
-			{
+			Thread thread = new Thread() {
 				public void run()
 				{
 					canChangeCell = false;
@@ -265,8 +264,9 @@ public class SimpleBethCellManager implements InstRECOStore
 								simpleWalkSetup.setGlobalAmbLightLevel(50f / 100f);
 								BethRenderSettings.setGlobalDirLightLevel(75 / 100f);
 								simpleWalkSetup.setGlobalDirLightLevel(75 / 100f);
-								
-								currentBethWorldVisualBranch = new BethWorldVisualBranch(currentCellFormId, j3dCellFactory);
+
+								currentBethWorldVisualBranch = new BethWorldVisualBranch(currentCellFormId, j3dCellFactory,
+										simpleWalkSetup.getPhysicsSystem());
 								if (avatarLocation != null)
 								{
 									currentBethWorldVisualBranch.init(avatarLocation.getTransform());
@@ -274,15 +274,17 @@ public class SimpleBethCellManager implements InstRECOStore
 								}
 								// notice init before making live to speed it up
 								simpleWalkSetup.getVisualBranch().addChild(currentBethWorldVisualBranch);
-
-								currentBethWorldPhysicalBranch = new BethWorldPhysicalBranch(simpleWalkSetup.getPhysicsSystem(),
-										currentCellFormId, j3dCellFactory);
-								if (avatarLocation != null)
+								if (!BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
 								{
-									currentBethWorldPhysicalBranch.init(avatarLocation.getTransform());
-									avatarLocation.addAvatarLocationListener(currentBethWorldPhysicalBranch);
+									currentBethWorldPhysicalBranch = new BethWorldPhysicalBranch(simpleWalkSetup.getPhysicsSystem(),
+											currentCellFormId, j3dCellFactory);
+									if (avatarLocation != null)
+									{
+										currentBethWorldPhysicalBranch.init(avatarLocation.getTransform());
+										avatarLocation.addAvatarLocationListener(currentBethWorldPhysicalBranch);
+									}
+									simpleWalkSetup.getPhysicalBranch().addChild(currentBethWorldPhysicalBranch);
 								}
-								simpleWalkSetup.getPhysicalBranch().addChild(currentBethWorldPhysicalBranch);
 							}
 							else
 							{
@@ -290,18 +292,19 @@ public class SimpleBethCellManager implements InstRECOStore
 								// inside is dim
 								BethRenderSettings.setGlobalAmbLightLevel(30f / 100f);
 								simpleWalkSetup.setGlobalAmbLightLevel(15f / 100f);
-								
+
 								cell = esmManager.getInteriorCELL(currentCellFormId);
 								if (cell != null)
 								{
 									currentBethInteriorVisualBranch = new BethInteriorVisualBranch(currentCellFormId, cell.getEditorID(),
-											j3dCellFactory);
+											j3dCellFactory, simpleWalkSetup.getPhysicsSystem());
 									simpleWalkSetup.getVisualBranch().addChild(currentBethInteriorVisualBranch);
-
-									currentBethInteriorPhysicalBranch = new BethInteriorPhysicalBranch(simpleWalkSetup.getPhysicsSystem(),
-											currentCellFormId, j3dCellFactory);
-									simpleWalkSetup.getPhysicalBranch().addChild(currentBethInteriorPhysicalBranch);
-
+									if (!BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+									{
+										currentBethInteriorPhysicalBranch = new BethInteriorPhysicalBranch(
+												simpleWalkSetup.getPhysicsSystem(), currentCellFormId, j3dCellFactory);
+										simpleWalkSetup.getPhysicalBranch().addChild(currentBethInteriorPhysicalBranch);
+									}
 									if (avatarLocation != null)
 									{
 										//TODO: the unload load part of this should still be called I think

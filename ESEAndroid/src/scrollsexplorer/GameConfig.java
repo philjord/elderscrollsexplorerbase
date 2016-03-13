@@ -64,7 +64,7 @@ public class GameConfig
 				new esmj3dtes3.j3d.cell.J3dCellFactory(), //
 				"textures\\tx_sky_clear.dds", //
 				"meshes\\i\\in_v_arena_01.nif", //
-				2.28f, //
+				2.88f, //
 				"MorrowindFolder", //
 				"Morrowind.esm", //
 				"morrowind", 0, new Vector3f(-170, 5, 1470)));
@@ -109,7 +109,7 @@ public class GameConfig
 				new esmj3dfo4.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\skyrimcloudsupper04.dds", //hahhah!
 				"meshes\\LoadScreenArt\\Armor01PowerArmor1.nif", //
-				2.28f, //
+				2.88f, //
 				"FallOut4Folder", //
 				"Fallout4.esm", //
 				"fallout4", 3988, new Vector3f(12, -28, 2)));
