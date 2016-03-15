@@ -18,7 +18,6 @@ import utils.source.MeshSource;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 
-
 import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
@@ -26,9 +25,6 @@ import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 public class PhysicsSystem implements NbccProvider
 {
 	public static Vector3f gravity = new Vector3f(0f, -9.8f, 0f);
-
-	// model update min time step
-	public long CLIENT_MIN_TIME_BETWEEN_BOUND_UPDATES_MS = 10;
 
 	private AvatarCollisionInfo avatarCollisionInfo;
 
@@ -38,9 +34,9 @@ public class PhysicsSystem implements NbccProvider
 
 	private MeshSource meshSource;
 
-	private long MIN_TIME_BETWEEN_BOUND_UPDATES_MS = 25;
+	private long MIN_TIME_BETWEEN_BOUND_UPDATES_MS = 20;
 
-	private long MIN_TIME_BETWEEN_STEPS_MS = 25;
+	private long MIN_TIME_BETWEEN_STEPS_MS = 20;
 
 	protected PhysicsDynamics physicsLocaleDynamics;
 
@@ -59,16 +55,15 @@ public class PhysicsSystem implements NbccProvider
 	 * starts paused for loading
 	 */
 
-	public PhysicsSystem(InstRECOStore instRECOStore, AvatarCollisionInfo avatarCollisionInfo, BranchGroup behaviourRoot, MeshSource meshSource)
+	public PhysicsSystem(InstRECOStore instRECOStore, AvatarCollisionInfo avatarCollisionInfo, BranchGroup behaviourRoot,
+			MeshSource meshSource)
 	{
 		this.avatarCollisionInfo = avatarCollisionInfo;
 		this.behaviourRoot = behaviourRoot;
 		this.instRECOStore = instRECOStore;
 		this.meshSource = meshSource;
-		setMinTimeForBoundUpdate(CLIENT_MIN_TIME_BETWEEN_BOUND_UPDATES_MS);
 
-		physicsSimThread = new PeriodicThread("Physics Sim Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated()
-		{
+		physicsSimThread = new PeriodicThread("Physics Sim Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
 			public void runUpdate()
 			{
 				try
@@ -84,8 +79,7 @@ public class PhysicsSystem implements NbccProvider
 		});
 		physicsSimThread.start();
 
-		physicsToModelThread = new PeriodicThread("Physics To Model Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated()
-		{
+		physicsToModelThread = new PeriodicThread("Physics To Model Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
 			public void runUpdate()
 			{
 				try
@@ -157,7 +151,7 @@ public class PhysicsSystem implements NbccProvider
 		//System.out.println("load request for cell " + cell.getName());
 		// add the items
 		for (J3dRECOInst instReco : cell.getJ3dRECOs().values())
-		{			
+		{
 			physicsLocaleDynamics.createRECO(instReco);
 		}
 		// use the arraylist of insts are teh keys for add
@@ -416,23 +410,23 @@ public class PhysicsSystem implements NbccProvider
 		}
 	}
 
-/*	@Override
-	public int getAverageStepTimeMS()
-	{
-		if (physicsLocaleDynamics != null)
+	/*	@Override
+		public int getAverageStepTimeMS()
 		{
-			return physicsLocaleDynamics.getAverageStepTimeMS();
+			if (physicsLocaleDynamics != null)
+			{
+				return physicsLocaleDynamics.getAverageStepTimeMS();
+			}
+			return 0;
 		}
-		return 0;
-	}
-
-	@Override
-	public int getNumCollisionObjects()
-	{
-		if (physicsLocaleDynamics != null)
+	
+		@Override
+		public int getNumCollisionObjects()
 		{
-			return physicsLocaleDynamics.getNumCollisionObjects();
-		}
-		return 0;
-	}*/
+			if (physicsLocaleDynamics != null)
+			{
+				return physicsLocaleDynamics.getNumCollisionObjects();
+			}
+			return 0;
+		}*/
 }

@@ -88,7 +88,7 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 			QueuingThread.CallBack callBack = new QueuingThread.CallBack() {
 				public void run(Object parameter)
 				{
-					//enusre we are nearby (character hasn't warped)
+					//ensure we are nearby (character hasn't warped)
 					//Point3f currentCharPoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
 					Point3f p = (Point3f) parameter;
 

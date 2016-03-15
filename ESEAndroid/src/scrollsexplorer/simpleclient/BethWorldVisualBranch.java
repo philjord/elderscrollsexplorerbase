@@ -34,7 +34,6 @@ import tools3d.utils.scenegraph.LocationUpdateListener;
 import tools3d.utils.scenegraph.StructureUpdateBehavior;
 
 /**
-
  * 
  * @author phil
  *
@@ -42,7 +41,9 @@ import tools3d.utils.scenegraph.StructureUpdateBehavior;
 public class BethWorldVisualBranch extends BranchGroup implements LocationUpdateListener
 {
 
-	public static boolean LOAD_PHYS_FROM_VIS = true;
+	//when set true the havok data will only be loaded once for physics
+	// and the red lines will not be able to be seen 
+	public static boolean LOAD_PHYS_FROM_VIS = false;
 
 	private int worldFormId;
 

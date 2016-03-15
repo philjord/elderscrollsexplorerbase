@@ -22,6 +22,7 @@ import esmmanager.loader.ESMManager;
 import esmmanager.loader.IESMManager;
 import nativeLinker.LWJGLLinker;
 import nif.BgsmSource;
+import scrollsexplorer.simpleclient.BethWorldVisualBranch;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
 import scrollsexplorer.simpleclient.SimpleWalkSetup;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
@@ -58,6 +59,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		ArchiveFile.USE_FILE_MAPS = false;
 		ESMManager.USE_FILE_MAPS = false;
 		BethRenderSettings.setFarLoadGridCount(0);
+		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
 
 		try
 		{
@@ -65,7 +67,6 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 			simpleWalkSetup = new SimpleWalkSetup("SimpleBethCellManager");
 			simpleWalkSetup.setAzerty(false);
-			
 
 			simpleBethCellManager = new SimpleBethCellManager(simpleWalkSetup);
 
@@ -75,7 +76,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 			for (GameConfig gameConfig : GameConfig.allGameConfigs)
 			{
-				System.out.println("checking against " + gameConfig.gameName);
+				System.out.println("checking " + gameToLoad + " against " + gameConfig.gameName);
 				if (gameConfig.gameName.equals(gameToLoad))
 				{
 					System.out.println("Found game to load! " + gameConfig.gameName);
