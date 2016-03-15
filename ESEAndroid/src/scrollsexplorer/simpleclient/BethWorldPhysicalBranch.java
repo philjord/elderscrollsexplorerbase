@@ -238,7 +238,7 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 		if (!loadedNears.containsKey(key))
 		{
 			//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
-			j3dCELLTemporary = j3dCellFactory.makeBGWRLDTemporary(worldFormId, x, y, false);
+			j3dCELLTemporary = j3dCellFactory.makeBGWRLDTemporary(worldFormId, x, y, true);
 			synchronized (loadedNears)
 			{
 				loadedNears.put(key, j3dCELLTemporary);

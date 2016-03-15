@@ -154,7 +154,7 @@ public class PhysicsSystem implements NbccProvider
 		{
 			physicsLocaleDynamics.createRECO(instReco);
 		}
-		// use the arraylist of insts are teh keys for add
+		// use the arraylist of insts are the keys for add
 		eventsToProcess.add(PhysicsUpdate.createLFM(cell.getJ3dRECOs().values()));
 	}
 
