@@ -1,5 +1,7 @@
 #version 120
 
+precision mediump float;
+
 uniform mat4 worldMatrix;
 uniform mat4 glModelViewMatrixInverse;
 

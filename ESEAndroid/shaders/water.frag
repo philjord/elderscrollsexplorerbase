@@ -1,3 +1,7 @@
+#version 120
+
+precision mediump float;
+
 varying vec3 position;
 varying vec3 worldNormal;
 varying vec3 eyeNormal;

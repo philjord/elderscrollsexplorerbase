@@ -1,5 +1,7 @@
 #version 120
 
+precision mediump float;
+
 uniform int alphaTestEnabled;
 uniform int alphaTestFunction;
 uniform float alphaTestValue;

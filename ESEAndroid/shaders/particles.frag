@@ -1,5 +1,7 @@
 #version 120
 
+precision mediump float;
+
  
 //End of FFP inputs
 varying vec2 glTexCoord0;

@@ -1,5 +1,7 @@
 #version 120
 
+precision mediump float;
+
 uniform sampler2D baseMap;
  
 varying vec4 A;

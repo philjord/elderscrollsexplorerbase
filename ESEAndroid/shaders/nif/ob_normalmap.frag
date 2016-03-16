@@ -1,5 +1,7 @@
 #version 120
 
+precision mediump float;
+
 uniform vec4 glLightSource0specular;
 
 uniform int alphaTestEnabled;

@@ -1,4 +1,6 @@
 #version 120
+
+
 attribute vec4 glVertex;
 attribute vec4 glColor;
 attribute vec3 glNormal;  

@@ -448,6 +448,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		{
 			Point3f updatePoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
 			nearUpdateThread.addToQueue(updatePoint);
+			grossUpdateThread.addToQueue(updatePoint);
 		}
 	}
 

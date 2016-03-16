@@ -1,4 +1,6 @@
 #version 120
+//https://www.khronos.org/files/opengles_shading_language.pdf
+precision mediump float;
 
 uniform sampler2D baseMap;
 uniform sampler2D layerMap1;
@@ -14,7 +16,8 @@ varying vec4 A;
 varying vec4 C;
 varying vec4 D;
 
-uniform int layerCount;
+//glsles requires highp for a shared uniform
+uniform highp int layerCount;
 
 varying vec2 glTexCoord0;
 

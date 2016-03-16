@@ -26,7 +26,7 @@ uniform vec4 glLightSource0diffuse;
 
 varying vec2 glTexCoord0;
 
-uniform int layerCount;
+uniform highp int layerCount;
 
 
 varying vec4 A;
