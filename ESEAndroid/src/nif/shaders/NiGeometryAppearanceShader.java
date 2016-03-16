@@ -227,17 +227,17 @@ public class NiGeometryAppearanceShader
 			{
 				String fname = fileName(texprop, 0);
 
-				if (fname.isEmpty())
-					return false;
+				if (fname != null && !fname.isEmpty())
+				{
+					int pos = fname.indexOf("_");
 
-				int pos = fname.indexOf("_");
+					if (pos >= 0)
+						fname = fname.substring(0, pos) + "_n.dds";
+					else if ((pos = fname.lastIndexOf(".")) >= 0)
+						fname = fname.substring(0, pos) + "_n" + fname.substring(pos);
 
-				if (pos >= 0)
-					fname = fname.substring(0, pos) + "_n.dds";
-				else if ((pos = fname.lastIndexOf(".")) >= 0)
-					fname = fname.substring(0, pos) + "_n" + fname.substring(pos);
-
-				bind(textureUnitName, texprop, fname, clamp);
+					bind(textureUnitName, texprop, fname, clamp);
+				}
 			}
 			else if (bsprop != null)
 			{
@@ -253,17 +253,17 @@ public class NiGeometryAppearanceShader
 			{
 				String fname = fileName(texprop, 0);
 
-				if (fname.isEmpty())
-					return false;
+				if (fname != null && !fname.isEmpty())
+				{
+					int pos = fname.indexOf("_");
 
-				int pos = fname.indexOf("_");
+					if (pos >= 0)
+						fname = fname.substring(0, pos) + "_g.dds";
+					else if ((pos = fname.lastIndexOf(".")) >= 0)
+						fname = fname.substring(0, pos) + "_g" + fname.substring(pos);
 
-				if (pos >= 0)
-					fname = fname.substring(0, pos) + "_g.dds";
-				else if ((pos = fname.lastIndexOf(".")) >= 0)
-					fname = fname.substring(0, pos) + "_g" + fname.substring(pos);
-
-				bind(textureUnitName, texprop, fname, clamp);
+					bind(textureUnitName, texprop, fname, clamp);
+				}
 			}
 			else if (bsprop != null)
 			{
@@ -906,7 +906,8 @@ public class NiGeometryAppearanceShader
 			//See FO4 for testing
 			ra.setDepthBufferEnable((nzp.flags.flags & 0x01) != 0);
 			ra.setDepthBufferWriteEnable((nzp.flags.flags & 0x02) != 0);
-			ra.setDepthTestFunction(NifOpenGLToJava3D.convertStencilFunction(nzp.function.mode));
+			if (nzp.function != null)
+				ra.setDepthTestFunction(NifOpenGLToJava3D.convertStencilFunction(nzp.function.mode));
 		}
 	}
 
@@ -1129,7 +1130,7 @@ public class NiGeometryAppearanceShader
 			TextureUnitState tus = new TextureUnitState();
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
-				
+
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
 
 				ImageComponent[] ics = tex.getImages();
@@ -1142,7 +1143,7 @@ public class NiGeometryAppearanceShader
 
 				tus.setTexture(tcm);
 				tus.setName(fileName);
-				
+
 			}
 			else
 			{
