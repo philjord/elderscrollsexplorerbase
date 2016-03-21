@@ -270,8 +270,8 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	@Override
 	public void closingTime()
 	{
-		cameraPanel.stopRendering();
-
+		if (cameraPanel != null)
+			cameraPanel.stopRendering();
 	}
 
 	/* (non-Javadoc)
@@ -430,7 +430,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 					cameraPanel = new CameraPanel(universe);
 				else
 					cameraPanel = new CameraPanel(universe, gl_window);
-				
+
 				// and the dolly it rides on
 				HeadCamDolly headCamDolly = new HeadCamDolly(avatarCollisionInfo);
 				cameraPanel.setDolly(headCamDolly);

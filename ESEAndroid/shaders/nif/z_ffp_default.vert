@@ -20,7 +20,7 @@ uniform mat4 glModelViewProjectionMatrix;
 uniform mat3 glNormalMatrix;
 
 uniform vec4 glFrontMaterialdiffuse;
-uniform vec3 glFrontMaterialemission;
+uniform vec4 glFrontMaterialemission;
 uniform vec3 glFrontMaterialspecular;
 uniform float glFrontMaterialshininess;
 uniform int ignoreVertexColors;
@@ -70,7 +70,7 @@ void main( void )
 		C = glColor;
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;		
 	
-	emissive = glFrontMaterialemission;
+	emissive = glFrontMaterialemission.rgb;
 	specular = glFrontMaterialspecular;
 	shininess = glFrontMaterialshininess;
 	

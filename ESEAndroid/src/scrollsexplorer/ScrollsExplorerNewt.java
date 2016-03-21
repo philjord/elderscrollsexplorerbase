@@ -13,7 +13,6 @@ import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 
 import archive.ArchiveFile;
-import archive.ArchiveInputStream;
 import archive.BSArchiveSet;
 import bsa.source.BsaMeshSource;
 import bsa.source.BsaSoundSource;
@@ -63,7 +62,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
 
 		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
-		ArchiveFile.USE_NON_NATIVE_ZIP = true;
+		ArchiveFile.USE_NON_NATIVE_ZIP = false;
 		
 		try
 		{
