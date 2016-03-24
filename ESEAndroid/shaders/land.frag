@@ -19,7 +19,7 @@ varying vec4 C;
 varying vec4 D;
 
 //glsles requires highp for a shared uniform
-uniform highp int layerCount;
+//uniform highp int layerCount;
 
 varying vec2 glTexCoord0;
 

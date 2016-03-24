@@ -24,6 +24,8 @@ import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 
 public class PhysicsSystem implements NbccProvider
 {
+	public static long MIN_TIME_BETWEEN_STEPS_MS = 20;
+
 	public static Vector3f gravity = new Vector3f(0f, -9.8f, 0f);
 
 	private AvatarCollisionInfo avatarCollisionInfo;
@@ -35,8 +37,6 @@ public class PhysicsSystem implements NbccProvider
 	private MeshSource meshSource;
 
 	private long MIN_TIME_BETWEEN_BOUND_UPDATES_MS = 20;
-
-	private long MIN_TIME_BETWEEN_STEPS_MS = 20;
 
 	protected PhysicsDynamics physicsLocaleDynamics;
 

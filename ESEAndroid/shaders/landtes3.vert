@@ -4,10 +4,10 @@ attribute vec4 glVertex;
 attribute vec4 glColor;
 attribute vec2 glMultiTexCoord0; 
 
-attribute vec4 alphas04;
-attribute vec4 alphas58;
-attribute vec4 alphas912;
-
+attribute vec4 samplers0;
+attribute vec4 samplers1;
+attribute vec4 samplers2;
+attribute vec4 samplers3;
 
 //uniform mat4 glProjectionMatrix;
 //uniform mat4 glModelViewMatrix;
@@ -28,9 +28,10 @@ varying vec4 A;
 varying vec4 C;
 varying vec4 D;
 
-varying vec4 layerAlpha4;
-varying vec4 layerAlpha8;
-varying vec4 layerAlpha12;
+varying vec4 fragSamplers0;
+varying vec4 fragSamplers1;
+varying vec4 fragSamplers2;
+varying vec4 fragSamplers3;
  
 
 void main( void )
@@ -46,8 +47,11 @@ void main( void )
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;
 	 
 	
-	layerAlpha4 = alphas04;
-	layerAlpha8 = alphas58;
-	layerAlpha12 = alphas912; 	
+	fragSamplers0 = samplers0;
+	fragSamplers1 = samplers1;
+	fragSamplers2 = samplers2; 	
+	fragSamplers3 = samplers3; 	
+	//TODO: I could work out the right ones here now and pass the samplers across to the frag as varying
+	// or maybe not need to check
 	
 }
