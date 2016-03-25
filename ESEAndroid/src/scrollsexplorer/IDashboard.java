@@ -18,4 +18,14 @@ public abstract class IDashboard
 	public abstract void setFarLoading(int isLoading);
 
 	public abstract void setLodLoading(int isLoading);
+
+	public abstract int getEsmLoading();
+
+	public abstract int getCellLoading();
+
+	public abstract int getNearLoading();
+
+	public abstract int getFarLoading();
+
+	public abstract int getLodLoading();
 }

@@ -44,10 +44,6 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 
 	private HUDText HUDText;
 
-	private int hudWidth = 300;
-
-	private int hudHeight = 60;
-
 	public ActionableMouseOverHandler(PhysicsSystem clientPhysicsSystem, SimpleBethCellManager simpleBethCellManager)
 	{
 		super(clientPhysicsSystem);
@@ -79,7 +75,8 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 			{
 				HUDText = new HUDText((Canvas3D2D) canvas3D, new Rectangle(0, 80, hudWidth, hudHeight), 16);
 			}*/
-			HUDText = new HUDText((Canvas3D2D) canvas3D, new Point2f(0f, 0f), 16);
+			HUDText = new HUDText(new Point2f(0f, 0f), 16, "");
+			HUDText.addToCanvas((Canvas3D2D) canvas3D);
 		}
 
 	}
@@ -257,7 +254,6 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 						if (recoId != currentActionTargetData.recoId)
 						{
 							currentActionTargetData.clear();
-
 							currentActionTargetData.recoId = recoId;
 						}
 
@@ -463,10 +459,7 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 	@Override
 	protected void screenResized()
 	{
-		if (!canvas3D.getView().getCompatibilityModeEnable())
-			HUDText.setLocation((canvas3D.getWidth() / 2) - (hudWidth / 2), (canvas3D.getHeight() / 2) - (hudHeight / 2));
-		else
-			HUDText.setLocation(0, 80);
+		HUDText.setLocation(new Point2f(0, 0));
 	}
 
 	private class CurrentActionTargetData

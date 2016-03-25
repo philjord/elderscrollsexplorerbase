@@ -17,7 +17,7 @@ public class DashboardNewt extends IDashboard
 
 	public DashboardNewt()
 	{
-		scrollsexplorer.IDashboard.dashboard = this;
+		IDashboard.dashboard = this;
 	}
 
 	public void setPhysicSystem(PhysicsSystem physicsSystem)
@@ -52,6 +52,30 @@ public class DashboardNewt extends IDashboard
 	public void setLodLoading(int isLoading)
 	{
 		lodLoading += isLoading;
+	}
 
+	public int getEsmLoading()
+	{
+		return esmLoading;
+	}
+
+	public int getCellLoading()
+	{
+		return cellLoading;
+	}
+
+	public int getNearLoading()
+	{
+		return nearLoading;
+	}
+
+	public int getFarLoading()
+	{
+		return farLoading;
+	}
+
+	public int getLodLoading()
+	{
+		return lodLoading;
 	}
 }

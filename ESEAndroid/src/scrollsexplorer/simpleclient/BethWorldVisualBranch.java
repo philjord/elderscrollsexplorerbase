@@ -334,7 +334,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 						//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
 
 						J3dCELLGeneral bg = j3dCellFactory.makeBGWRLDTemporary(worldFormId, x, y, false);
-
+					 
 						synchronized (loadedNears)
 						{
 							loadedNears.put(key, bg);
@@ -507,9 +507,15 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	{
 		synchronized (loadedNears)
 		{
+			//System.out.println("asked for " +recoId);
 			for (J3dCELLGeneral cell : loadedNears.values())
-			{
-				if (cell != null && cell.isLive())
+			{				
+				 //FIXME: often this does not work in Morrowind for the mouse over, but it works
+				// everytime if visual is shared with physics as if the ids are being not reused
+				
+				//customs and excise gates are 49346 (is in visuals) when good but
+				//60466 when bad, must be a generating a new id for physics side
+				if (cell != null) 
 				{
 					J3dRECOInst jri = cell.getJ3dRECOs().get(recoId);
 					if (jri != null)

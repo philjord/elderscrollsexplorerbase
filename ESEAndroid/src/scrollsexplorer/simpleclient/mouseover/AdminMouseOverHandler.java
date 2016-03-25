@@ -18,10 +18,6 @@ public class AdminMouseOverHandler extends MouseOverHandler
 {
 	private HUDText HUDText;
 
-	private int hudWidth = 500;
-
-	private int hudHeight = 50;
-
 	public AdminMouseOverHandler(PhysicsSystem clientPhysicsSystem)
 	{
 		super(clientPhysicsSystem);
@@ -49,14 +45,15 @@ public class AdminMouseOverHandler extends MouseOverHandler
 		{
 			//HUDText = new HUDText((Canvas3D2D) canvas3D, new Rectangle((int) (canvas3D.getWidth() * 0.95f) - hudWidth,
 			//		(int) (canvas3D.getHeight() * 0.95f) - hudHeight, hudWidth, hudHeight), 10);
-			HUDText = new HUDText((Canvas3D2D) canvas3D, new Point2f(0.1f, -0.85f), 10);
+			HUDText = new HUDText(new Point2f(0.1f, -0.85f), 10, "");
+			HUDText.addToCanvas((Canvas3D2D) canvas3D);
 		}
 	}
 
 	@Override
 	protected void screenResized()
 	{
-		HUDText.setLocation((int) (canvas3D.getWidth() * 0.95f) - hudWidth, (int) (canvas3D.getHeight() * 0.95f) - hudHeight);
+		//HUDText.setLocation((int) (canvas3D.getWidth() * 0.95f) - hudWidth, (int) (canvas3D.getHeight() * 0.95f) - hudHeight);
 	}
 
 	@Override

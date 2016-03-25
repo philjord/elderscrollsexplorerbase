@@ -29,6 +29,7 @@ import scrollsexplorer.IDashboard;
 import scrollsexplorer.simpleclient.mouseover.ActionableMouseOverHandler;
 import scrollsexplorer.simpleclient.mouseover.AdminMouseOverHandler;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
+import scrollsexplorer.simpleclient.scenegraph.LoadingInfoBehavior;
 import tools.compressedtexture.dds.DDSTextureLoader;
 import tools3d.camera.CameraPanel;
 import tools3d.camera.HMDCamDolly;
@@ -110,6 +111,9 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	//private HUDPhysicsState hudPhysicsState;
 
 	private HUDText firstInstruction;
+
+	private HUDText loadInfo;
+	private LoadingInfoBehavior loadingInfoBehavior;
 
 	private PhysicsSystem physicsSystem;
 
@@ -219,6 +223,11 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		hudCrossHair = new HUDCrossHair();
 
 		behaviourBranch.addChild(fpsCounter.getBehaviorBranchGroup());
+		loadInfo = new HUDText(new Point2f(-0.95f, 0.1f), 18, "Loading...");
+		loadingInfoBehavior = new LoadingInfoBehavior(loadInfo);
+		behaviourBranch.addChild(loadingInfoBehavior);
+		firstInstruction = new HUDText(new Point2f(-0.95f, 0f), 18, "Press tab to look around, press tab again to release mouse");
+
 		//behaviourBranch.addChild(hudPhysicsState.getBehaviorBranchGroup());
 
 		//	structureUpdateBehavior = new StructureUpdateBehavior();
@@ -244,6 +253,12 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		});
 
 		NiGeometryAppearanceFactoryShader.setAsDefault();
+
+		DDSTextureLoader.setAnisotropicFilterDegree(8);
+		setupGraphicsSetting();
+		cameraPanel.getCanvas3D2D().getGLWindow().setSize(1200, 1000);
+		cameraPanel.startRendering();
+		cameraPanel.getCanvas3D2D().addNotify();
 
 		/*
 		
@@ -345,24 +360,6 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 
 		cameraAdminMouseOverHandler = new AdminMouseOverHandler(physicsSystem);
 
-		//hudPhysicsState.setHudPhysicsStateData(physicsSystem);
-
-		//	GraphicsSettings gs = ScreenResolution.organiseResolution(Preferences.userNodeForPackage(SimpleWalkSetup.class), frame, false, true,
-		//				false, false);
-		//		if (gs != null)
-		{
-			setupGraphicsSetting();
-		}
-
-		//TODO: these must come form a new one of those ^
-
-		DDSTextureLoader.setAnisotropicFilterDegree(8);
-		cameraPanel.getCanvas3D2D().getGLWindow().setSize(1200, 1000);
-
-		//frame.setSize(100,100);// oddly still needed
-
-		cameraPanel.startRendering();
-
 	}
 
 	private void setupGraphicsSetting()
@@ -455,18 +452,11 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			hudcompass.addToCanvas(canvas3D2D);
 			//hudPhysicsState.addToCanvas(canvas3D2D);
 			hudCrossHair.addToCanvas(canvas3D2D);
-
+			loadInfo.addToCanvas(canvas3D2D);
 			//allow tab for mouse lock
 			//			canvas3D2D.setFocusTraversalKeysEnabled(false);
 
 			//			canvas3D2D.addComponentListener(canvasResizeListener);
-
-			if (firstInstruction == null)
-			{
-				firstInstruction = new HUDText(canvas3D2D, new Point2f(-0.95f, 0f), 18);
-				firstInstruction.setLocation(0, 200);
-				firstInstruction.setText("Press tab to look around, press tab again to release mouse");
-			}
 
 			if (isLive)
 			{
@@ -505,10 +495,8 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 				cameraMouseOver.setConfig(cameraPanel.getCanvas3D2D());
 				cameraAdminMouseOverHandler.setConfig(cameraPanel.getCanvas3D2D());
 				physicsSystem.unpause();
-				//frame.setVisible(true);
-				cameraPanel.startRendering();
-
-				cameraPanel.getCanvas3D2D().addNotify();
+				loadInfo.removeFromCanvas();
+				loadingInfoBehavior.setEnable(false);
 			}
 			else
 			{
@@ -517,6 +505,8 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 				physicsSystem.pause();
 				//frame.setVisible(false);
 				//cameraPanel.stopRendering();// this kills the J3d stuff like removeNotify did
+				loadInfo.addToCanvas(cameraPanel.getCanvas3D2D());
+				loadingInfoBehavior.setEnable(true);
 			}
 			enabled = enable;
 		}
