@@ -58,6 +58,9 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		//Setting to emulate Android requirements
 		ArchiveFile.USE_FILE_MAPS = false;
 		ESMManager.USE_FILE_MAPS = false;
+		ESMManager.USE_NON_NATIVE_ZIP = false;
+		ESMManager.USE_MINI_CHANNEL_MAPS = true;
+		
 		BethRenderSettings.setFarLoadGridCount(0);
 		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
 
