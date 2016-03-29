@@ -63,7 +63,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
 		ArchiveFile.USE_NON_NATIVE_ZIP = false;
-		
+
 		try
 		{
 			PropertyLoader.load();
@@ -252,6 +252,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 			}
 		};
+		t.setName("setSelectedGameConfig " + newGameConfig.gameName);
 		t.start();
 	}
 

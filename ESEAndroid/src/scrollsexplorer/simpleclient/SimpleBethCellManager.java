@@ -341,6 +341,7 @@ public class SimpleBethCellManager implements InstRECOStore
 					canChangeCell = true;
 				}
 			};
+			thread.setName("Set current Cell form id = " + newCellFormId);
 			thread.start();
 		}
 	}
