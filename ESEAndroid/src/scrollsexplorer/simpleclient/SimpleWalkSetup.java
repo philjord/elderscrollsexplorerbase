@@ -422,11 +422,15 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			//if HMD fails or not HMD
 			if (cameraPanel == null)
 			{
-
 				if (gl_window == null)
+				{
 					cameraPanel = new CameraPanel(universe);
+					cameraPanel.getCanvas3D2D().getGLWindow().setPosition(600, 10);
+				}
 				else
+				{
 					cameraPanel = new CameraPanel(universe, gl_window);
+				}
 
 				// and the dolly it rides on
 				HeadCamDolly headCamDolly = new HeadCamDolly(avatarCollisionInfo);
