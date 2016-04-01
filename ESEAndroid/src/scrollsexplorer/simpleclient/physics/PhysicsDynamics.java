@@ -9,6 +9,13 @@ import javax.media.j3d.Transform3D;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
+import com.bulletphysics.collision.dispatch.CollisionWorld;
+import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
+import com.frostwire.util.SparseArray;
+
+import esmj3d.j3d.j3drecords.inst.J3dLAND;
+import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
+import esmj3d.j3d.j3drecords.type.J3dRECOType;
 import nif.NifFile;
 import nif.NifToJ3d;
 import nif.j3d.animation.J3dNiControllerManager;
@@ -25,24 +32,17 @@ import tools3d.navigation.AvatarLocation;
 import tools3d.utils.Utils3D;
 import utils.source.MeshSource;
 
-import com.bulletphysics.collision.dispatch.CollisionWorld;
-import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
-
-import esmj3d.j3d.j3drecords.inst.J3dLAND;
-import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
-import esmj3d.j3d.j3drecords.type.J3dRECOType;
-
 public class PhysicsDynamics extends DynamicsEngine
 {
 	//public static HeadlessUniverse headlessUniverse = new HeadlessUniverse();
 
 	protected InstRECOStore instRecoToNif;
 
-	private HashMap<Integer, NifBulletBinding> instRecoBulletBindings = new HashMap<Integer, NifBulletBinding>();
+	private SparseArray<NifBulletBinding> instRecoBulletBindings = new SparseArray<NifBulletBinding>();
 
 	private HashMap<BulletNifModel, Integer> nifBulletToRecoId = new HashMap<BulletNifModel, Integer>();
 
-	private HashMap<Integer, BulletNifModel> recoIdToNifBullet = new HashMap<Integer, BulletNifModel>();
+	private SparseArray<BulletNifModel> recoIdToNifBullet = new SparseArray<BulletNifModel>();
 
 	private BranchGroup dynamicsRootBranchGroup;
 
@@ -153,7 +153,7 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	public BulletNifModel createRECO(J3dRECOInst j3dRECOInst)
 	{
-		if (recoIdToNifBullet.containsKey(j3dRECOInst.getRecordId()))
+		if (recoIdToNifBullet.get(j3dRECOInst.getRecordId()) != null)
 		{
 			System.out.println("PhysicsDynamics, already loaded key " + j3dRECOInst.getRecordId() + " of " + j3dRECOInst);
 			new Throwable("Thread:" + Thread.currentThread()).printStackTrace();
@@ -273,21 +273,13 @@ public class PhysicsDynamics extends DynamicsEngine
 
 			nb = new NBSimpleDynamicModel(model, meshSource, 0);
 
-			if (nb != null)
-			{
-				//TODO: nif file should have mass, but for custom written might need to check and set set mass 
-				//nb.getRootNifBulletbhkCollisionObject().getRigidBody().setMassProps(mass, inertia);
+			//TODO: nif file should have mass, but for custom written might need to check and set set mass 
+			//nb.getRootNifBulletbhkCollisionObject().getRigidBody().setMassProps(mass, inertia);
 
-				Vector3f linearVelocity = new Vector3f();
-				Vector3f rotationalVelocity = new Vector3f();
-				//velo.getVelocities(linearVelocity, rotationalVelocity);
-				nb.forceUpdate(rootTrans, linearVelocity, rotationalVelocity);
-
-			}
-			else
-			{
-				System.out.println("IOException for model in reco " + j3dRECOInst + " file = " + model);
-			}
+			Vector3f linearVelocity = new Vector3f();
+			Vector3f rotationalVelocity = new Vector3f();
+			//velo.getVelocities(linearVelocity, rotationalVelocity);
+			nb.forceUpdate(rootTrans, linearVelocity, rotationalVelocity);
 
 		}
 		else
@@ -412,8 +404,9 @@ public class PhysicsDynamics extends DynamicsEngine
 	{
 		synchronized (dynamicsWorld)
 		{
-			for (NifBulletBinding instRecoNifBulletBinding : instRecoBulletBindings.values())
+			for (int i = 0; i < instRecoBulletBindings.size(); i++)
 			{
+				NifBulletBinding instRecoNifBulletBinding = instRecoBulletBindings.get(instRecoBulletBindings.keyAt(i));
 				instRecoNifBulletBinding.applyToModel();
 			}
 		}
@@ -462,8 +455,10 @@ public class PhysicsDynamics extends DynamicsEngine
 		PhysicsStatus ret = new PhysicsStatus();
 		synchronized (recoIdToNifBullet)
 		{
-			for (BulletNifModel bnm : recoIdToNifBullet.values())
+			for (int i = 0; i < recoIdToNifBullet.size(); i++)
 			{
+				BulletNifModel bnm = recoIdToNifBullet.get(recoIdToNifBullet.keyAt(i));
+
 				if (bnm instanceof NBSimpleDynamicModel)
 				{
 					ret.dynCount++;
