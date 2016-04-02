@@ -4,10 +4,10 @@ import javax.media.j3d.Transform3D;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
-import tools3d.utils.Utils3D;
+import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import nifbullet.dyn.NBSimpleDynamicModel;
 import nifbullet.dyn.NifBulletTransformListener;
-import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
+import tools3d.utils.Utils3D;
 
 public class InstRecoNifBulletBinding implements NifBulletBinding, NifBulletTransformListener
 {

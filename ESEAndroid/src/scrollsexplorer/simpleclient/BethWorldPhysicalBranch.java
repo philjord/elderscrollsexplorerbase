@@ -1,7 +1,5 @@
 package scrollsexplorer.simpleclient;
 
-import javaawt.Point;
-import javaawt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,10 +12,6 @@ import javax.vecmath.Point3f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
-import scrollsexplorer.simpleclient.physics.PhysicsSystem;
-import tools.QueuingThread;
-import tools3d.utils.scenegraph.LocationUpdateListener;
-import tools3d.utils.scenegraph.StructureUpdateBehavior;
 import esmj3d.j3d.BethRenderSettings;
 import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
@@ -27,6 +21,12 @@ import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmmanager.common.data.record.Record;
 import esmmanager.common.data.record.Subrecord;
+import javaawt.Point;
+import javaawt.Rectangle;
+import scrollsexplorer.simpleclient.physics.PhysicsSystem;
+import tools.QueuingThread;
+import tools3d.utils.scenegraph.LocationUpdateListener;
+import tools3d.utils.scenegraph.StructureUpdateBehavior;
 
 /*
  * Notice it NEVER loads far/distant

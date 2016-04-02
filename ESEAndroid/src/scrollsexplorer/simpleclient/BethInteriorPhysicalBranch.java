@@ -3,13 +3,13 @@ package scrollsexplorer.simpleclient;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
 
-import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICELLPersistent;
 import esmj3d.j3d.cell.J3dICellFactory;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmmanager.common.data.record.Record;
 import esmmanager.common.data.record.Subrecord;
+import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 
 public class BethInteriorPhysicalBranch extends BranchGroup
 {

@@ -6,6 +6,11 @@ import java.util.Collection;
 import javax.media.j3d.BranchGroup;
 import javax.vecmath.Vector3f;
 
+import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
+
+import esmj3d.j3d.cell.GridSpace;
+import esmj3d.j3d.cell.J3dCELLGeneral;
+import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import nifbullet.BulletNifModel;
 import nifbullet.NavigationProcessorBullet.NbccProvider;
 import nifbullet.cha.NBControlledChar;
@@ -15,12 +20,6 @@ import tools.clock.PeriodicThread;
 import tools.clock.PeriodicallyUpdated;
 import tools3d.navigation.AvatarCollisionInfo;
 import utils.source.MeshSource;
-
-import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
-
-import esmj3d.j3d.cell.GridSpace;
-import esmj3d.j3d.cell.J3dCELLGeneral;
-import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 
 public class PhysicsSystem implements NbccProvider
 {

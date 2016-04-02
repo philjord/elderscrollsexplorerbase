@@ -6,11 +6,6 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
-import scrollsexplorer.simpleclient.physics.PhysicsSystem;
-import tools.clock.PeriodicThread;
-import tools.clock.PeriodicallyUpdated;
-import tools3d.mixed3d2d.CanvasPickRayGen;
-
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 import com.jogamp.newt.event.MouseAdapter;
@@ -18,6 +13,11 @@ import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.event.WindowListener;
 import com.jogamp.newt.event.WindowUpdateEvent;
+
+import scrollsexplorer.simpleclient.physics.PhysicsSystem;
+import tools.clock.PeriodicThread;
+import tools.clock.PeriodicallyUpdated;
+import tools3d.mixed3d2d.CanvasPickRayGen;
 
 //TODO: this and the copy in space trader could have the clientphysics replaced with a dynamicsworld object (if avaible?)
 //and this would be totally generic and able to be put in nifbullet

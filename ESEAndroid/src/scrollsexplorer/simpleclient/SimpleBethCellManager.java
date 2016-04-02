@@ -15,7 +15,7 @@ import esmj3d.j3d.j3drecords.inst.J3dRECODynInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmmanager.common.PluginException;
 import esmmanager.common.data.plugin.PluginRecord;
-import esmmanager.common.data.plugin.PluginSubrecord;
+import esmmanager.common.data.record.Subrecord;
 import esmmanager.loader.IESMManager;
 import esmmanager.tes3.ESMManagerTes3;
 import scrollsexplorer.GameConfig;
@@ -105,8 +105,8 @@ public class SimpleBethCellManager implements InstRECOStore
 
 				if (pr != null)
 				{
-					List<PluginSubrecord> subrecords = pr.getSubrecords();
-					for (PluginSubrecord subrec : subrecords)
+					List<Subrecord> subrecords = pr.getSubrecords();
+					for (Subrecord subrec : subrecords)
 					{
 						//TES5 has these FULLs as FormIDs, so test for 4 bytes
 						if (subrec.getSubrecordType().equals("FULL") && subrec.getSubrecordData().length > 4)
