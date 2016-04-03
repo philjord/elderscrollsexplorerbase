@@ -362,7 +362,12 @@ public class PhysicsDynamics extends DynamicsEngine
 
 				//TODO: this guy is added things to a live scene graph, definately problem chance??
 				if (nifBullet instanceof Node)
-					dynamicsRootBranchGroup.addChild((Node) nifBullet);
+				{
+					if (((Node) nifBullet).getParent() == null)
+						dynamicsRootBranchGroup.addChild((Node) nifBullet);
+					else
+						System.err.println("PhysicsDynamics attempt to readd a node to scene? " + nifBullet);
+				}
 
 				if (nifBullet instanceof NBSimpleDynamicModel)
 				{

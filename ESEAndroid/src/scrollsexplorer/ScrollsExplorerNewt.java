@@ -60,16 +60,15 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
 		ArchiveFile.USE_NON_NATIVE_ZIP = false;
 
-		ESMManager.USE_FILE_MAPS = false;		
+		ESMManager.USE_FILE_MAPS = false;
 		ESMManager.USE_MINI_CHANNEL_MAPS = true;
 		ESMManager.USE_NON_NATIVE_ZIP = false;
-		
+
 		BethRenderSettings.setFarLoadGridCount(0);
 		BethRenderSettings.setLOD_LOAD_DIST_MAX(32);
 		BethRenderSettings.setObjectFade(100);
 		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
 
-		
 		try
 		{
 			PropertyLoader.load();
@@ -191,7 +190,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 						if (bsaFileSet == null)
 						{
-							bsaFileSet = new BSArchiveSet(new String[] { selectedGameConfig.scrollsFolder }, true, false);
+							bsaFileSet = new BSArchiveSet(new String[] { selectedGameConfig.scrollsFolder }, true);
 						}
 
 						if (bsaFileSet.size() == 0)

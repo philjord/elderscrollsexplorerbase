@@ -88,6 +88,7 @@ public abstract class DynamicsEngine
 
 	public void dynamicsTick()
 	{
+		System.out.println("Physics is runnningn ruinnging runinng");
 		long dtms = timeKeeper.getTimeMicroseconds();
 		timeKeeper.reset();
 		dynamicsPreStep();
