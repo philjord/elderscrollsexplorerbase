@@ -227,24 +227,29 @@ public class PhysicsSystem implements NbccProvider
 			{
 				if (pu.type == PhysicsUpdate.UPDATE_TYPE.LOAD_FROM_MODEL)
 				{
+					boolean prevIsPaused = physicsLocaleDynamics.isPaused();
+					physicsLocaleDynamics.pause();
+
 					// assumes cell id and stmodel set properly by now
 					for (J3dRECOInst instReco : pu.collection)
 					{
 						physicsLocaleDynamics.addRECO(instReco);
 					}
 
-					// tell the statemodel we want to know about movements
-					//System.out.println("1Physics objects loaded for cell " + cellId);
-					//TODO: why the hell unpause here? isn't there somewhere better? bay in the worldphysicsbranch
-					physicsLocaleDynamics.unpause();
+					if (!prevIsPaused)
+						physicsLocaleDynamics.unpause();
 				}
 				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.UNLOAD_FROM_MODEL)
 				{
+					boolean prevIsPaused = physicsLocaleDynamics.isPaused();
+					physicsLocaleDynamics.pause();
 					// assumes cell id and stmodel set properly by now
 					for (J3dRECOInst instReco : pu.collection)
 					{
 						physicsLocaleDynamics.removeRECO(instReco);
 					}
+					if (!prevIsPaused)
+						physicsLocaleDynamics.unpause();
 				}
 				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.ADD)
 				{
@@ -257,15 +262,11 @@ public class PhysicsSystem implements NbccProvider
 
 			}
 			cpl.clear();
-
 			if (!isPaused())
 			{
 				physicsLocaleDynamics.dynamicsTick();
-
 			}
-
 		}
-
 	}
 
 	/**

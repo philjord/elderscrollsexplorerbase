@@ -88,7 +88,6 @@ public abstract class DynamicsEngine
 
 	public void dynamicsTick()
 	{
-		System.out.println("Physics is runnningn ruinnging runinng");
 		long dtms = timeKeeper.getTimeMicroseconds();
 		timeKeeper.reset();
 		dynamicsPreStep();
@@ -122,19 +121,12 @@ public abstract class DynamicsEngine
 			}
 			catch (NullPointerException e)
 			{
-				//DbvtBroadphase.setAabb being a dick
+				//DbvtBroadphase.setAabb being crazy
 				System.out.println("" + e + " " + e.getStackTrace()[0]);
 			}
 			catch (ClassCastException e)
 			{
-				//probably BvhTriangleMeshShape cannot be cast to com.bulletphysics.collision.shapes.CompoundShape
-				// CollisionDispatcher findAlgorithm(body0, body1, null) is finding the compund algorithm but but one not compound
-
-				//is this for an unknown type maybe?
-				//DefaultCollisionConfiguration().getCollisionAlgorithmCreateFunc ??? 
-
-				//seems like this guy GImpactCollisionAlgorithm.registerAlgorithm(dispatcher);
-
+				// used to be called when ObjectPool was not properly multi threaded, should be fixed now
 				System.out.println("" + e + " " + e.getStackTrace()[0]);
 			}
 

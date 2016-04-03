@@ -360,13 +360,13 @@ public class PhysicsDynamics extends DynamicsEngine
 			{
 				nifBullet.addToDynamicsWorld(dynamicsWorld);
 
-				//TODO: this guy is added things to a live scene graph, definately problem chance??
+				//TODO: this guy is added things to a live scene graph, definitely problem chance??
 				if (nifBullet instanceof Node)
 				{
 					if (((Node) nifBullet).getParent() == null)
 						dynamicsRootBranchGroup.addChild((Node) nifBullet);
 					else
-						System.err.println("PhysicsDynamics attempt to readd a node to scene? " + nifBullet);
+						System.err.println("PhysicsDynamics attempt to re-add a node to scene? " + nifBullet);
 				}
 
 				if (nifBullet instanceof NBSimpleDynamicModel)
@@ -388,7 +388,7 @@ public class PhysicsDynamics extends DynamicsEngine
 			// remove from physics simulation
 			synchronized (dynamicsWorld)
 			{
-				//TODO: this guy is added things to a live scene graph, definately problem chance??
+				//TODO: this guy is added things to a live scene graph, definitely problem chance??
 				if (nifBullet instanceof Node)
 					dynamicsRootBranchGroup.removeChild((Node) nifBullet);
 
