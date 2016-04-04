@@ -731,7 +731,7 @@ public class NiGeometryAppearanceShader
 
 		// Shape merging demand aggressive appearance sharing, and hence component re-use
 		// Sahders are newer and not well support for Shape merging
-		shaderAttributeSet = getShaderAttributeSet(allShaderAttributeValues);
+		shaderAttributeSet = getShaderAttributeSet(shaderProgram, allShaderAttributeValues);
 
 		// Texture Unit state does not require the same aggression as Java3D will find equivalence
 		TextureUnitState[] tus = allTextureUnitStates.toArray(new TextureUnitState[] {});
@@ -853,36 +853,48 @@ public class NiGeometryAppearanceShader
 		return true;
 	}
 
-	private static WeakHashMap<ShaderAttributeSet, ShaderAttributeSet> currentShaderAttributeSets = new WeakHashMap<ShaderAttributeSet, ShaderAttributeSet>();
+	private static WeakHashMap<GLSLShaderProgram2, WeakHashMap<ShaderAttributeSet, ShaderAttributeSet>> shaderAttributeSetsByProgram = new WeakHashMap<GLSLShaderProgram2, WeakHashMap<ShaderAttributeSet, ShaderAttributeSet>>();
 
-	private static ShaderAttributeSet getShaderAttributeSet(List<ShaderAttributeValue2> newShaderAttributeValues)
+	private static ShaderAttributeSet getShaderAttributeSet(GLSLShaderProgram2 shaderProgram,
+			List<ShaderAttributeValue2> newShaderAttributeValues)
 	{
 		ShaderAttributeSet sas = null;
-		synchronized (currentShaderAttributeSets)
+		synchronized (shaderAttributeSetsByProgram)
 		{
-			for (ShaderAttributeSet currShaderAttributeSet : currentShaderAttributeSets.keySet())
+			WeakHashMap<ShaderAttributeSet, ShaderAttributeSet> currentShaderAttributeSets = shaderAttributeSetsByProgram
+					.get(shaderProgram);
+
+			if (currentShaderAttributeSets != null)
 			{
-				boolean equal = currShaderAttributeSet.size() == newShaderAttributeValues.size();
-				if (equal)
+				for (ShaderAttributeSet currShaderAttributeSet : currentShaderAttributeSets.keySet())
 				{
-					for (int i = 0; i < newShaderAttributeValues.size(); i++)
+					boolean equal = currShaderAttributeSet.size() == newShaderAttributeValues.size();
+					if (equal)
 					{
-						ShaderAttribute newSav = newShaderAttributeValues.get(i);
-						ShaderAttribute currSav = currShaderAttributeSet.getAll()[i];
-						if (newSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
-								|| currSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE) || !newSav.equals(currSav))
+						for (int i = 0; i < newShaderAttributeValues.size(); i++)
 						{
-							equal = false;
-							break;
+							ShaderAttribute newSav = newShaderAttributeValues.get(i);
+							ShaderAttribute currSav = currShaderAttributeSet.get(newSav.getAttributeName());
+							if (currSav == null || newSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
+									|| currSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE) || !newSav.equals(currSav))
+							{
+								equal = false;
+								break;
+							}
 						}
 					}
-				}
 
-				if (equal)
-				{
-					sas = currShaderAttributeSet;
-					break;
+					if (equal)
+					{
+						sas = currShaderAttributeSet;
+						break;
+					}
 				}
+			}
+			else
+			{
+				currentShaderAttributeSets = new WeakHashMap<ShaderAttributeSet, ShaderAttributeSet>();
+				shaderAttributeSetsByProgram.put(shaderProgram, currentShaderAttributeSets);
 			}
 
 			if (sas == null)
