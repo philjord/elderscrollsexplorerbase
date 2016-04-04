@@ -122,12 +122,14 @@ public abstract class DynamicsEngine
 			catch (NullPointerException e)
 			{
 				//DbvtBroadphase.setAabb being crazy
-				System.out.println("" + e + " " + e.getStackTrace()[0]);
+				if (e.getStackTrace().length > 0)
+					System.out.println("" + e + " " + e.getStackTrace()[0]);
 			}
 			catch (ClassCastException e)
 			{
 				// used to be called when ObjectPool was not properly multi threaded, should be fixed now
-				System.out.println("" + e + " " + e.getStackTrace()[0]);
+				if (e.getStackTrace().length > 0)
+					System.out.println("" + e + " " + e.getStackTrace()[0]);
 			}
 
 		}
