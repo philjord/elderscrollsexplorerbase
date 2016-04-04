@@ -114,7 +114,8 @@ public class NiGeometryAppearanceShader
 	private Material mat = new Material();
 	private RenderingAttributes ra = new RenderingAttributes();
 	private PolygonAttributes pa = new PolygonAttributes();
-	private Transform3D textureTransform = new Transform3D();
+	private Vector2f textureScale = new Vector2f(1, 1);
+	private Vector2f textureOffset = new Vector2f(0, 0);
 	private TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NONE, 0f);
 
 	private GLSLShaderProgram2 shaderProgram = null;
@@ -153,6 +154,14 @@ public class NiGeometryAppearanceShader
 		app.setPolygonAttributes(pa);
 
 		app.setTransparencyAttributes(ta);
+
+		// let's clear all capabilities for a laugh
+		shape.clearCapabilities();
+		app.clearCapabilities();
+		mat.clearCapabilities();
+		ra.clearCapabilities();
+		pa.clearCapabilities();
+		ta.clearCapabilities();
 
 	}
 
@@ -302,13 +311,13 @@ public class NiGeometryAppearanceShader
 
 			if (sm == null)
 			{
-				textureTransform.setScale(new Vector3d(bslsp.UVScale.u, bslsp.UVScale.v, 0));
-				textureTransform.setTranslation(new Vector3f(bslsp.UVOffSet.u, bslsp.UVOffSet.v, 0));
+				textureScale.set(bslsp.UVScale.u, bslsp.UVScale.v);
+				textureOffset.set(bslsp.UVOffSet.u, bslsp.UVOffSet.v);
 			}
 			else
 			{
-				textureTransform.setScale(new Vector3d(sm.fUScale, sm.fVScale, 0));
-				textureTransform.setTranslation(new Vector3f(sm.fUOffset, sm.fVOffset, 0));
+				textureScale.set(sm.fUScale, sm.fVScale);
+				textureOffset.set(sm.fUOffset, sm.fVOffset);
 			}
 
 			//http://www.swiftless.com/tutorials/opengl4/3-opengl-4-matrices.html
@@ -626,13 +635,13 @@ public class NiGeometryAppearanceShader
 
 			if (em == null)
 			{
-				textureTransform.setScale(new Vector3d(bsesp.UVScale.u, bsesp.UVScale.v, 0));
-				textureTransform.setTranslation(new Vector3f(bsesp.UVOffSet.u, bsesp.UVOffSet.v, 0));
+				textureScale.set(bsesp.UVScale.u, bsesp.UVScale.v);
+				textureOffset.set(bsesp.UVOffSet.u, bsesp.UVOffSet.v);
 			}
 			else
 			{
-				textureTransform.setScale(new Vector3d(em.fUScale, em.fVScale, 0));
-				textureTransform.setTranslation(new Vector3f(em.fUOffset, em.fVOffset, 0));
+				textureScale.set(em.fUScale, em.fVScale);
+				textureOffset.set(em.fUOffset, em.fVOffset);
 			}
 
 			uni1i("hasSourceTexture", hasSourceTexture);
@@ -737,9 +746,14 @@ public class NiGeometryAppearanceShader
 		// but it seem expensive and wasteful to me
 		TextureUnitState[] tus = allTextureUnitStates.toArray(new TextureUnitState[] {});
 
-		if (textureTransform.getBestType() != Transform3D.IDENTITY)
+		// note if we have transform TUS we must use our own unique copy not the shared version		
+		if (textureScale.x != 1 || textureScale.y != 1 || textureOffset.x != 0 || textureOffset.y != 0)
 		{
-			// note if we have transform TUS we must use our own unique copy not the shared version
+			Transform3D textureTransform = new Transform3D();
+			textureTransform.setScale(new Vector3d(textureScale.x, textureScale.y, 0));
+			textureTransform.setTranslation(new Vector3f(textureOffset.x, textureOffset.y, 0));
+			//System.out.println("textureScale " + textureScale);
+			//System.out.println("textureOffset " + textureOffset);
 			textureAttributes.setTextureTransform(textureTransform);
 			for (int i = 0; i < tus.length; i++)
 			{
@@ -1195,6 +1209,7 @@ public class NiGeometryAppearanceShader
 		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
 		{
 			TextureUnitState tus = new TextureUnitState();
+			tus.clearCapabilities();
 			if (J3dNiGeometry.textureExists(fileName, textureSource))
 			{
 				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
@@ -1302,6 +1317,7 @@ public class NiGeometryAppearanceShader
 				warningsGiven.add(fileName);
 
 			}
+
 			//setUpTimeController(bsesp, niToJ3dData);
 
 			allTextureUnitStates.add(tus);
