@@ -733,7 +733,6 @@ public class NiGeometryAppearanceShader
 		// Sahders are newer and not well support for Shape merging
 		shaderAttributeSet = getShaderAttributeSet(allShaderAttributeValues);
 
-		
 		// Texture Unit state does not require the same aggression as Java3D will find equivalence
 		TextureUnitState[] tus = allTextureUnitStates.toArray(new TextureUnitState[] {});
 
@@ -859,42 +858,44 @@ public class NiGeometryAppearanceShader
 	private static ShaderAttributeSet getShaderAttributeSet(List<ShaderAttributeValue2> newShaderAttributeValues)
 	{
 		ShaderAttributeSet sas = null;
-		for (ShaderAttributeSet currShaderAttributeSet : currentShaderAttributeSets.keySet())
+		synchronized (currentShaderAttributeSets)
 		{
-			boolean equal = currShaderAttributeSet.size() == newShaderAttributeValues.size();
-			if (equal)
+			for (ShaderAttributeSet currShaderAttributeSet : currentShaderAttributeSets.keySet())
 			{
-				for (int i = 0; i < newShaderAttributeValues.size(); i++)
+				boolean equal = currShaderAttributeSet.size() == newShaderAttributeValues.size();
+				if (equal)
 				{
-					ShaderAttribute newSav = newShaderAttributeValues.get(i);
-					ShaderAttribute currSav = currShaderAttributeSet.getAll()[i];
-					if (newSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
-							|| currSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
-							|| !newSav.equals(currSav))
+					for (int i = 0; i < newShaderAttributeValues.size(); i++)
 					{
-						equal = false;
-						break;
+						ShaderAttribute newSav = newShaderAttributeValues.get(i);
+						ShaderAttribute currSav = currShaderAttributeSet.getAll()[i];
+						if (newSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
+								|| currSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE) || !newSav.equals(currSav))
+						{
+							equal = false;
+							break;
+						}
 					}
+				}
+
+				if (equal)
+				{
+					sas = currShaderAttributeSet;
+					break;
 				}
 			}
 
-			if (equal)
+			if (sas == null)
 			{
-				sas = currShaderAttributeSet;
-				break;
+				sas = new ShaderAttributeSet();
+				for (ShaderAttributeValue sav : newShaderAttributeValues)
+				{
+					if (OUTPUT_BINDINGS)
+						System.out.println(sav.getAttributeName() + " " + sav.getValue());
+					sas.put(sav);
+				}
+				currentShaderAttributeSets.put(sas, sas);
 			}
-		}
-
-		if (sas == null)
-		{
-			sas = new ShaderAttributeSet();
-			for (ShaderAttributeValue sav : newShaderAttributeValues)
-			{
-				if (OUTPUT_BINDINGS)
-					System.out.println(sav.getAttributeName() + " " + sav.getValue());
-				sas.put(sav);
-			}
-			currentShaderAttributeSets.put(sas, sas);
 		}
 		return sas;
 	}
