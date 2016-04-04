@@ -3,6 +3,8 @@ package nif.shaders;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.WeakHashMap;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.ImageComponent;
@@ -11,6 +13,7 @@ import javax.media.j3d.Material;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.RenderingAttributes;
 import javax.media.j3d.ShaderAppearance;
+import javax.media.j3d.ShaderAttribute;
 import javax.media.j3d.ShaderAttributeSet;
 import javax.media.j3d.ShaderAttributeValue;
 import javax.media.j3d.Shape3D;
@@ -726,15 +729,12 @@ public class NiGeometryAppearanceShader
 
 		}
 
-		shaderAttributeSet = new ShaderAttributeSet();
+		// Shape merging demand aggressive appearance sharing, and hence component re-use
+		// Sahders are newer and not well support for Shape merging
+		shaderAttributeSet = getShaderAttributeSet(allShaderAttributeValues);
 
-		for (ShaderAttributeValue sav : allShaderAttributeValues)
-		{
-			if (OUTPUT_BINDINGS)
-				System.out.println(sav.getAttributeName() + " " + sav.getValue());
-			shaderAttributeSet.put(sav);
-		}
-
+		
+		// Texture Unit state does not require the same aggression as Java3D will find equivalence
 		TextureUnitState[] tus = allTextureUnitStates.toArray(new TextureUnitState[] {});
 
 		if (textureTransform.getBestType() != Transform3D.IDENTITY)
@@ -848,7 +848,55 @@ public class NiGeometryAppearanceShader
 			NiGeometryAppearanceFixed.setUpTimeController(bsesp, niToJ3dData, textureSource, target);
 		}
 
+		// empty these 2 temps
+		allShaderAttributeValues.clear();
+		allTextureUnitStates.clear();
 		return true;
+	}
+
+	private static WeakHashMap<ShaderAttributeSet, ShaderAttributeSet> currentShaderAttributeSets = new WeakHashMap<ShaderAttributeSet, ShaderAttributeSet>();
+
+	private static ShaderAttributeSet getShaderAttributeSet(List<ShaderAttributeValue2> newShaderAttributeValues)
+	{
+		ShaderAttributeSet sas = null;
+		for (ShaderAttributeSet currShaderAttributeSet : currentShaderAttributeSets.keySet())
+		{
+			boolean equal = currShaderAttributeSet.size() == newShaderAttributeValues.size();
+			if (equal)
+			{
+				for (int i = 0; i < newShaderAttributeValues.size(); i++)
+				{
+					ShaderAttribute newSav = newShaderAttributeValues.get(i);
+					ShaderAttribute currSav = currShaderAttributeSet.getAll()[i];
+					if (newSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
+							|| currSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
+							|| !newSav.equals(currSav))
+					{
+						equal = false;
+						break;
+					}
+				}
+			}
+
+			if (equal)
+			{
+				sas = currShaderAttributeSet;
+				break;
+			}
+		}
+
+		if (sas == null)
+		{
+			sas = new ShaderAttributeSet();
+			for (ShaderAttributeValue sav : newShaderAttributeValues)
+			{
+				if (OUTPUT_BINDINGS)
+					System.out.println(sav.getAttributeName() + " " + sav.getValue());
+				sas.put(sav);
+			}
+			currentShaderAttributeSets.put(sas, sas);
+		}
+		return sas;
 	}
 
 	private void glProperty(NiWireframeProperty nwp)

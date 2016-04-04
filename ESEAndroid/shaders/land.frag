@@ -52,7 +52,5 @@ void main( void )
 	color.a = 1.0;
 
 	gl_FragColor = color;	
-	//gl_FragColor = baseMapTex;
-	//gl_FragColor = vec4(float(layerCount)/6.0,layerAlpha4.x,layerAlpha4.y,1);
- 
+
 }
