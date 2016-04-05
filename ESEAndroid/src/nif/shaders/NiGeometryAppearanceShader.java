@@ -76,7 +76,7 @@ import utils.source.TextureSource;
 /**
  Note I should update everything
  
- Shaders usage by nifskop
+ Shaders usage by nifskope
  Abraxo_Clean = fo4_env
  BloodBugButtRed.nif = fo4_env
  most props are env
@@ -123,9 +123,24 @@ public class NiGeometryAppearanceShader
 	private ShaderAttributeSet shaderAttributeSet = null;
 
 	private ArrayList<ShaderAttributeValue2> allShaderAttributeValues = new ArrayList<ShaderAttributeValue2>();
-	private ArrayList<TextureUnitState> allTextureUnitStates = new ArrayList<TextureUnitState>();
+	private ArrayList<Binding> allTextureUnitStateBindings = new ArrayList<Binding>();
 
 	private int texunit = 0;
+
+	private static class Binding
+	{
+		public static int CUBE_MAP = -123;
+		public String samplerName = "";
+		public String fileName = "";
+		public int clampType = -1;
+
+		public Binding(String samplerName, String fileName, int clampType)
+		{
+			this.samplerName = samplerName;
+			this.fileName = fileName;
+			this.clampType = clampType;
+		}
+	}
 
 	public NiGeometryAppearanceShader(NiGeometry niGeometry, NiToJ3dData niToJ3dData, TextureSource textureSource, Shape3D shape,
 			J3dNiAVObject target)
@@ -223,15 +238,15 @@ public class NiGeometryAppearanceShader
 			String textureUnitName = "BaseMap";
 			if (texprop != null)
 			{
-				bind(textureUnitName, texprop, fileName(texprop, 0), clamp);
+				registerBind(textureUnitName, fileName(texprop, 0), clamp);
 			}
 			else if (bsprop != null)
 			{
-				bind(textureUnitName, bsprop, fileName(bsprop, 0), clamp);
+				registerBind(textureUnitName, fileName(bsprop, 0), clamp);
 			}
 			else if (bslsp != null)
 			{
-				bind(textureUnitName, bslsp, fileName(bslsp, 0), clamp);
+				registerBind(textureUnitName, fileName(bslsp, 0), clamp);
 			}
 
 			textureUnitName = "NormalMap";
@@ -248,16 +263,16 @@ public class NiGeometryAppearanceShader
 					else if ((pos = fname.lastIndexOf(".")) >= 0)
 						fname = fname.substring(0, pos) + "_n" + fname.substring(pos);
 
-					bind(textureUnitName, texprop, fname, clamp);
+					registerBind(textureUnitName, fname, clamp);
 				}
 			}
 			else if (bsprop != null)
 			{
-				bind(textureUnitName, bsprop, fileName(bsprop, 1), clamp);
+				registerBind(textureUnitName, fileName(bsprop, 1), clamp);
 			}
 			else if (bslsp != null)
 			{
-				bind(textureUnitName, bslsp, fileName(bslsp, 1), clamp);
+				registerBind(textureUnitName, fileName(bslsp, 1), clamp);
 			}
 
 			textureUnitName = "GlowMap";
@@ -274,27 +289,23 @@ public class NiGeometryAppearanceShader
 					else if ((pos = fname.lastIndexOf(".")) >= 0)
 						fname = fname.substring(0, pos) + "_g" + fname.substring(pos);
 
-					bind(textureUnitName, texprop, fname, clamp);
+					registerBind(textureUnitName, fname, clamp);
 				}
 			}
 			else if (bsprop != null)
 			{
-				bind(textureUnitName, bsprop, fileName(bsprop, 2), clamp);
+				registerBind(textureUnitName, fileName(bsprop, 2), clamp);
 			}
 			else if (bslsp != null)
 			{
 				ShaderMaterial sm = (ShaderMaterial) getMaterial(bslsp);
 				if (sm == null)
-					bind(textureUnitName, bslsp, fileName(bslsp, 2), clamp);
+					registerBind(textureUnitName, fileName(bslsp, 2), clamp);
 				else
-					bind(textureUnitName, bslsp, fileName(bslsp, 5), clamp);
+					registerBind(textureUnitName, fileName(bslsp, 5), clamp);
 			}
 		}
 		//with materials glowmap is in fact 5! and spec is now 2 not 2 and 7 as previous
-
-		String white = "shaders/nif/white.dds";
-		//String black = "shaders/nif/black.dds";
-		String default_n = "shaders/nif/default_n.dds";
 
 		// BSLightingShaderProperty
 		if (bslsp != null)
@@ -355,7 +366,7 @@ public class NiGeometryAppearanceShader
 			uni1i("greyscaleColor", hasGreyScaleColor);
 			if (hasGreyScaleColor)
 			{
-				bind("GreyscaleMap", bslsp, fileName(bslsp, 3, ""), TexClampMode.MIRRORED_S_MIRRORED_T);
+				registerBind("GreyscaleMap", fileName(bslsp, 3), TexClampMode.MIRRORED_S_MIRRORED_T);
 			}
 
 			boolean hasTintColor = bslsp.HairTintColor != null || bslsp.SkinTintColor != null;
@@ -372,13 +383,13 @@ public class NiGeometryAppearanceShader
 			uni1i("hasDetailMask", hasDetailMask);
 			if (hasDetailMask)
 			{
-				bind("DetailMask", bslsp, fileName(bslsp, 3, "shaders/nif/blankdetailmap.dds"), clamp);
+				registerBind("DetailMask", fileName(bslsp, 3), clamp);
 			}
 
 			uni1i("hasDetailMask", hasTintMask);
 			if (hasTintMask)
 			{
-				bind("TintMask", bslsp, fileName(bslsp, 6, "shaders/nif/gray.dds"), clamp);
+				registerBind("TintMask", fileName(bslsp, 6), clamp);
 			}
 
 			// Rim & Soft params
@@ -392,7 +403,7 @@ public class NiGeometryAppearanceShader
 
 			if (niGeometry.nVer.LOAD_USER_VER2 < 130 && (hasSoftlight || hasRimlight))
 			{
-				bind("LightMask", bslsp, fileName(bslsp, 2, default_n), clamp);
+				registerBind("LightMask", fileName(bslsp, 2), clamp);
 			}
 
 			// Backlight params
@@ -403,7 +414,7 @@ public class NiGeometryAppearanceShader
 
 			if (niGeometry.nVer.LOAD_USER_VER2 < 130 && hasBacklight)
 			{
-				bind("BacklightMap", bslsp, fileName(bslsp, 7, default_n), clamp);
+				registerBind("BacklightMap", fileName(bslsp, 7), clamp);
 			}
 
 			// Glow params
@@ -463,9 +474,9 @@ public class NiGeometryAppearanceShader
 			if (hasSpecularMap && (niGeometry.nVer.LOAD_USER_VER2 == 130 || !hasBacklight))
 			{
 				if (sm == null)
-					bind("SpecularMap", bslsp, fileName(bslsp, 7, white), clamp);
+					registerBind("SpecularMap", fileName(bslsp, 7), clamp);
 				else
-					bind("SpecularMap", bslsp, fileName(bslsp, 2, white), clamp);
+					registerBind("SpecularMap", fileName(bslsp, 2), clamp);
 			}
 
 			if (niGeometry.nVer.LOAD_USER_VER2 == 130)
@@ -509,7 +520,7 @@ public class NiGeometryAppearanceShader
 				uni1f("outerRefraction", bslsp.ParallaxRefractionScale);
 				uni1f("outerReflection", bslsp.ParallaxEnvmapStrength);
 
-				bind("InnerMap", bslsp, fileName(bslsp, 6, default_n), clamp);
+				registerBind("InnerMap", fileName(bslsp, 6), clamp);
 			}
 
 			// Environment Mapping
@@ -550,9 +561,9 @@ public class NiGeometryAppearanceShader
 				uni1f("envReflection", envReflection);
 
 				if (useEnvironmentMask)
-					bind("EnvironmentMap", bslsp, fileName(bslsp, 5, white), clamp);
+					registerBind("EnvironmentMap", fileName(bslsp, 5), clamp);
 
-				bindCube("CubeMap", bslsp, fileName(bslsp, 4));
+				registerBindCube("CubeMap", fileName(bslsp, 4));
 
 			}
 			else
@@ -568,7 +579,7 @@ public class NiGeometryAppearanceShader
 
 			if (niGeometry.nVer.LOAD_USER_VER2 < 130 && hasHeightMap)
 			{
-				bind("HeightMap", bslsp, fileName(bslsp, 3, "shaders/nif/gray.dds"), clamp);
+				registerBind("HeightMap", fileName(bslsp, 3), clamp);
 			}
 
 			//PJ new gear			
@@ -620,7 +631,7 @@ public class NiGeometryAppearanceShader
 			String EnvMask = em == null ? bsesp.EnvMaskTexture : em.textureList.get(4);
 			boolean hasEnvMask = EnvMask != null && EnvMask.trim().length() > 0;
 
-			bind("SourceTexture", bsesp, SourceTexture, clamp);
+			registerBind("SourceTexture", SourceTexture, clamp);
 
 			boolean isDoubleSided = bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Double_Sided);
 			if (em != null)
@@ -697,7 +708,7 @@ public class NiGeometryAppearanceShader
 			}
 
 			// BSEffectShader textures
-			bind("GreyscaleMap", bsesp, GreyscaleMap, TexClampMode.MIRRORED_S_MIRRORED_T);
+			registerBind("GreyscaleMap", GreyscaleMap, TexClampMode.MIRRORED_S_MIRRORED_T);
 
 			if (niGeometry.nVer.LOAD_USER_VER2 == 130)
 			{
@@ -708,7 +719,7 @@ public class NiGeometryAppearanceShader
 
 				uni1i("hasNormalMap", hasNormalMap);
 				if (hasNormalMap)
-					bind("NormalMap", bsesp, NormalMap, clamp);
+					registerBind("NormalMap", NormalMap, clamp);
 
 				uni1i("hasCubeMap", hasEnvMap);
 				uni1i("hasEnvMask", hasEnvMask);
@@ -721,10 +732,10 @@ public class NiGeometryAppearanceShader
 						uni1f("envReflection", em.fEnvironmentMappingMaskScale);
 
 					if (hasEnvMask)
-						bind("SpecularMap", bsesp, EnvMask, clamp);
+						registerBind("SpecularMap", EnvMask, clamp);
 
 					String textureUnitName = "CubeMap";
-					bind(textureUnitName, bsprop, fileName(bsprop, 2), clamp);
+					registerBind(textureUnitName, fileName(bsprop, 2), clamp);
 				}
 				else
 				{
@@ -737,41 +748,6 @@ public class NiGeometryAppearanceShader
 			uni1i("isVertexAlphaAnimation", isVertexAlphaAnimation);
 
 		}
-
-		// Shape merging demand aggressive appearance sharing, and hence component re-use
-		// Sahders are newer and not well support for Shape merging
-		shaderAttributeSet = getShaderAttributeSet(shaderProgram, allShaderAttributeValues);
-
-		// Texture Unit state does not require the same aggression as Java3D will find equivalence
-		// but it seem expensive and wasteful to me
-		TextureUnitState[] tus = allTextureUnitStates.toArray(new TextureUnitState[] {});
-
-		// note if we have transform TUS we must use our own unique copy not the shared version		
-		if (textureScale.x != 1 || textureScale.y != 1 || textureOffset.x != 0 || textureOffset.y != 0)
-		{
-			Transform3D textureTransform = new Transform3D();
-			textureTransform.setScale(new Vector3d(textureScale.x, textureScale.y, 0));
-			textureTransform.setTranslation(new Vector3f(textureOffset.x, textureOffset.y, 0));
-			//System.out.println("textureScale " + textureScale);
-			//System.out.println("textureOffset " + textureOffset);
-			textureAttributes.setTextureTransform(textureTransform);
-			for (int i = 0; i < tus.length; i++)
-			{
-				TextureUnitState tu = tus[i];
-				// can have null if texture not found
-				if (tu != null)
-				{
-					TextureUnitState newTu = new TextureUnitState();
-					newTu.setTexture(tu.getTexture());
-					newTu.setTextureAttributes(textureAttributes);
-					tus[i] = newTu;
-				}
-			}
-		}
-
-		app.setTextureUnitState(tus);
-		app.setShaderProgram(shaderProgram);
-		app.setShaderAttributeSet(shaderAttributeSet);
 
 		// BSESP/BSLSP do not always need an NiAlphaProperty, and appear to override it at times
 		boolean translucent = (bslsp != null)
@@ -848,6 +824,68 @@ public class NiGeometryAppearanceShader
 			pa.setPolygonOffsetFactor(0.04f);
 		}
 
+		boolean hasController = false;
+		if (texprop != null)
+		{
+			hasController |= niToJ3dData.get(texprop.controller) != null;
+		}
+		if (bsprop != null)
+		{
+			hasController |= niToJ3dData.get(bsprop.controller) != null;
+		}
+		if (bsesp != null)
+		{
+			hasController |= niToJ3dData.get(bsesp.controller) != null;
+		}
+		if (bslsp != null)
+		{
+			hasController |= niToJ3dData.get(bslsp.controller) != null;
+		}
+
+		// Shape merging demand aggressive appearance sharing, and hence component re-use
+		// Shaders are newer and not well support for Shape merging
+		shaderAttributeSet = getShaderAttributeSet(shaderProgram, allShaderAttributeValues);
+
+		// don't share if we will be controlled or transformed
+		boolean shared = (!hasController && textureScale.x == 1 && textureScale.y == 1 && textureOffset.x == 0 && textureOffset.y == 0);
+		// note non shared TUS have default read caps on
+		
+		// Texture Unit state does not require the same aggression as Java3D will find equivalence
+		// but it seem expensive and wasteful to me
+		TextureUnitState[] tus = new TextureUnitState[allTextureUnitStateBindings.size()];
+		for (int i = 0; i < allTextureUnitStateBindings.size(); i++)
+		{
+			Binding binding = allTextureUnitStateBindings.get(i);
+			if (binding.clampType == Binding.CUBE_MAP)
+			{
+				tus[i] = bindCube(binding);
+			}
+			else
+			{
+				tus[i] = bind(binding, shared);
+			}
+
+			// give it a transform if needed
+			if (tus[i] != null && (textureScale.x != 1 || textureScale.y != 1 || textureOffset.x != 0 || textureOffset.y != 0))
+			{
+				Transform3D textureTransform = new Transform3D();
+				textureTransform.setScale(new Vector3d(textureScale.x, textureScale.y, 0));
+				textureTransform.setTranslation(new Vector3f(textureOffset.x, textureOffset.y, 0));
+				//System.out.println("textureScale " + textureScale);
+				//System.out.println("textureOffset " + textureOffset);
+				textureAttributes.setTextureTransform(textureTransform);
+				tus[i].setTextureAttributes(textureAttributes);
+			}
+		}
+
+		app.setTextureUnitState(tus);
+		app.setShaderProgram(shaderProgram);
+		app.setShaderAttributeSet(shaderAttributeSet);
+
+		// empty these 2 temps
+		allShaderAttributeValues.clear();
+		allTextureUnitStateBindings.clear();
+
 		//Setting up controller must be done after the appearance is properly set up so the 
 		// controller can get at the pieces
 		if (texprop != null)
@@ -867,9 +905,6 @@ public class NiGeometryAppearanceShader
 			NiGeometryAppearanceFixed.setUpTimeController(bsesp, niToJ3dData, textureSource, target);
 		}
 
-		// empty these 2 temps
-		allShaderAttributeValues.clear();
-		allTextureUnitStates.clear();
 		return true;
 	}
 
@@ -1204,137 +1239,95 @@ public class NiGeometryAppearanceShader
 			allShaderAttributeValues.add(new ShaderAttributeValue2(var, val));
 	};
 
-	private void bindCube(String textureUnitName, BSLightingShaderProperty bslsp, String fileName)
+	private void registerBindCube(String samplerName, String fileName)
 	{
-		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
+		if (shaderProgram.programHasVar(samplerName) && fileName != null && fileName.length() > 0)
 		{
-			TextureUnitState tus = new TextureUnitState();
-			tus.clearCapabilities();
-			if (J3dNiGeometry.textureExists(fileName, textureSource))
-			{
-				Texture tex = J3dNiGeometry.loadTexture(fileName, textureSource);
-
-				ImageComponent[] ics = tex.getImages();
-				TextureCubeMap tcm = new TextureCubeMap(ics.length <= 1 ? Texture.BASE_LEVEL : Texture.MULTI_LEVEL_MIPMAP, Texture.RGBA,
-						tex.getWidth());
-
-				for (int f = 0; f < 6; f++)
-					for (int l = 0; l < ics.length; l++)
-						tcm.setImage(l, f, (ImageComponent2D) ics[l]);
-
-				tus.setTexture(tcm);
-				tus.setName(fileName);
-			}
-			else
-			{
-				System.out.println("bindCube BSLightingShaderProperty " + fileName + " No Texture found for nif " + bslsp.nVer.fileName);
-			}
-			//setUpTimeController(ntp, niToJ3dData);	
-
-			allTextureUnitStates.add(tus);
-			uni1i(textureUnitName, texunit++);
+			Binding binding = new Binding(samplerName, fileName, Binding.CUBE_MAP);
+			allTextureUnitStateBindings.add(binding);
 		}
 	}
 
-	private void bind(String textureUnitName, NiTexturingProperty ntp, String fileName, int clamp)
+	private TextureUnitState bindCube(Binding binding)
 	{
-		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
+		TextureUnitState tus = new TextureUnitState();
+		tus.clearCapabilities();
+		if (J3dNiGeometry.textureExists(binding.fileName, textureSource))
 		{
+			Texture tex = J3dNiGeometry.loadTexture(binding.fileName, textureSource);
 
+			ImageComponent[] ics = tex.getImages();
+			TextureCubeMap tcm = new TextureCubeMap(ics.length <= 1 ? Texture.BASE_LEVEL : Texture.MULTI_LEVEL_MIPMAP, Texture.RGBA,
+					tex.getWidth());
+
+			for (int f = 0; f < 6; f++)
+				for (int l = 0; l < ics.length; l++)
+					tcm.setImage(l, f, (ImageComponent2D) ics[l]);
+
+			tus.setTexture(tcm);
+			tus.setName(binding.fileName);
+		}
+		else
+		{
+			System.out.println(
+					"bindCube BSLightingShaderProperty " + binding.fileName + " No Texture found for nif " + niGeometry.nVer.fileName);
+		}
+
+		uni1i(binding.samplerName, texunit++);
+		return tus;
+	}
+
+	private void registerBind(String samplerName, String fileName, int clamp)
+	{
+		if (shaderProgram.programHasVar(samplerName) && fileName != null && fileName.length() > 0)
+		{
+			Binding binding = new Binding(samplerName, fileName, clamp);
+			allTextureUnitStateBindings.add(binding);
+		}
+	}
+
+	private TextureUnitState bind(Binding binding, boolean shared)
+	{
+		TextureUnitState tus = null;
+		if (shared)
+		{
 			//TODO: jonwd7 suggest texture slot is the decaling place, see his fixed pipeline
 			// also these should go through as shader uniforms I reckon
 			//textureAttributes.setTextureMode(ntp.isApplyReplace() ? TextureAttributes.REPLACE
 			//		: ntp.isApplyDecal() ? TextureAttributes.DECAL : TextureAttributes.MODULATE);
 
-			TextureUnitState tus = J3dNiGeometry.loadTextureUnitState(fileName, textureSource);
-			if (tus == null && !warningsGiven.contains(fileName))
+			tus = J3dNiGeometry.loadTextureUnitState(binding.fileName, textureSource);
+			if (tus == null && !warningsGiven.contains(binding.fileName))
 			{
-				System.out.println("NiTexturingProperty " + fileName + " No Texture found for nif " + ntp.nVer.fileName);
-				warningsGiven.add(fileName);
+				System.out.println("NiTexturingProperty " + binding.fileName + " No Texture found for nif " + niGeometry.nVer.fileName);
+				warningsGiven.add(binding.fileName);
 			}
-
-			//setUpTimeController(ntp, niToJ3dData);	
-
-			allTextureUnitStates.add(tus);
-			uni1i(textureUnitName, texunit++);
-
 		}
-	}
-
-	private void bind(String textureUnitName, BSShaderLightingProperty bsprop, String fileName, int clamp)
-	{
-		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
+		else
 		{
-			TextureUnitState tus = J3dNiGeometry.loadTextureUnitState(fileName, textureSource);
-			if (tus == null && !warningsGiven.contains(fileName))
+			Texture tex = J3dNiGeometry.loadTexture(binding.fileName, textureSource);
+			if (tex == null && !warningsGiven.contains(binding.fileName))
 			{
-				System.out.println("BSShaderLightingProperty " + fileName + " No Texture found for nif " + bsprop.nVer.fileName);
-				warningsGiven.add(fileName);
+				System.out.println("NiTexturingProperty " + binding.fileName + " No Texture found for nif " + niGeometry.nVer.fileName);
+				warningsGiven.add(binding.fileName);
 			}
 
-			//setUpTimeController(bslsp, niToJ3dData);
-
-			allTextureUnitStates.add(tus);
-			uni1i(textureUnitName, texunit++);
-
+			tus = new TextureUnitState();
+			tus.setTexture(tex);
+			tus.setName(binding.fileName);
 		}
+
+		uni1i(binding.samplerName, texunit++);
+
+		return tus;
 	}
 
 	private static HashSet<String> warningsGiven = new HashSet<String>();
-
-	private void bind(String textureUnitName, BSLightingShaderProperty bslsp, String fileName, int clamp)
-	{
-		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
-		{
-			TextureUnitState tus = J3dNiGeometry.loadTextureUnitState(fileName, textureSource);
-			if (tus == null && !warningsGiven.contains(fileName))
-			{
-				System.out.println("BSLightingShaderProperty " + fileName + " No Texture found for nif " + bslsp.nVer.fileName);
-				warningsGiven.add(fileName);
-			}
-
-			//NiSingleInterpController controller = (NiSingleInterpController) niToJ3dData.get(bslsp.controller);
-			//setUpTimeController(controller, niToJ3dData);
-
-			if (OUTPUT_BINDINGS)
-				System.out.println("bound " + textureUnitName + " to " + texunit + " with " + fileName);
-
-			allTextureUnitStates.add(tus);
-			uni1i(textureUnitName, texunit++);
-
-		}
-
-	}
-
-	private void bind(String textureUnitName, BSEffectShaderProperty bsesp, String fileName, int clamp)
-	{
-		if (shaderProgram.programHasVar(textureUnitName) && fileName != null && fileName.length() > 0)
-		{
-			TextureUnitState tus = J3dNiGeometry.loadTextureUnitState(fileName, textureSource);
-			if (tus == null && !warningsGiven.contains(fileName))
-			{
-				System.out.println("BSEffectShaderProperty " + fileName + " No Texture found for nif " + bsesp.nVer.fileName);
-				warningsGiven.add(fileName);
-
-			}
-
-			//setUpTimeController(bsesp, niToJ3dData);
-
-			allTextureUnitStates.add(tus);
-			uni1i(textureUnitName, texunit++);
-
-		}
-	}
 
 	private boolean hasFileName(BSLightingShaderProperty bslsp, int textureSlot)
 	{
 		String fn = fileName(bslsp, textureSlot);
 		return fn != null && fn.trim().length() > 0;
-	}
-
-	private String fileName(BSLightingShaderProperty bslsp, int textureSlot)
-	{
-		return fileName(bslsp, textureSlot, null);
 	}
 
 	private static BSMaterial getMaterial(BSEffectShaderProperty bsesp)
@@ -1371,7 +1364,7 @@ public class NiGeometryAppearanceShader
 		return null;
 	}
 
-	private String fileName(BSLightingShaderProperty bslsp, int textureSlot, String defaultFileName)
+	private String fileName(BSLightingShaderProperty bslsp, int textureSlot)
 	{
 		if (bslsp != null)
 		{
@@ -1388,7 +1381,7 @@ public class NiGeometryAppearanceShader
 			}
 
 		}
-		return defaultFileName;
+		return "";
 
 	}
 

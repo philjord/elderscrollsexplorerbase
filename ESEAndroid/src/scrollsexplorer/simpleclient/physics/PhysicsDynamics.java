@@ -449,9 +449,17 @@ public class PhysicsDynamics extends DynamicsEngine
 	{
 		synchronized (dynamicsWorld)
 		{
-			CollisionWorld.ClosestRayResultCallback rayCallback = new CollisionWorld.ClosestRayResultCallback(rayFrom, rayTo);
-			dynamicsWorld.rayTest(rayFrom, rayTo, rayCallback);
-			return rayCallback;
+			try
+			{
+				CollisionWorld.ClosestRayResultCallback rayCallback = new CollisionWorld.ClosestRayResultCallback(rayFrom, rayTo);
+				dynamicsWorld.rayTest(rayFrom, rayTo, rayCallback);
+				return rayCallback;
+			}
+			catch (NullPointerException e)
+			{
+				System.out.println("findRayIntersect null again! something something ObjectPools");
+				return null;
+			}
 		}
 	}
 

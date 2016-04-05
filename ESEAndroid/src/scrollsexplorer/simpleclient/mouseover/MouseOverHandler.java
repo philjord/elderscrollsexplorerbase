@@ -91,6 +91,8 @@ public abstract class MouseOverHandler implements WindowListener
 	{
 		// record the mouse move for the picker to use when it next wakes up
 		lastMouseEvent = e;
+		
+		//System.out.println("lastMouseEvent "+lastMouseEvent);
 	}
 
 	public void doMouseExited(MouseEvent e)
@@ -118,6 +120,8 @@ public abstract class MouseOverHandler implements WindowListener
 
 			canvas3D.getGLWindow().addMouseListener(mouseAdapter);
 			canvas3D.getGLWindow().addWindowListener(this);
+			
+			//System.out.println("MouseOverHandler setconfig");
 		}
 
 	}
