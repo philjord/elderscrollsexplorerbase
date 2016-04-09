@@ -67,7 +67,7 @@ public class SimpleSky extends BranchGroup
 		// and because we are *inside* the Sphere we have to generate 
 		// Normal coordinates inwards or the Sphere will not be visible.
 		Sphere sphere = new Sphere(1.0f, Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD,
-				app);
+				8, app);
 
 		// start wiring everything together,
 

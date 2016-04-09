@@ -1288,6 +1288,9 @@ public class NiGeometryAppearanceShader
 
 	private TextureUnitState bind(Binding binding, boolean shared)
 	{
+		if(warningsGiven.contains(binding.fileName))
+			return null;
+		
 		TextureUnitState tus = null;
 		if (shared)
 		{
@@ -1299,7 +1302,7 @@ public class NiGeometryAppearanceShader
 			tus = J3dNiGeometry.loadTextureUnitState(binding.fileName, textureSource);
 			if (tus == null && !warningsGiven.contains(binding.fileName))
 			{
-				System.out.println("NiTexturingProperty " + binding.fileName + " No Texture found for nif " + niGeometry.nVer.fileName);
+				System.out.println("Shared TextureUnitState bind " + binding.fileName + " no TextureUnitState found for nif " + niGeometry.nVer.fileName);
 				warningsGiven.add(binding.fileName);
 			}
 		}
@@ -1308,7 +1311,7 @@ public class NiGeometryAppearanceShader
 			Texture tex = J3dNiGeometry.loadTexture(binding.fileName, textureSource);
 			if (tex == null && !warningsGiven.contains(binding.fileName))
 			{
-				System.out.println("NiTexturingProperty " + binding.fileName + " No Texture found for nif " + niGeometry.nVer.fileName);
+				System.out.println("TextureUnitState bind " + binding.fileName + " no Texture found for nif " + niGeometry.nVer.fileName);
 				warningsGiven.add(binding.fileName);
 			}
 
