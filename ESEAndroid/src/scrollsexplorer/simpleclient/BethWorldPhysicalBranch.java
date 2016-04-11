@@ -1,9 +1,12 @@
 package scrollsexplorer.simpleclient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
@@ -39,11 +42,10 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 
 	private J3dICELLPersistent j3dCELLPersistent;
 
-	private J3dCELLGeneral j3dCELLTemporary;
-
 	private Vector3f lastUpdatedTranslation = new Vector3f(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
 
 	private HashMap<Point, J3dCELLGeneral> loadedNears = new HashMap<Point, J3dCELLGeneral>();
+	private Set<Point> loadingNears = Collections.synchronizedSet(new HashSet<Point>());
 
 	private QueuingThread updateThread;
 
@@ -117,7 +119,7 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 			/*j3dCELLPersistent = j3dCellFactory.makeBGInteriorCELLPersistent(worldFormId, false);
 			addChild((J3dCELLGeneral) j3dCELLPersistent);
 			clientPhysicsSystem.cellChanged(worldFormId, (J3dCELLGeneral) j3dCELLPersistent);
-
+			
 			j3dCELLTemporary = j3dCellFactory.makeBGInteriorCELLTemporary(worldFormId, false);
 			addChild(j3dCELLTemporary);
 			clientPhysicsSystem.loadJ3dCELL(j3dCELLTemporary);*/
@@ -212,44 +214,59 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 					clientPhysicsSystem.unloadJ3dCELL(bg);
 				}
 			}
-
 		}
 
+		ArrayList<Thread> igors = new ArrayList<Thread>();
 		for (int x = lowX; x <= highX; x++)
 		{
 			for (int y = lowY; y <= highY; y++)
 			{
-				//if(x==1&&y==1)
+				final Point key = new Point(x, y);
+				if (!loadedNears.containsKey(key) && !loadingNears.contains(key))
 				{
-					load(x, y);
+					loadingNears.add(key);
+					//let's split -up we can do more damage that way
+					Thread t = new Thread() {
+						public void run()
+						{
+							//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
+							J3dCELLGeneral j3dCELLTemporary = j3dCellFactory.makeBGWRLDTemporary(worldFormId, key.x, key.y, true);
+							synchronized (loadedNears)
+							{
+								loadedNears.put(key, j3dCELLTemporary);
+								if (j3dCELLTemporary != null)
+								{
+									j3dCELLTemporary.compile();// better to be done not on the j3d thread?
+									structureUpdateBehavior.add(BethWorldPhysicalBranch.this, j3dCELLTemporary);
+									clientPhysicsSystem.loadJ3dCELL(j3dCELLTemporary);
+								}
+							}
+							loadingNears.remove(key);
+						}
+					};
+					t.setName("phys load " + key);
+					t.start();
+					igors.add(t);
 				}
+
 			}
 		}
 
+		//now we wait for igors to come back from their missions
+		for (Thread t : igors)
+		{
+			try
+			{
+				t.join();
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
 		if ((System.currentTimeMillis() - start) > 50)
 			System.out.println("BethWorldPhysicalBranch.update took " + (System.currentTimeMillis() - start) + "ms");
 
-	}
-
-	private void load(int x, int y)
-	{
-
-		Point key = new Point(x, y);
-		if (!loadedNears.containsKey(key))
-		{
-			//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
-			j3dCELLTemporary = j3dCellFactory.makeBGWRLDTemporary(worldFormId, x, y, true);
-			synchronized (loadedNears)
-			{
-				loadedNears.put(key, j3dCELLTemporary);
-				if (j3dCELLTemporary != null)
-				{
-					j3dCELLTemporary.compile();// better to be done not on the j3d thread?
-					structureUpdateBehavior.add(this, j3dCELLTemporary);
-					clientPhysicsSystem.loadJ3dCELL(j3dCELLTemporary);
-				}
-			}
-		}
 	}
 
 	/**

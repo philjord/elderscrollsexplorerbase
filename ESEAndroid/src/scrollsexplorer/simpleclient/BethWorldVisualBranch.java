@@ -1,9 +1,13 @@
 package scrollsexplorer.simpleclient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
@@ -53,9 +57,13 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	private Vector3f lastUpdatedTranslation = new Vector3f(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
 
-	private HashMap<Point, J3dCELLGeneral> loadedNears = new HashMap<Point, J3dCELLGeneral>();
+	private Map<Point, J3dCELLGeneral> loadedNears = Collections.synchronizedMap(new HashMap<Point, J3dCELLGeneral>());
 
-	private HashMap<Point, J3dCELLGeneral> loadedFars = new HashMap<Point, J3dCELLGeneral>();
+	private Map<Point, J3dCELLGeneral> loadedFars = Collections.synchronizedMap(new HashMap<Point, J3dCELLGeneral>());
+
+	private Set<Point> loadingNears = Collections.synchronizedSet(new HashSet<Point>());
+
+	private Set<Point> loadingFars = Collections.synchronizedSet(new HashSet<Point>());
 
 	private QueuingThread nearUpdateThread;
 
@@ -180,7 +188,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	}
 
 	/**
-	 * Note this MUST be called wiht the visuals not yet attached, it does much structure change
+	 * Note this MUST be called with the visuals not yet attached, it does much structure change
 	 * @param charLocation
 	 */
 	public void init(Transform3D charLocation)
@@ -192,7 +200,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		charLocation.get(newTranslation);
 		lastUpdatedTranslation.set(newTranslation);
 
-		//Note not on a seperate thread		
+		//Note not on a separate thread		
 		if (j3dCELLPersistent != null)
 		{
 			j3dCELLPersistent.getGridSpaces().update(p.x, -p.z, bethLodManager);
@@ -276,10 +284,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			}
 
 			updateNear(p.x, -p.z);
-			IDashboard.dashboard.setNearLoading(-1);
-			IDashboard.dashboard.setFarLoading(1);
-			updateFar(p.x, -p.z);
-			IDashboard.dashboard.setFarLoading(-1);
+
 		}
 	}
 
@@ -289,7 +294,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 		long start = System.currentTimeMillis();
 
-		// lets remove those loaded nears not in the range
+		// figure out nears not in the range
 		Iterator<Point> keys = loadedNears.keySet().iterator();
 		ArrayList<Point> keysToRemove = new ArrayList<Point>();
 		while (keys.hasNext())
@@ -300,6 +305,83 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				keysToRemove.add(key);
 			}
 		}
+
+		ArrayList<Thread> igors = new ArrayList<Thread>();
+		for (int x = bounds.x; x <= bounds.x + bounds.width; x++)
+		{
+			for (int y = bounds.y; y <= bounds.y + bounds.height; y++)
+			{
+				final Point key = new Point(x, y);
+
+				if (!loadedNears.containsKey(key) && !loadingNears.contains(key))
+				{
+					loadingNears.add(key);
+					//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
+
+					//let's split -up we can do more damage that way
+					Thread t = new Thread() {
+						public void run()
+						{
+							J3dCELLGeneral bg = j3dCellFactory.makeBGWRLDTemporary(worldFormId, key.x, key.y, false);
+
+							loadedNears.put(key, bg);
+
+							//NOTE nears own the detailed land					
+							if (bg != null)
+							{
+								bg.compile();
+								structureUpdateBehavior.add(BethWorldVisualBranch.this, bg);
+
+								if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
+								{
+									clientPhysicsSystem.loadJ3dCELL(bg);
+								}
+
+								// now get rid of any fars that have the same keys loaded in
+								J3dCELLGeneral bgFar = loadedFars.get(key);
+								if (bgFar != null)
+								{
+									structureUpdateBehavior.remove(BethWorldVisualBranch.this, bgFar);
+									loadedFars.remove(key);
+								}
+							}
+							else
+							{
+								// normally just asking off the edge of map, should be fine
+								//System.out.println("bg==null! " +key);
+							}
+
+							loadingNears.remove(key);
+						}
+					};
+					t.setName("makeBGWRLDTemporaryNear " + key);
+					t.start();
+					igors.add(t);
+				}
+
+			}
+		}
+		//now we wait for igors to come back from their missions
+		for (Thread t : igors)
+		{
+			try
+			{
+				t.join();
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+		if ((System.currentTimeMillis() - start) > 50)
+			System.out.println("BethWorldVisualBranch.updateNear took " + (System.currentTimeMillis() - start) + "ms");
+
+		//add the fars in before removing the near it will replace
+		IDashboard.dashboard.setNearLoading(-1);
+		IDashboard.dashboard.setFarLoading(1);
+		updateFar(charX, charY, keysToRemove);
+		IDashboard.dashboard.setFarLoading(-1);
 
 		for (int i = 0; i < keysToRemove.size(); i++)
 		{
@@ -320,65 +402,16 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			}
 		}
 
-		for (int x = bounds.x; x <= bounds.x + bounds.width; x++)
-		{
-			for (int y = bounds.y; y <= bounds.y + bounds.height; y++)
-			{
-				//tester  
-				//	if (x == -4 && y == 1)
-				{
-					Point key = new Point(x, y);
-
-					if (!loadedNears.containsKey(key))
-					{
-						//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
-
-						J3dCELLGeneral bg = j3dCellFactory.makeBGWRLDTemporary(worldFormId, x, y, false);
-					 
-						synchronized (loadedNears)
-						{
-							loadedNears.put(key, bg);
-						}
-
-						//NOTE nears own the detailed land					
-						if (bg != null)
-						{
-							bg.compile();// better to be done not on the j3d thread?
-							structureUpdateBehavior.add(this, bg);
-
-							if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
-							{
-								clientPhysicsSystem.loadJ3dCELL(bg);
-							}
-						}
-
-						// now get rid of any fars that have the same keys loaded in
-						bg = loadedFars.get(key);
-						if (bg != null)
-						{
-							structureUpdateBehavior.remove(this, bg);
-							loadedFars.remove(key);
-							if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
-							{
-								clientPhysicsSystem.unloadJ3dCELL(bg);
-							}
-						}
-					}
-				}
-			}
-		}
-		if ((System.currentTimeMillis() - start) > 50)
-			System.out.println("BethWorldVisualBranch.updateNear took " + (System.currentTimeMillis() - start) + "ms");
-
 	}
 
 	/**
 	 * This only does things for Oblivion, tes5 doesn't use it
 	 * @param charX
 	 * @param charY
+	 * @param nearsAboutToBeRemoved 
 	 * @param isLive 
 	 */
-	private void updateFar(float charX, float charY)
+	private void updateFar(float charX, float charY, ArrayList<Point> nearsAboutToBeRemoved)
 	{
 		long start = System.currentTimeMillis();
 
@@ -412,26 +445,51 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				loadedFars.remove(key);
 			}
 		}
-
+		ArrayList<Thread> igors = new ArrayList<Thread>();
 		for (int x = lowX; x <= highX; x++)
 		{
 			for (int y = lowY; y <= highY; y++)
 			{
-				Point key = new Point(x, y);
-				// don't load fars where a near is
-				if (!loadedFars.containsKey(key) && !loadedNears.containsKey(key))
-				{
-					//long start = System.currentTimeMillis();
+				final Point key = new Point(x, y);
 
-					J3dCELLGeneral bg = j3dCellFactory.makeBGWRLDDistant(worldFormId, x, y, false);
-					loadedFars.put(key, bg);
-					if (bg != null)
-					{
-						bg.compile();// better to be done not on the j3d thread?
-						structureUpdateBehavior.add(this, bg);
-						//System.out.println("updateFar3 " + key + " " + (System.currentTimeMillis() - start));
-					}
+				// don't load if already there or coming
+				if (!loadedFars.containsKey(key) && !loadingFars.contains(key)
+				// don't load fars where a near is (but do where a near is about to leave	)				
+						&& (nearsAboutToBeRemoved.contains(key) || !loadedNears.containsKey(key)))
+				{
+					loadingFars.add(key);
+					//long start = System.currentTimeMillis();
+					Thread t = new Thread() {
+						public void run()
+						{
+							//System.out.println("updateFar3 " + key);
+							J3dCELLGeneral bg = j3dCellFactory.makeBGWRLDDistant(worldFormId, key.x, key.y, false);
+							loadedFars.put(key, bg);
+							if (bg != null)
+							{
+								bg.compile();// better to be done not on the j3d thread?
+								structureUpdateBehavior.add(BethWorldVisualBranch.this, bg);
+								//System.out.println("updateFar3 " + key + " " + (System.currentTimeMillis() - start));
+							}
+							loadingFars.remove(key);
+						}
+					};
+					t.setName("makeBGWRLDTemporaryFar " + key);
+					t.start();
+					igors.add(t);
 				}
+			}
+		}
+
+		for (Thread t : igors)
+		{
+			try
+			{
+				t.join();
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
 			}
 		}
 		if ((System.currentTimeMillis() - start) > 50)
@@ -509,13 +567,13 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		{
 			//System.out.println("asked for " +recoId);
 			for (J3dCELLGeneral cell : loadedNears.values())
-			{				
-				 //FIXME: often this does not work in Morrowind for the mouse over, but it works
+			{
+				//FIXME: often this does not work in Morrowind for the mouse over, but it works
 				// everytime if visual is shared with physics as if the ids are being not reused
-				
+
 				//customs and excise gates are 49346 (is in visuals) when good but
 				//60466 when bad, must be a generating a new id for physics side
-				if (cell != null) 
+				if (cell != null)
 				{
 					J3dRECOInst jri = cell.getJ3dRECOs().get(recoId);
 					if (jri != null)

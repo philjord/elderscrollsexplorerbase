@@ -26,7 +26,9 @@ import scrollsexplorer.simpleclient.BethWorldVisualBranch;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
 import scrollsexplorer.simpleclient.SimpleWalkSetup;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
+import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools.io.ConfigLoader;
+import tools3d.camera.Camera;
 import tools3d.utils.YawPitch;
 import tools3d.utils.loader.PropertyCodec;
 import tools3d.utils.scenegraph.LocationUpdateListener;
@@ -56,18 +58,26 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	public ScrollsExplorerNewt(String gameToLoad)
 	{
 		//Setting to emulate Android requirements
-		ArchiveFile.USE_FILE_MAPS = false;
-		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
-		ArchiveFile.USE_NON_NATIVE_ZIP = false;
+		Camera.FRONT_CLIP = 0.5f;
+		Camera.BACK_CLIP = 1000f;
+		Camera.MIN_FRAME_CYCLE_TIME = 33;
 
 		ESMManager.USE_FILE_MAPS = false;
 		ESMManager.USE_MINI_CHANNEL_MAPS = true;
 		ESMManager.USE_NON_NATIVE_ZIP = false;
 
-		BethRenderSettings.setFarLoadGridCount(0);
+		ArchiveFile.USE_FILE_MAPS = false;
+		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
+		ArchiveFile.USE_NON_NATIVE_ZIP = false;
+
+		BethRenderSettings.setFarLoadGridCount(4);
+		BethRenderSettings.setNearLoadGridCount(2);
 		BethRenderSettings.setLOD_LOAD_DIST_MAX(32);
 		BethRenderSettings.setObjectFade(100);
+		BethRenderSettings.setItemFade(100);
+		BethRenderSettings.setActorFade(50);// NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
+		PhysicsSystem.MIN_TIME_BETWEEN_STEPS_MS = 25;
 
 		try
 		{
