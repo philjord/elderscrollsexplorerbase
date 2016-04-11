@@ -35,7 +35,7 @@ public class ClientNifBulletCharBinding implements NifBulletBinding, CharacterPo
 	}
 
 	@Override
-	public synchronized void applyToModel()
+	public void applyToModel()
 	{
 		if (updateRequired)
 		{
@@ -60,7 +60,7 @@ public class ClientNifBulletCharBinding implements NifBulletBinding, CharacterPo
 	}
 
 	@Override
-	public synchronized void positionChanged(Vector3f newPosition2, Quat4f newRotation2)
+	public void positionChanged(Vector3f newPosition2, Quat4f newRotation2)
 	{
 		if (Float.isNaN(newPosition2.x))
 		{

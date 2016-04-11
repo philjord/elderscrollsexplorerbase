@@ -86,11 +86,17 @@ public abstract class DynamicsEngine
 		this.skipStepSim = skipStepSim;
 	}
 
+	private long timeOfLastStep = System.currentTimeMillis() * 2;
+
 	public void dynamicsTick()
 	{
 		long dtms = timeKeeper.getTimeMicroseconds();
 		timeKeeper.reset();
+
+		long startOfPreStep = System.currentTimeMillis();
 		dynamicsPreStep();
+		if (System.currentTimeMillis() - startOfPreStep > 100)
+			System.err.println("startOfPreStep update long " + (System.currentTimeMillis() - startOfPreStep));
 
 		// step the simulation
 		if (dynamicsWorld != null)
@@ -98,21 +104,37 @@ public abstract class DynamicsEngine
 			try
 			{
 				long dtms2 = timeKeeper.getTimeMicroseconds();
-				//note timeStep is seconds not ms AND you must have a sub step count! make him 5ish
+
+				long startOfSynch = System.currentTimeMillis();
 				synchronized (dynamicsWorld)
 				{
+					if ((System.currentTimeMillis() - startOfSynch) > 20)
+						System.err.println("synchronized (dynamicsWorld) long " + (System.currentTimeMillis() - startOfSynch));
+
 					if (!skipStepSim)
 					{
+						if (System.currentTimeMillis() - timeOfLastStep > 300)
+							System.err.println("Physics step stuttered " + (System.currentTimeMillis() - timeOfLastStep));
+						timeOfLastStep = System.currentTimeMillis();
+
+						//note timeStep is seconds not ms AND you must have a sub step count! make him 5ish
+						long startOfStepSimulation = System.currentTimeMillis();
 						dynamicsWorld.stepSimulation(dtms / 1000000f, 5);
+						if (System.currentTimeMillis() - startOfStepSimulation > 300)
+							System.err.println("stepSimulation long " + (System.currentTimeMillis() - startOfStepSimulation));
 					}
 					else
 					{
+						long startOfActions = System.currentTimeMillis();
 						//fire actions any way?
 						for (int a = 0; a < dynamicsWorld.getNumActions(); a++)
 						{
 							ActionInterface ai = dynamicsWorld.getAction(a);
 							ai.updateAction(dynamicsWorld, dtms / 1000000f);
 						}
+						if (System.currentTimeMillis() - startOfActions > 100)
+							System.err.println("Action updates long " + (System.currentTimeMillis() - startOfActions));
+
 					}
 				}
 
@@ -123,18 +145,22 @@ public abstract class DynamicsEngine
 			{
 				//DbvtBroadphase.setAabb being crazy
 				if (e.getStackTrace().length > 0)
-					System.out.println("" + e + " " + e.getStackTrace()[0]);
+					System.out.println("DbvtBroadphase.setAabb being crazy" + e + " " + e.getStackTrace()[0]);
 			}
 			catch (ClassCastException e)
 			{
 				// used to be called when ObjectPool was not properly multi threaded, should be fixed now
 				if (e.getStackTrace().length > 0)
-					System.out.println("" + e + " " + e.getStackTrace()[0]);
+					System.out.println("used to be called when ObjectPool was not properly multi threaded, should be fixed now" + e + " "
+							+ e.getStackTrace()[0]);
 			}
 
 		}
-
+		long startOfPostStep = System.currentTimeMillis();
 		dynamicsPostStep();
+		if (System.currentTimeMillis() - startOfPostStep > 100)
+			System.err.println("dynamicsPostStep update long " + (System.currentTimeMillis() - startOfPostStep));
+
 	}
 
 	protected abstract void dynamicsPostStep();

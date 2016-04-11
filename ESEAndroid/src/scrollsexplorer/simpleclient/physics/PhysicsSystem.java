@@ -35,7 +35,7 @@ public class PhysicsSystem implements NbccProvider
 
 	private MeshSource meshSource;
 
-	private long MIN_TIME_BETWEEN_BOUND_UPDATES_MS = 20;
+	private long MIN_TIME_BETWEEN_BOUND_UPDATES_MS = 50;
 
 	protected PhysicsDynamics physicsLocaleDynamics;
 
@@ -63,11 +63,20 @@ public class PhysicsSystem implements NbccProvider
 		this.meshSource = meshSource;
 
 		physicsSimThread = new PeriodicThread("Physics Sim Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
+			private long startOfLastUpdate = System.currentTimeMillis() * 2;
+
 			public void runUpdate()
 			{
+				if (System.currentTimeMillis() - startOfLastUpdate > 300)
+					System.err.println("PeriodicThread slow " + (System.currentTimeMillis() - startOfLastUpdate));
+				startOfLastUpdate = System.currentTimeMillis();
+
 				try
 				{
+					long startOfTick = System.currentTimeMillis();
 					physicsTick();
+					if ((System.currentTimeMillis() - startOfTick) > 300)
+						System.err.println("physicsTick long " + (System.currentTimeMillis() - startOfTick));
 				}
 				catch (Exception e)
 				{
@@ -220,15 +229,15 @@ public class PhysicsSystem implements NbccProvider
 	{
 		if (physicsLocaleDynamics != null)
 		{
-
+			long startOfEventProcessing = System.currentTimeMillis();
 			// notice no pause check so we can load up while paused
 			ArrayList<PhysicsUpdate> cpl = eventsToProcess.getCurrentPendingList();
 			for (PhysicsUpdate pu : cpl)
 			{
 				if (pu.type == PhysicsUpdate.UPDATE_TYPE.LOAD_FROM_MODEL)
 				{
-				//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
-				//	physicsLocaleDynamics.pause();
+					//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
+					//	physicsLocaleDynamics.pause();
 
 					// assumes cell id and stmodel set properly by now
 					for (J3dRECOInst instReco : pu.collection)
@@ -236,20 +245,20 @@ public class PhysicsSystem implements NbccProvider
 						physicsLocaleDynamics.addRECO(instReco);
 					}
 
-				//	if (!prevIsPaused)
-				//		physicsLocaleDynamics.unpause();
+					//	if (!prevIsPaused)
+					//		physicsLocaleDynamics.unpause();
 				}
 				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.UNLOAD_FROM_MODEL)
 				{
-				//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
-				//	physicsLocaleDynamics.pause();
+					//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
+					//	physicsLocaleDynamics.pause();
 					// assumes cell id and stmodel set properly by now
 					for (J3dRECOInst instReco : pu.collection)
 					{
 						physicsLocaleDynamics.removeRECO(instReco);
 					}
-				//	if (!prevIsPaused)
-				//		physicsLocaleDynamics.unpause();
+					//	if (!prevIsPaused)
+					//		physicsLocaleDynamics.unpause();
 				}
 				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.ADD)
 				{
@@ -262,10 +271,15 @@ public class PhysicsSystem implements NbccProvider
 
 			}
 			cpl.clear();
+
+			if ((System.currentTimeMillis() - startOfEventProcessing) > 100)
+				System.out.println("Physics event processing is slow " + (System.currentTimeMillis() - startOfEventProcessing));
+
 			if (!isPaused())
 			{
 				physicsLocaleDynamics.dynamicsTick();
 			}
+
 		}
 	}
 

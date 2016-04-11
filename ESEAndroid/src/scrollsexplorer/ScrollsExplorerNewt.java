@@ -58,9 +58,9 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	public ScrollsExplorerNewt(String gameToLoad)
 	{
 		//Setting to emulate Android requirements
-		Camera.FRONT_CLIP = 0.5f;
+		Camera.FRONT_CLIP = 0.2f;
 		Camera.BACK_CLIP = 1000f;
-		Camera.MIN_FRAME_CYCLE_TIME = 33;
+		Camera.MIN_FRAME_CYCLE_TIME = 15;
 
 		ESMManager.USE_FILE_MAPS = false;
 		ESMManager.USE_MINI_CHANNEL_MAPS = true;
@@ -77,7 +77,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		BethRenderSettings.setItemFade(100);
 		BethRenderSettings.setActorFade(50);// NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
-		PhysicsSystem.MIN_TIME_BETWEEN_STEPS_MS = 25;
+		PhysicsSystem.MIN_TIME_BETWEEN_STEPS_MS = 20;
 
 		try
 		{

@@ -31,6 +31,7 @@ import nifbullet.util.debug.opengl.LWJGL;
 import tools3d.navigation.AvatarCollisionInfo;
 import tools3d.navigation.AvatarLocation;
 import tools3d.utils.Utils3D;
+import tools3d.utils.scenegraph.StructureUpdateBehavior;
 import utils.source.MeshSource;
 
 public class PhysicsDynamics extends DynamicsEngine
@@ -46,6 +47,8 @@ public class PhysicsDynamics extends DynamicsEngine
 	private SparseArray<BulletNifModel> recoIdToNifBullet = new SparseArray<BulletNifModel>();
 
 	private BranchGroup dynamicsRootBranchGroup;
+
+	private StructureUpdateBehavior structureUpdateBehavior;
 
 	private boolean displayDebug = false;
 
@@ -70,6 +73,9 @@ public class PhysicsDynamics extends DynamicsEngine
 		dynamicsRootBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
 		dynamicsRootBranchGroup.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		dynamicsRootBranchGroup.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+
+		structureUpdateBehavior = new StructureUpdateBehavior();
+		dynamicsRootBranchGroup.addChild(structureUpdateBehavior);
 
 		rootGroup.addChild(dynamicsRootBranchGroup);
 
@@ -345,9 +351,6 @@ public class PhysicsDynamics extends DynamicsEngine
 	}
 
 	/**
-	 * Note I need to carefully watch for the addChild to the java3d scene graph
-	 * it must be done to a non live root node and then added later via a strucutre update behaviour
-	 * dynamicsRootBranchGroup.addChild((NBSimpleModel) nb);
 	 * @param j3dRECOInst
 	 */
 	protected void addRECO(J3dRECOInst j3dRECOInst)
@@ -360,14 +363,18 @@ public class PhysicsDynamics extends DynamicsEngine
 			// add to physics simulation
 			synchronized (dynamicsWorld)
 			{
+				long startTimeInSynchBlock = System.currentTimeMillis();
 				nifBullet.addToDynamicsWorld(dynamicsWorld);
+				if (System.currentTimeMillis() - startTimeInSynchBlock > 50)
+					System.err.println("TimeInSynchBlock bad " + (System.currentTimeMillis() - startTimeInSynchBlock));
 			}
 
-			//TODO: this guy is added things to a live scene graph, definitely problem chance??
 			if (nifBullet instanceof Node)
 			{
 				if (((Node) nifBullet).getParent() == null)
-					dynamicsRootBranchGroup.addChild((Node) nifBullet);
+				{
+					structureUpdateBehavior.add(dynamicsRootBranchGroup, (Node) nifBullet);
+				}
 				else
 					System.err.println("PhysicsDynamics attempt to re-add a node to scene? " + nifBullet);
 			}
@@ -376,8 +383,11 @@ public class PhysicsDynamics extends DynamicsEngine
 			{
 				synchronized (dynamicsWorld)
 				{
+					long startTimeInSynchBlock = System.currentTimeMillis();
 					NifBulletBinding irnbb = new InstRecoNifBulletBinding(j3dRECOInst, instRecoToNif, (NBSimpleDynamicModel) nifBullet);
 					instRecoBulletBindings.put(j3dRECOInst.getRecordId(), irnbb);
+					if (System.currentTimeMillis() - startTimeInSynchBlock > 50)
+						System.err.println("TimeInSynchBlock bad " + (System.currentTimeMillis() - startTimeInSynchBlock));
 				}
 			}
 		}
@@ -394,16 +404,19 @@ public class PhysicsDynamics extends DynamicsEngine
 		BulletNifModel nifBullet = recoIdToNifBullet.get(recordId);
 		if (nifBullet != null)
 		{
+			if (nifBullet instanceof Node)
+				structureUpdateBehavior.remove(dynamicsRootBranchGroup, (Node) nifBullet);
+
 			// remove from physics simulation
 			synchronized (dynamicsWorld)
 			{
-				//TODO: this guy is added things to a live scene graph, definitely problem chance??
-				if (nifBullet instanceof Node)
-					dynamicsRootBranchGroup.removeChild((Node) nifBullet);
+				long startTimeInSynchBlock = System.currentTimeMillis();
 
 				nifBullet.removeFromDynamicsWorld();
 				nifBullet.destroy();
 				instRecoBulletBindings.remove(recordId);
+				if (System.currentTimeMillis() - startTimeInSynchBlock > 50)
+					System.err.println("TimeInSynchBlock bad " + (System.currentTimeMillis() - startTimeInSynchBlock));
 			}
 			synchronized (recoIdToNifBullet)
 			{
@@ -416,7 +429,7 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	public void applyPhysicsToModel()
 	{
-		synchronized (dynamicsWorld)
+		//synchronized (dynamicsWorld)
 		{
 			for (int i = 0; i < instRecoBulletBindings.size(); i++)
 			{
