@@ -227,8 +227,8 @@ public class PhysicsSystem implements NbccProvider
 			{
 				if (pu.type == PhysicsUpdate.UPDATE_TYPE.LOAD_FROM_MODEL)
 				{
-					boolean prevIsPaused = physicsLocaleDynamics.isPaused();
-					physicsLocaleDynamics.pause();
+				//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
+				//	physicsLocaleDynamics.pause();
 
 					// assumes cell id and stmodel set properly by now
 					for (J3dRECOInst instReco : pu.collection)
@@ -236,20 +236,20 @@ public class PhysicsSystem implements NbccProvider
 						physicsLocaleDynamics.addRECO(instReco);
 					}
 
-					if (!prevIsPaused)
-						physicsLocaleDynamics.unpause();
+				//	if (!prevIsPaused)
+				//		physicsLocaleDynamics.unpause();
 				}
 				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.UNLOAD_FROM_MODEL)
 				{
-					boolean prevIsPaused = physicsLocaleDynamics.isPaused();
-					physicsLocaleDynamics.pause();
+				//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
+				//	physicsLocaleDynamics.pause();
 					// assumes cell id and stmodel set properly by now
 					for (J3dRECOInst instReco : pu.collection)
 					{
 						physicsLocaleDynamics.removeRECO(instReco);
 					}
-					if (!prevIsPaused)
-						physicsLocaleDynamics.unpause();
+				//	if (!prevIsPaused)
+				//		physicsLocaleDynamics.unpause();
 				}
 				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.ADD)
 				{

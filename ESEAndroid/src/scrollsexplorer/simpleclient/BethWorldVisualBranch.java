@@ -396,10 +396,9 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 					clientPhysicsSystem.unloadJ3dCELL((J3dCELLGeneral) bg);
 				}
 			}
-			synchronized (loadedNears)
-			{
-				loadedNears.remove(key);
-			}
+
+			loadedNears.remove(key);
+
 		}
 
 	}

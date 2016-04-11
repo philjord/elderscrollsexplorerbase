@@ -14,6 +14,7 @@ import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallb
 import com.frostwire.util.SparseArray;
 
 import esmj3d.j3d.j3drecords.inst.J3dLAND;
+import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmj3d.j3d.j3drecords.type.J3dRECOType;
 import nif.NifFile;
@@ -173,8 +174,9 @@ public class PhysicsDynamics extends DynamicsEngine
 			}
 			else
 			{
-				System.out.println(
-						"j3dRECOType null or null phys " + j3dRECOType + " for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
+				if (!(j3dRECOInst instanceof J3dRECOChaInst))
+					System.out.println(
+							"j3dRECOType null or null phys " + j3dRECOType + " for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
 
 			}
 		}
@@ -359,24 +361,31 @@ public class PhysicsDynamics extends DynamicsEngine
 			synchronized (dynamicsWorld)
 			{
 				nifBullet.addToDynamicsWorld(dynamicsWorld);
+			}
 
-				//TODO: this guy is added things to a live scene graph, definitely problem chance??
-				if (nifBullet instanceof Node)
-				{
-					if (((Node) nifBullet).getParent() == null)
-						dynamicsRootBranchGroup.addChild((Node) nifBullet);
-					else
-						System.err.println("PhysicsDynamics attempt to re-add a node to scene? " + nifBullet);
-				}
+			//TODO: this guy is added things to a live scene graph, definitely problem chance??
+			if (nifBullet instanceof Node)
+			{
+				if (((Node) nifBullet).getParent() == null)
+					dynamicsRootBranchGroup.addChild((Node) nifBullet);
+				else
+					System.err.println("PhysicsDynamics attempt to re-add a node to scene? " + nifBullet);
+			}
 
-				if (nifBullet instanceof NBSimpleDynamicModel)
+			if (nifBullet instanceof NBSimpleDynamicModel)
+			{
+				synchronized (dynamicsWorld)
 				{
 					NifBulletBinding irnbb = new InstRecoNifBulletBinding(j3dRECOInst, instRecoToNif, (NBSimpleDynamicModel) nifBullet);
 					instRecoBulletBindings.put(j3dRECOInst.getRecordId(), irnbb);
 				}
 			}
-
 		}
+		else
+		{
+			//System.out.println("nifBullet == null in addRECO for inst "+j3dRECOInst.getRecordId());
+		}
+
 	}
 
 	protected void removeRECO(J3dRECOInst j3dRECOInst)
@@ -431,35 +440,38 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	public int getRecordId(BulletNifModel nifBullet)
 	{
+		Integer id = null;
 		synchronized (dynamicsWorld)
 		{
-			Integer id = nifBulletToRecoId.get(nifBullet);
-			if (id == null)
-			{
-				return -1;
-			}
-			else
-			{
-				return id.intValue();
-			}
+			id = nifBulletToRecoId.get(nifBullet);
 		}
+		if (id == null)
+		{
+			return -1;
+		}
+		else
+		{
+			return id.intValue();
+		}
+
 	}
 
 	public ClosestRayResultCallback findRayIntersect(Vector3f rayFrom, Vector3f rayTo)
 	{
-		synchronized (dynamicsWorld)
+
+		try
 		{
-			try
+			CollisionWorld.ClosestRayResultCallback rayCallback = new CollisionWorld.ClosestRayResultCallback(rayFrom, rayTo);
+			synchronized (dynamicsWorld)
 			{
-				CollisionWorld.ClosestRayResultCallback rayCallback = new CollisionWorld.ClosestRayResultCallback(rayFrom, rayTo);
 				dynamicsWorld.rayTest(rayFrom, rayTo, rayCallback);
-				return rayCallback;
 			}
-			catch (NullPointerException e)
-			{
-				System.out.println("findRayIntersect null again! something something ObjectPools");
-				return null;
-			}
+			return rayCallback;
+		}
+		catch (NullPointerException e)
+		{
+			System.out.println("findRayIntersect null again! something something ObjectPools");
+			return null;
 		}
 	}
 
