@@ -1,12 +1,12 @@
 package scrollsexplorer.simpleclient.physics;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import javax.media.j3d.BranchGroup;
 import javax.vecmath.Vector3f;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
+import com.frostwire.util.SparseArray;
 
 import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
@@ -140,36 +140,42 @@ public class PhysicsSystem implements NbccProvider
 		//System.out.println("load request for GridSpace " + cell.getName() + " recos count = " + cell.getJ3dRECOsById().values().size());
 
 		// add the items
-		for (J3dRECOInst instReco : cell.getJ3dRECOsById().values())
+		SparseArray<J3dRECOInst> j3dRECOsById = cell.getJ3dRECOsById();
+		for (int i = 0; i < j3dRECOsById.size(); i++)
 		{
+			J3dRECOInst instReco = j3dRECOsById.get(j3dRECOsById.keyAt(i));
 			physicsLocaleDynamics.createRECO(instReco);
 		}
-		// use the arraylist of insts are teh keys for add
-		eventsToProcess.add(PhysicsUpdate.createLFM(cell.getJ3dRECOsById().values()));
+		// use the arraylist of insts are the keys for add
+		eventsToProcess.add(PhysicsUpdate.createLFM(j3dRECOsById));
 	}
 
 	public void unloadJ3dGridSpace(GridSpace cell)
 	{
+		SparseArray<J3dRECOInst> j3dRECOsById = cell.getJ3dRECOsById();
 		// removes just need the keys to remove
-		eventsToProcess.add(PhysicsUpdate.createULFM(cell.getJ3dRECOsById().values()));
+		eventsToProcess.add(PhysicsUpdate.createULFM(j3dRECOsById));
 	}
 
 	public void loadJ3dCELL(J3dCELLGeneral cell)
 	{
 		//System.out.println("load request for cell " + cell.getName());
 		// add the items
-		for (J3dRECOInst instReco : cell.getJ3dRECOs().values())
+		SparseArray<J3dRECOInst> j3dRECOs = cell.getJ3dRECOs();
+		for (int i = 0; i < j3dRECOs.size(); i++)
 		{
+			J3dRECOInst instReco = j3dRECOs.get(j3dRECOs.keyAt(i));
 			physicsLocaleDynamics.createRECO(instReco);
 		}
 		// use the arraylist of insts are the keys for add
-		eventsToProcess.add(PhysicsUpdate.createLFM(cell.getJ3dRECOs().values()));
+		eventsToProcess.add(PhysicsUpdate.createLFM(j3dRECOs));
 	}
 
 	public void unloadJ3dCELL(J3dCELLGeneral cell)
 	{
+		SparseArray<J3dRECOInst> j3dRECOs = cell.getJ3dRECOs();
 		// removes just need the keys to remove
-		eventsToProcess.add(PhysicsUpdate.createULFM(cell.getJ3dRECOs().values()));
+		eventsToProcess.add(PhysicsUpdate.createULFM(j3dRECOs));
 	}
 
 	public void addRECO(J3dRECOInst j3dRECOInst)
@@ -240,8 +246,9 @@ public class PhysicsSystem implements NbccProvider
 					//	physicsLocaleDynamics.pause();
 
 					// assumes cell id and stmodel set properly by now
-					for (J3dRECOInst instReco : pu.collection)
+					for (int i = 0; i < pu.collection.size(); i++)
 					{
+						J3dRECOInst instReco = pu.collection.get(pu.collection.keyAt(i));					 
 						physicsLocaleDynamics.addRECO(instReco);
 					}
 
@@ -253,8 +260,9 @@ public class PhysicsSystem implements NbccProvider
 					//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
 					//	physicsLocaleDynamics.pause();
 					// assumes cell id and stmodel set properly by now
-					for (J3dRECOInst instReco : pu.collection)
+					for (int i = 0; i < pu.collection.size(); i++)
 					{
+						J3dRECOInst instReco = pu.collection.get(pu.collection.keyAt(i));	
 						physicsLocaleDynamics.removeRECO(instReco);
 					}
 					//	if (!prevIsPaused)
@@ -389,7 +397,7 @@ public class PhysicsSystem implements NbccProvider
 
 		public J3dRECOInst reco = null;
 
-		public Collection<J3dRECOInst> collection;
+		public SparseArray<J3dRECOInst> collection;
 
 		public static PhysicsUpdate createAdd(J3dRECOInst reco)
 		{
@@ -407,19 +415,19 @@ public class PhysicsSystem implements NbccProvider
 			return pu;
 		}
 
-		public static PhysicsUpdate createLFM(Collection<J3dRECOInst> collection)
+		public static PhysicsUpdate createLFM(SparseArray<J3dRECOInst> collection)
 		{
 			PhysicsUpdate pu = new PhysicsUpdate();
 			pu.type = UPDATE_TYPE.LOAD_FROM_MODEL;
-			pu.collection = new ArrayList<J3dRECOInst>(collection);
+			pu.collection = collection;
 			return pu;
 		}
 
-		public static PhysicsUpdate createULFM(Collection<J3dRECOInst> collection)
+		public static PhysicsUpdate createULFM(SparseArray<J3dRECOInst> collection)
 		{
 			PhysicsUpdate pu = new PhysicsUpdate();
 			pu.type = UPDATE_TYPE.UNLOAD_FROM_MODEL;
-			pu.collection = new ArrayList<J3dRECOInst>(collection);
+			pu.collection = collection;
 			return pu;
 		}
 	}
