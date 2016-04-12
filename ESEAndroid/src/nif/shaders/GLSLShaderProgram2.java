@@ -55,8 +55,11 @@ public class GLSLShaderProgram2 extends GLSLShaderProgram
 	{
 		for (Shader s : getShaders())
 		{
-			if (((GLSLSourceCodeShader) s).shaderHasVar(var, val.getClass().getSimpleName()))
+			//type checking not in fact done so use faster call
+			if (((GLSLSourceCodeShader) s).shaderHasVar(var))
 				return true;
+			//if (((GLSLSourceCodeShader) s).shaderHasVar(var, val.getClass().getSimpleName()))
+			//	return true;
 		}
 		return false;
 	}
