@@ -70,6 +70,7 @@ public class PhysicsDynamics extends DynamicsEngine
 
 		this.instRecoToNif = instRecoToNif;
 		dynamicsRootBranchGroup = new BranchGroup();
+		dynamicsRootBranchGroup.setName("dynamicsRootBranchGroup");
 		dynamicsRootBranchGroup.setCapability(BranchGroup.ALLOW_DETACH);
 		dynamicsRootBranchGroup.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		dynamicsRootBranchGroup.setCapability(Group.ALLOW_CHILDREN_EXTEND);
@@ -193,7 +194,8 @@ public class PhysicsDynamics extends DynamicsEngine
 	private NBSimpleModel createLand(J3dLAND j3dLAND)
 	{
 		Transform3D rootTrans = j3dLAND.getLocation(new Transform3D());
-		NBSimpleModel nb = new NBSimpleModel(j3dLAND.getGeometryInfo(), rootTrans);
+		//NBSimpleModel nb = new NBSimpleModel(j3dLAND.getGeometryInfo(), rootTrans);
+		NBSimpleModel nb = new NBSimpleModel(j3dLAND.getHeights(), rootTrans);
 		if (nb != null)
 		{
 			synchronized (recoIdToNifBullet)
@@ -376,7 +378,12 @@ public class PhysicsDynamics extends DynamicsEngine
 					structureUpdateBehavior.add(dynamicsRootBranchGroup, (Node) nifBullet);
 				}
 				else
-					System.err.println("PhysicsDynamics attempt to re-add a node to scene? " + nifBullet);
+				{
+					new Throwable("PhysicsDynamics attempt to re-add a node to scene! recordId " + recordId + " " + nifBullet)
+							.printStackTrace();
+					for (Object o : structureUpdateBehavior.getQueue())
+						System.out.println("On queue " + o);
+				}
 			}
 
 			if (nifBullet instanceof NBSimpleDynamicModel)
