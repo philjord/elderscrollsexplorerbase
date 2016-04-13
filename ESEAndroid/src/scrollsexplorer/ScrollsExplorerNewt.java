@@ -22,11 +22,13 @@ import esmmanager.loader.ESMManager;
 import esmmanager.loader.IESMManager;
 import nativeLinker.LWJGLLinker;
 import nif.BgsmSource;
+import nif.appearance.NiGeometryAppearanceFactoryShader;
 import scrollsexplorer.simpleclient.BethWorldVisualBranch;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
 import scrollsexplorer.simpleclient.SimpleWalkSetup;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
+import tools.compressedtexture.CompressedTextureLoader;
 import tools.io.ConfigLoader;
 import tools3d.camera.Camera;
 import tools3d.utils.YawPitch;
@@ -59,7 +61,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	{
 		//Setting to emulate Android requirements
 		Camera.FRONT_CLIP = 0.2f;
-		Camera.BACK_CLIP = 1000f;
+		Camera.BACK_CLIP = 2000f;
 		Camera.MIN_FRAME_CYCLE_TIME = 15;
 
 		ESMManager.USE_FILE_MAPS = false;
@@ -78,6 +80,9 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		BethRenderSettings.setActorFade(50);// NOTE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
 		PhysicsSystem.MIN_TIME_BETWEEN_STEPS_MS = 20;
+		
+		NiGeometryAppearanceFactoryShader.setAsDefault();
+		CompressedTextureLoader.setAnisotropicFilterDegree(8);
 
 		try
 		{

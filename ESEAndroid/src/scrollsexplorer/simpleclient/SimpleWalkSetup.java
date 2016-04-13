@@ -21,7 +21,6 @@ import com.jogamp.newt.opengl.GLWindow;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import esmj3d.j3d.BethRenderSettings;
-import nif.appearance.NiGeometryAppearanceFactoryShader;
 import nifbullet.NavigationProcessorBullet;
 import nifbullet.NavigationProcessorBullet.NbccProvider;
 import nifbullet.cha.NBControlledChar;
@@ -30,7 +29,6 @@ import scrollsexplorer.simpleclient.mouseover.ActionableMouseOverHandler;
 import scrollsexplorer.simpleclient.mouseover.AdminMouseOverHandler;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import scrollsexplorer.simpleclient.scenegraph.LoadingInfoBehavior;
-import tools.compressedtexture.dds.DDSTextureLoader;
 import tools3d.camera.CameraPanel;
 import tools3d.camera.HMDCamDolly;
 import tools3d.camera.HMDCameraPanel;
@@ -252,9 +250,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			}
 		});
 
-		NiGeometryAppearanceFactoryShader.setAsDefault();
 
-		DDSTextureLoader.setAnisotropicFilterDegree(8);
 		setupGraphicsSetting();
 		cameraPanel.getCanvas3D2D().getGLWindow().setSize(1200, 1000);
 		cameraPanel.startRendering();
