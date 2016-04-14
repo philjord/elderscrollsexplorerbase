@@ -2,7 +2,7 @@
 
 precision mediump float;
 
-uniform mat4 viewMatrix;
+uniform mat4 glViewMatrix;
 
 uniform int alphaTestEnabled;
 uniform int alphaTestFunction;
@@ -113,7 +113,7 @@ void main( void )
 	
 	// Convert model space to view space
 	//	Swizzled G/B values!
-	normal = normalize( vec3( viewMatrix * vec4( normal.rbg, 0.0 )));
+	normal = normalize( vec3( glViewMatrix * vec4( normal.rbg, 0.0 )));
 	
 	// Face Normals
 	//vec3 X = dFdx(v);

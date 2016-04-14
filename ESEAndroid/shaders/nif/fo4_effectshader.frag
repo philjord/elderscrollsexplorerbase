@@ -3,7 +3,7 @@
 precision mediump float;
 
 uniform mat4 glModelViewMatrixInverse;
-uniform mat4 viewMatrix;
+uniform mat4 glViewMatrix;
 
 uniform int alphaTestEnabled;
 uniform int alphaTestFunction;
@@ -111,7 +111,7 @@ void main( void )
 
 	vec3 reflected = reflect( V, normal );
 	vec3 reflectedVS = t * reflected.x + b * reflected.y + N * reflected.z;
-	vec3 reflectedWS = vec3( viewMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
+	vec3 reflectedWS = vec3( glViewMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
 	
 	// Falloff
 	float falloff = 1.0;

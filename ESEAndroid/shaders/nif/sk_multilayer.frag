@@ -2,7 +2,7 @@
 
 precision mediump float;
 
-uniform mat4 worldMatrix;
+uniform mat4 glModelMatrix;
 uniform mat4 glModelViewMatrixInverse;
 
 uniform int alphaTestEnabled;
@@ -152,7 +152,7 @@ void main( void )
 
 	vec3 reflected = reflect( -E, normal );
 	vec3 reflectedVS = b * reflected.x + t * reflected.y + N * reflected.z;
-	vec3 reflectedWS = vec3( worldMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
+	vec3 reflectedWS = vec3( glModelMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
 
 
 	vec4 color;

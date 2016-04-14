@@ -4,10 +4,10 @@ attribute vec4 glVertex;
 attribute vec4 glColor;
 attribute vec2 glMultiTexCoord0; 
 
-uniform mat4 glProjectionMatrix;
-uniform mat4 glModelViewMatrix;
+//uniform mat4 glProjectionMatrix;
+//uniform mat4 glModelViewMatrix;
 uniform mat4 glModelViewProjectionMatrix;
-uniform mat3 glNormalMatrix;
+//uniform mat3 glNormalMatrix;
 
 uniform vec4 glFrontMaterialdiffuse;
 uniform int ignoreVertexColors;

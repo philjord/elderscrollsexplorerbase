@@ -2,8 +2,7 @@
 
 precision mediump float;
 
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
+uniform mat4 glModelMatrix;
 uniform mat4 glModelViewMatrixInverse;
 
 uniform int alphaTestEnabled;
@@ -49,8 +48,6 @@ uniform float rimPower;
 uniform float backlightPower;
 
 uniform float envReflection;
-
-uniform mat4 worldMatrix;
 
 varying vec3 LightDir;
 varying vec3 ViewDir;
@@ -173,7 +170,7 @@ void main( void )
 
 	vec3 reflected = reflect( V, normal );
 	vec3 reflectedVS = t * reflected.x + b * reflected.y + N * reflected.z;
-	vec3 reflectedWS = vec3( viewMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
+	vec3 reflectedWS = vec3( glModelMatrix * (glModelViewMatrixInverse * vec4( reflectedVS, 0.0 )) );
 
 
 	vec4 color;

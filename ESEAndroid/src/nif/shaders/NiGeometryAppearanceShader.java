@@ -70,30 +70,17 @@ import nif.niobject.bs.SkyShaderProperty;
 import nif.niobject.bs.TallGrassShaderProperty;
 import nif.niobject.bs.TileShaderProperty;
 import nif.niobject.bs.WaterShaderProperty;
+import nif.niobject.controller.NiTextureTransformController;
+import nif.niobject.controller.NiTimeController;
 import utils.convert.NifOpenGLToJava3D;
 import utils.source.TextureSource;
 
 /**
- Note I should update everything
- 
- Shaders usage by nifskope
- Abraxo_Clean = fo4_env
- BloodBugButtRed.nif = fo4_env
- most props are env
- 
- 
- interiors/brain/deadneuron01 effectshader
- interface/INTMenuFogParticles effectshader
- 
- 
- 
- this will build an appearance up out of a NiGeometry that can be used by a real j3dnigeometry 
+ This will build an appearance up out of a NiGeometry that can be used by a real j3dnigeometry 
  It is based on the nifskope 2.0 renderer code from jonwd7
   
  TODO:
  The SKYRIM TREE ANIM code in the bind, is useless but should be put into a new shader type
- 
- sk_env must have the wrld matrix sent through, perhaps just a dummy to ensure the variable is bound?
  
  https://gist.github.com/patriciogonzalezvivo/3a81453a24a542aabc63 looks like some real good lighting equations
 */
@@ -196,7 +183,7 @@ public class NiGeometryAppearanceShader
 				return program.getName();
 		}
 
-		System.out.println("ARRRRRRRRRRRRRRRRRRRRRRGGGH FFP attempt " + niGeometry.nVer.fileName);
+		System.err.println("ARRRRRRRRRRRRRRRRRRRRRRGGGH FFP attempt " + niGeometry.nVer.fileName);
 		//null mean use fixed
 		return null;
 	}
@@ -214,13 +201,11 @@ public class NiGeometryAppearanceShader
 		// note time controllers below need appearance set on the shape now
 		shape.setAppearance(app);
 
-		// Render polygon fill slightly behind alpha transparency and wireframe
-		//glEnable( GL_POLYGON_OFFSET_FILL );
-		//glPolygonOffset( 1.0f, 2.0f );
-		// to put the above it I would need to undo it in the alpha section, not entirely sure
-		// but where are decals?
-
-		TextureAttributes textureAttributes = new TextureAttributes();
+		// 3.1 and down NiTextureProperty NiMultiTextureProperty
+		// not seen often BSSkyShaderProperty? BSWaterShaderProperty?
+		// NiTexturingPropertyC 1 BSShaderLightingPropertyC 1, then bsprop is overridden by texprop
+		// BSShaderLightingProperty has dozens of sub classes like BSShaderPPLightingProperty,  BSShaderNoLightingProperty  
+		// BSEffectShaderProperty appears to always be alone
 
 		NiTexturingProperty texprop = (NiTexturingProperty) props.get(NiTexturingProperty.class);
 		BSShaderLightingProperty bsprop = (BSShaderLightingProperty) props.get(BSShaderLightingProperty.class);
@@ -330,34 +315,6 @@ public class NiGeometryAppearanceShader
 				textureScale.set(sm.fUScale, sm.fVScale);
 				textureOffset.set(sm.fUOffset, sm.fVOffset);
 			}
-
-			//http://www.swiftless.com/tutorials/opengl4/3-opengl-4-matrices.html
-			// the above say worldMatrix is view and local is model
-			// others suggest and usage suggests world=model
-			// renderer.cpp says local=model for sure
-			// as projection does not exist I say view is proj
-			// translation is:
-			// viewMatrix = glProjectionMatrix
-			// localMatrix = modelMatrix (no inverse)
-			// worldMatrix = viewMatrix (no inverse)
-
-			/*	Matrix4f viewMatrix = new Matrix4f();
-				viewMatrix.setIdentity();
-				uni4m("viewMatrix", viewMatrix);
-				viewMatrix.invert();
-				uni4m("viewMatrixInverse", viewMatrix);
-			
-				//uni4m( "localMatrix", mesh.localTrans().toMatrix4() );
-				//uni4m( "localMatrixInverse", mesh.localTrans().toMatrix4().inverted() );
-			
-				Matrix4f worldMatrix = new Matrix4f();
-				worldMatrix.setIdentity();
-				uni4m("worldMatrix", worldMatrix);
-				worldMatrix.invert();
-				uni4m("worldMatrixInverse", worldMatrix);*/
-
-			//sk_env.frag and sk_multilayer.frag and  fo4_env.frag fo4_effectshader  uses the worldMatrix  
-			//sk_msn.frag uses  viewMatrix (msn stand for model space normal mapping)
 
 			boolean hasGreyScaleColor = bslsp.ShaderFlags1.isBitSet(SkyrimShaderPropertyFlags1.SLSF1_Greyscale_To_PaletteColor);
 			if (sm != null)
@@ -582,39 +539,16 @@ public class NiGeometryAppearanceShader
 				registerBind("HeightMap", fileName(bslsp, 3), clamp);
 			}
 
-			//PJ new gear			
-			//TODO: check this jonwd7 does not do it, there is a use vertex alpha flag that would do this, but it
-			// appear to be not used this way on trees
-			// apparently the The vertex colors are used as well, just not the alpha component when
-			// SF_Vertex_Animation is present
+			// vertex alpha is ignored when SF_Vertex_Animation is present
 			// http://niftools.sourceforge.net/forum/viewtopic.php?f=10&t=3276
 			boolean isVertexAlphaAnimation = bslsp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_Tree_Anim);
 			uni1i("isVertexAlphaAnimation", isVertexAlphaAnimation);
-			if (isVertexAlphaAnimation)
-			{
-				//System.out.println("SLSF2_Tree_Anim using shader "+shaderProgram);
-				//hand through the isTreeAnim flag so the shader can ignore alpha
-				//textureAttributes.setTextureMode(TextureAttributes.COMBINE);
-				//textureAttributes.setCombineAlphaMode(TextureAttributes.COMBINE_REPLACE);
-				//ta.setTransparencyMode(TransparencyAttributes.SCREEN_DOOR);
-				//if ( isVertexAlphaAnimation ) {
-				//	for ( int i = 0; i < colors.count(); i++ )
-				//		colors[i].setRGBA( colors[i].red(), colors[i].green(), colors[i].blue(), 1 );
-				//}
-				//the glColors need to ignore the alpha component
-
-			}
-
 		}
 
+		// note this will be sole texturer if present
 		BSEffectShaderProperty bsesp = (BSEffectShaderProperty) props.get(BSEffectShaderProperty.class);
 		if (bsesp != null)
 		{
-			//TODO: same issue as above which one is this!
-			Matrix4f worldMatrix = new Matrix4f();
-			worldMatrix.setIdentity();
-			uni4m("worldMatrix", worldMatrix);
-
 			EffectMaterial em = (EffectMaterial) getMaterial(bsesp);
 
 			clamp = bsesp.TextureClampMode.mode;
@@ -757,28 +691,18 @@ public class NiGeometryAppearanceShader
 		BSMaterial m = bslsp != null ? getMaterial(bslsp) : bsesp != null ? getMaterial(bsesp) : null;
 		if (m == null)
 		{
-			// setup alpha
 			glProperty((NiAlphaProperty) props.get(NiAlphaProperty.class));
-			// setup material
 			glProperty((NiMaterialProperty) props.get(NiMaterialProperty.class), (NiSpecularProperty) props.get(NiSpecularProperty.class));
-			// setup z buffer
 			glProperty((NiZBufferProperty) props.get(NiZBufferProperty.class));
-			// setup stencil
 			glProperty((NiStencilProperty) props.get(NiStencilProperty.class));
-			// wireframe ?
 			glProperty((NiWireframeProperty) props.get(NiWireframeProperty.class));
 		}
 		else
 		{
-			// setup blending
 			glPropertyAlpha(m);
-			// setup material
 			glMaterial(m);
-			// setup z buffer
 			glMaterialZBuffer(m);
-			// setup stencil
 			glMaterialStencil(m);
-			// wireframe ?
 			glMaterialWireframe(m);
 		}
 
@@ -796,7 +720,6 @@ public class NiGeometryAppearanceShader
 		depthWrite |= (bsesp != null) && bsesp.ShaderFlags2.isBitSet(SkyrimShaderPropertyFlags2.SLSF2_ZBuffer_Write);
 		if (!depthWrite || translucent)
 		{
-			//TODO: is this the equivalent of glDepthMask( GL_FALSE );
 			ra.setDepthBufferWriteEnable(false);
 		}
 
@@ -824,31 +747,63 @@ public class NiGeometryAppearanceShader
 			pa.setPolygonOffsetFactor(0.04f);
 		}
 
-		boolean hasController = false;
+		TextureAttributes textureAttributes = null;
+		NiTimeController controller = null;
 		if (texprop != null)
 		{
-			hasController |= niToJ3dData.get(texprop.controller) != null;
+			controller = (NiTimeController) niToJ3dData.get(texprop.controller);
 		}
-		if (bsprop != null)
+		else if (bsprop != null)
 		{
-			hasController |= niToJ3dData.get(bsprop.controller) != null;
-		}
-		if (bsesp != null)
-		{
-			hasController |= niToJ3dData.get(bsesp.controller) != null;
+			controller = (NiTimeController) niToJ3dData.get(bsprop.controller);
 		}
 		if (bslsp != null)
 		{
-			hasController |= niToJ3dData.get(bslsp.controller) != null;
+			controller = (NiTimeController) niToJ3dData.get(bslsp.controller);
 		}
+		if (bsesp != null)
+		{
+			controller = (NiTimeController) niToJ3dData.get(bsesp.controller);
+		}
+		if (controller != null)
+		{
+			if (controller instanceof NiTextureTransformController)
+			{
+				textureAttributes = niToJ3dData.getTextureAttributes(controller.refId);
+			}
+		}
+		if (textureAttributes == null)
+			textureAttributes = new TextureAttributes();
+
+		// ok for a given texturing prop I must build a set of tus and also a set of shader name
+		// bindings then pull it out of the nitoj3d object
+
+		// Time controllers are exactly like this, by refId in all, I just need to share
+		// the target back out again, so each one should maybe 
+		// NiAlphaController target = TransparencyAttributes
+		// NiFlipController target = appearance or it textureunitstates
+		// NiMaterialColor	target = Material
+		// NiVisContorller  target = renderingAttributes
+		// NiLightColor / Dimmer / radius target = PointLight
+		// NiUVController ?tricky currently just creates a TextureTransformController	
+		// NiGeomMorp == geometry data (singleton?)
+		// all the crazy NiPSysModifiers?			
+		// NiExtraDataController - not used by me yet
+		// NiControllerManager controller controller
+		// NiKeyframeController like single interp
+		// NiSingleInterpController joins a controller to an interpolator
+
+		//honestly the textureunitstates should also be by texturing property and bsep and bslsp
+		// so where they are reused more than once they are the exact same objects
 
 		// Shape merging demand aggressive appearance sharing, and hence component re-use
 		// Shaders are newer and not well support for Shape merging
 		shaderAttributeSet = getShaderAttributeSet(shaderProgram, allShaderAttributeValues);
 
 		// don't share if we will be controlled or transformed
-		boolean sharable = (!hasController && textureScale.x == 1 && textureScale.y == 1 && textureOffset.x == 0 && textureOffset.y == 0);
-		// note non shared TUS have default read caps on
+		boolean sharable = (controller == null && textureScale.x == 1 && textureScale.y == 1 && textureOffset.x == 0
+				&& textureOffset.y == 0);
+				// note non shared TUS have default read caps on
 
 		// Texture Unit state does not require the same aggression as Java3D will find equivalence
 		// but it seem expensive and wasteful to me
@@ -865,17 +820,23 @@ public class NiGeometryAppearanceShader
 				tus[i] = bind(binding, sharable);
 			}
 
-			// give it a transform if needed
-			if (tus[i] != null && (textureScale.x != 1 || textureScale.y != 1 || textureOffset.x != 0 || textureOffset.y != 0))
+			if (tus[i] != null)
 			{
-				Transform3D textureTransform = new Transform3D();
-				textureTransform.setScale(new Vector3d(textureScale.x, textureScale.y, 0));
-				textureTransform.setTranslation(new Vector3f(textureOffset.x, textureOffset.y, 0));
-				//System.out.println("textureScale " + textureScale);
-				//System.out.println("textureOffset " + textureOffset);
-				textureAttributes.setTextureTransform(textureTransform);
-				tus[i].setTextureAttributes(textureAttributes);
+				if ((textureScale.x != 1 || textureScale.y != 1 || textureOffset.x != 0 || textureOffset.y != 0))
+				{
+					Transform3D textureTransform = new Transform3D();
+					textureTransform.setScale(new Vector3d(textureScale.x, textureScale.y, 0));
+					textureTransform.setTranslation(new Vector3f(textureOffset.x, textureOffset.y, 0));
+					//System.out.println("textureScale " + textureScale);
+					//System.out.println("textureOffset " + textureOffset);
+					textureAttributes.setTextureTransform(textureTransform);
+					tus[i].setTextureAttributes(textureAttributes);
+				}
+
+				if (controller != null)
+					tus[i].setTextureAttributes(textureAttributes);
 			}
+
 		}
 
 		app.setTextureUnitState(tus);
@@ -886,25 +847,27 @@ public class NiGeometryAppearanceShader
 		allShaderAttributeValues.clear();
 		allTextureUnitStateBindings.clear();
 
+		//so for now I'm sharing the texture attributes to ensure tex transforms, 
+		//but how about alpha and vertex colors and Flip? they won't be shared, so the second usage made not animate?
+
 		//Setting up controller must be done after the appearance is properly set up so the 
 		// controller can get at the pieces
-		if (texprop != null)
+		if (controller != null)
 		{
-			NiGeometryAppearanceFixed.setUpTimeController(texprop, niToJ3dData, textureSource, target);
+			if (controller instanceof NiTextureTransformController)
+			{
+				// did we get a pre made one or should we set it up now?
+				if (niToJ3dData.getTextureAttributes(controller.refId) == null)
+				{
+					NiGeometryAppearanceFixed.setUpTimeController(controller, niToJ3dData, textureSource, target);
+					niToJ3dData.putTextureAttributes(controller.refId, textureAttributes);
+				}
+			}
+			else
+			{
+				NiGeometryAppearanceFixed.setUpTimeController(controller, niToJ3dData, textureSource, target);
+			}
 		}
-		if (bsprop != null)
-		{
-			NiGeometryAppearanceFixed.setUpTimeController(bsprop, niToJ3dData, textureSource, target);
-		}
-		if (bslsp != null)
-		{
-			NiGeometryAppearanceFixed.setUpTimeController(bslsp, niToJ3dData, textureSource, target);
-		}
-		if (bsesp != null)
-		{
-			NiGeometryAppearanceFixed.setUpTimeController(bsesp, niToJ3dData, textureSource, target);
-		}
-
 		return true;
 	}
 
@@ -1255,7 +1218,7 @@ public class NiGeometryAppearanceShader
 	private TextureUnitState bindCube(Binding binding)
 	{
 		TextureUnitState tus = null;
-		
+
 		if (J3dNiGeometry.textureExists(binding.fileName, textureSource))
 		{
 			Texture tex = J3dNiGeometry.loadTexture(binding.fileName, textureSource);

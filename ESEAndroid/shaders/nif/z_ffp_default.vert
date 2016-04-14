@@ -11,8 +11,8 @@ attribute vec2 glMultiTexCoord0;
 
 //uniform mat4 glProjectionMatrix;
 //uniform mat4 glProjectionMatrixInverse;
-//uniform mat4 modelMatrix;
-//uniform mat4 viewMatrix;
+//uniform mat4 glModelMatrix;
+//uniform mat4 glViewMatrix;
 uniform mat4 glModelViewMatrix;
 //uniform mat4 glModelViewMatrixInverse;
 uniform mat4 glModelViewProjectionMatrix;

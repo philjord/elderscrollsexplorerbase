@@ -131,7 +131,7 @@ public class ShaderPrograms
 	static class FileShader
 	{
 		private GLSLSourceCodeShader sourceCodeShader;
-		private String name;
+		public String name;
 		private boolean status = false;
 
 		private int type;
@@ -146,7 +146,7 @@ public class ShaderPrograms
 		{
 			String shaderCode = ShaderSourceIO.getTextFileAsString("shaders/nif/" + source);			 
 
-			ArrayList<String> problems = GLSLSourceCodeShader.testForFFP(shaderCode);
+/*			ArrayList<String> problems = GLSLSourceCodeShader.testForFFP(shaderCode);
 			if (problems.size() > 0)
 			{
 				System.out.println("Shader file appears to be FFP style " + source);
@@ -154,7 +154,7 @@ public class ShaderPrograms
 				{
 					System.out.println(problem);
 				}
-			}
+			}*/
 
 			sourceCodeShader = new GLSLSourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
 			sourceCodeShader.name = source;
