@@ -847,7 +847,7 @@ public class NiGeometryAppearanceShader
 		shaderAttributeSet = getShaderAttributeSet(shaderProgram, allShaderAttributeValues);
 
 		// don't share if we will be controlled or transformed
-		boolean shared = (!hasController && textureScale.x == 1 && textureScale.y == 1 && textureOffset.x == 0 && textureOffset.y == 0);
+		boolean sharable = (!hasController && textureScale.x == 1 && textureScale.y == 1 && textureOffset.x == 0 && textureOffset.y == 0);
 		// note non shared TUS have default read caps on
 
 		// Texture Unit state does not require the same aggression as Java3D will find equivalence
@@ -862,7 +862,7 @@ public class NiGeometryAppearanceShader
 			}
 			else
 			{
-				tus[i] = bind(binding, shared);
+				tus[i] = bind(binding, sharable);
 			}
 
 			// give it a transform if needed
@@ -1254,22 +1254,26 @@ public class NiGeometryAppearanceShader
 
 	private TextureUnitState bindCube(Binding binding)
 	{
-		TextureUnitState tus = new TextureUnitState();
-		tus.clearCapabilities();
+		TextureUnitState tus = null;
+		
 		if (J3dNiGeometry.textureExists(binding.fileName, textureSource))
 		{
 			Texture tex = J3dNiGeometry.loadTexture(binding.fileName, textureSource);
 
-			ImageComponent[] ics = tex.getImages();
-			TextureCubeMap tcm = new TextureCubeMap(ics.length <= 1 ? Texture.BASE_LEVEL : Texture.MULTI_LEVEL_MIPMAP, Texture.RGBA,
-					tex.getWidth());
+			if (tex != null)
+			{
+				ImageComponent[] ics = tex.getImages();
+				TextureCubeMap tcm = new TextureCubeMap(ics.length <= 1 ? Texture.BASE_LEVEL : Texture.MULTI_LEVEL_MIPMAP, Texture.RGBA,
+						tex.getWidth());
 
-			for (int f = 0; f < 6; f++)
-				for (int l = 0; l < ics.length; l++)
-					tcm.setImage(l, f, (ImageComponent2D) ics[l]);
-
-			tus.setTexture(tcm);
-			tus.setName(binding.fileName);
+				for (int f = 0; f < 6; f++)
+					for (int l = 0; l < ics.length; l++)
+						tcm.setImage(l, f, (ImageComponent2D) ics[l]);
+				tus = new TextureUnitState();
+				tus.clearCapabilities();
+				tus.setTexture(tcm);
+				tus.setName(binding.fileName);
+			}
 		}
 		else
 		{
@@ -1292,41 +1296,45 @@ public class NiGeometryAppearanceShader
 
 	private TextureUnitState bind(Binding binding, boolean shared)
 	{
-		if (warningsGiven.contains(binding.fileName))
-			return null;
 
 		TextureUnitState tus = null;
-		if (shared)
+		if (!warningsGiven.contains(binding.fileName))
 		{
-			//TODO: jonwd7 suggest texture slot is the decaling place, see his fixed pipeline
-			// also these should go through as shader uniforms I reckon
-			//textureAttributes.setTextureMode(ntp.isApplyReplace() ? TextureAttributes.REPLACE
-			//		: ntp.isApplyDecal() ? TextureAttributes.DECAL : TextureAttributes.MODULATE);
-
-			tus = J3dNiGeometry.loadTextureUnitState(binding.fileName, textureSource);
-			if (tus == null && !warningsGiven.contains(binding.fileName))
+			if (shared)
 			{
-				System.out.println("Shared TextureUnitState bind " + binding.fileName + " no TextureUnitState found for nif "
-						+ niGeometry.nVer.fileName);
-				warningsGiven.add(binding.fileName);
-			}
-		}
-		else
-		{
-			Texture tex = J3dNiGeometry.loadTexture(binding.fileName, textureSource);
-			if (tex == null && !warningsGiven.contains(binding.fileName))
-			{
-				System.out.println("TextureUnitState bind " + binding.fileName + " no Texture found for nif " + niGeometry.nVer.fileName);
-				warningsGiven.add(binding.fileName);
-			}
+				//TODO: jonwd7 suggest texture slot is the decaling place, see his fixed pipeline
+				// also these should go through as shader uniforms I reckon
+				//textureAttributes.setTextureMode(ntp.isApplyReplace() ? TextureAttributes.REPLACE
+				//		: ntp.isApplyDecal() ? TextureAttributes.DECAL : TextureAttributes.MODULATE);
 
-			tus = new TextureUnitState();
-			tus.setTexture(tex);
-			tus.setName(binding.fileName);
+				tus = J3dNiGeometry.loadTextureUnitState(binding.fileName, textureSource);
+				if (tus == null && !warningsGiven.contains(binding.fileName))
+				{
+					System.out.println("Shared TextureUnitState bind " + binding.fileName + " no TextureUnitState found for nif "
+							+ niGeometry.nVer.fileName);
+					warningsGiven.add(binding.fileName);
+				}
+			}
+			else
+			{
+				Texture tex = J3dNiGeometry.loadTexture(binding.fileName, textureSource);
+				if (tex == null && !warningsGiven.contains(binding.fileName))
+				{
+					System.out
+							.println("TextureUnitState bind " + binding.fileName + " no Texture found for nif " + niGeometry.nVer.fileName);
+					warningsGiven.add(binding.fileName);
+					// notice tus left as null!
+				}
+				else
+				{
+					tus = new TextureUnitState();
+					tus.setTexture(tex);
+					tus.setName(binding.fileName);
+				}
+			}
 		}
 
 		uni1i(binding.samplerName, texunit++);
-
 		return tus;
 	}
 

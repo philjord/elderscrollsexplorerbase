@@ -40,7 +40,7 @@ varying vec4 C;
 void main( void )
 {
 	gl_Position = glModelViewProjectionMatrix * glVertex;	
-	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,0)).st;	
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;	
 	
 	N = normalize(glNormalMatrix * glNormal);
 	t = normalize(glNormalMatrix * tangent);

@@ -34,7 +34,7 @@ void main( void )
 {
 	gl_Position = glModelViewProjectionMatrix * glVertex;
 	
-	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,0)).st;
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;
 							  
 	v = vec3(glModelViewMatrix * glVertex);
 
