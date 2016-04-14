@@ -849,7 +849,7 @@ public class NiGeometryAppearanceShader
 		// don't share if we will be controlled or transformed
 		boolean shared = (!hasController && textureScale.x == 1 && textureScale.y == 1 && textureOffset.x == 0 && textureOffset.y == 0);
 		// note non shared TUS have default read caps on
-		
+
 		// Texture Unit state does not require the same aggression as Java3D will find equivalence
 		// but it seem expensive and wasteful to me
 		TextureUnitState[] tus = new TextureUnitState[allTextureUnitStateBindings.size()];
@@ -914,57 +914,61 @@ public class NiGeometryAppearanceShader
 			List<ShaderAttributeValue2> newShaderAttributeValues)
 	{
 		ShaderAttributeSet sas = null;
+		WeakHashMap<ShaderAttributeSet, ShaderAttributeSet> currentShaderAttributeSets = null;
 		synchronized (shaderAttributeSetsByProgram)
 		{
-			WeakHashMap<ShaderAttributeSet, ShaderAttributeSet> currentShaderAttributeSets = shaderAttributeSetsByProgram
-					.get(shaderProgram);
+			currentShaderAttributeSets = shaderAttributeSetsByProgram.get(shaderProgram);
 
-			if (currentShaderAttributeSets != null)
-			{
-				for (ShaderAttributeSet currShaderAttributeSet : currentShaderAttributeSets.keySet())
-				{
-					boolean equal = currShaderAttributeSet.size() == newShaderAttributeValues.size();
-					if (equal)
-					{
-						for (int i = 0; i < newShaderAttributeValues.size(); i++)
-						{
-							ShaderAttribute newSav = newShaderAttributeValues.get(i);
-							ShaderAttribute currSav = currShaderAttributeSet.get(newSav.getAttributeName());
-							if (currSav == null || newSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
-									|| currSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE) || !newSav.equals(currSav))
-							{
-								equal = false;
-								break;
-							}
-						}
-					}
-
-					if (equal)
-					{
-						sas = currShaderAttributeSet;
-						break;
-					}
-				}
-			}
-			else
+			if (currentShaderAttributeSets == null)
 			{
 				currentShaderAttributeSets = new WeakHashMap<ShaderAttributeSet, ShaderAttributeSet>();
 				shaderAttributeSetsByProgram.put(shaderProgram, currentShaderAttributeSets);
 			}
-
-			if (sas == null)
+		}
+		synchronized (currentShaderAttributeSets)
+		{
+			for (ShaderAttributeSet currShaderAttributeSet : currentShaderAttributeSets.keySet())
 			{
-				sas = new ShaderAttributeSet();
-				for (ShaderAttributeValue sav : newShaderAttributeValues)
+				boolean equal = currShaderAttributeSet.size() == newShaderAttributeValues.size();
+				if (equal)
 				{
-					if (OUTPUT_BINDINGS)
-						System.out.println(sav.getAttributeName() + " " + sav.getValue());
-					sas.put(sav);
+					for (int i = 0; i < newShaderAttributeValues.size(); i++)
+					{
+						ShaderAttribute newSav = newShaderAttributeValues.get(i);
+						ShaderAttribute currSav = currShaderAttributeSet.get(newSav.getAttributeName());
+						if (currSav == null || newSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE)
+								|| currSav.getCapability(ShaderAttributeValue.ALLOW_VALUE_WRITE) || !newSav.equals(currSav))
+						{
+							equal = false;
+							break;
+						}
+					}
 				}
+
+				if (equal)
+				{
+					sas = currShaderAttributeSet;
+					break;
+				}
+			}
+		}
+
+		if (sas == null)
+		{
+			sas = new ShaderAttributeSet();
+			for (ShaderAttributeValue sav : newShaderAttributeValues)
+			{
+				if (OUTPUT_BINDINGS)
+					System.out.println(sav.getAttributeName() + " " + sav.getValue());
+				sas.put(sav);
+			}
+			synchronized (currentShaderAttributeSets)
+			{
 				currentShaderAttributeSets.put(sas, sas);
 			}
 		}
 		return sas;
+
 	}
 
 	private void glProperty(NiWireframeProperty nwp)
@@ -1288,9 +1292,9 @@ public class NiGeometryAppearanceShader
 
 	private TextureUnitState bind(Binding binding, boolean shared)
 	{
-		if(warningsGiven.contains(binding.fileName))
+		if (warningsGiven.contains(binding.fileName))
 			return null;
-		
+
 		TextureUnitState tus = null;
 		if (shared)
 		{
@@ -1302,7 +1306,8 @@ public class NiGeometryAppearanceShader
 			tus = J3dNiGeometry.loadTextureUnitState(binding.fileName, textureSource);
 			if (tus == null && !warningsGiven.contains(binding.fileName))
 			{
-				System.out.println("Shared TextureUnitState bind " + binding.fileName + " no TextureUnitState found for nif " + niGeometry.nVer.fileName);
+				System.out.println("Shared TextureUnitState bind " + binding.fileName + " no TextureUnitState found for nif "
+						+ niGeometry.nVer.fileName);
 				warningsGiven.add(binding.fileName);
 			}
 		}

@@ -125,7 +125,16 @@ public abstract class MouseOverHandler implements WindowListener
 		}
 
 	}
-
+	
+	
+	//deburners, better be single thread
+	private Point3d o = new Point3d();
+	private Vector3d d = new Vector3d();
+	private Vector3f diff = new Vector3f();
+	private Vector3f rayFrom = new Vector3f();
+	private Vector3f rayTo = new Vector3f();
+	
+	
 	protected ClosestRayResultCallback findRayIntersect(MouseEvent mouseEvent)
 	{
 		if (clientPhysicsSystem != null)
@@ -141,18 +150,16 @@ public abstract class MouseOverHandler implements WindowListener
 			}
 
 			PickRay pr = (PickRay) selectPickCanvas.getPickShape();
-
-			Point3d o = new Point3d();
-			Vector3d d = new Vector3d();
+			
 			pr.get(o, d);
 
 			// make a to point by adding 100 meters of the direction normal on
-			Vector3f diff = new Vector3f(d);
+			diff.set(d);
 			diff.normalize();
 			diff.scale(MAX_MOUSE_RAY_DIST);
 
-			Vector3f rayFrom = new Vector3f(o);
-			Vector3f rayTo = new Vector3f(o);
+			rayFrom.set(o);
+			rayTo.set(o);
 			rayTo.add(diff);
 
 			CollisionWorld.ClosestRayResultCallback rayCallback = clientPhysicsSystem.findRayIntersect(rayFrom, rayTo);
