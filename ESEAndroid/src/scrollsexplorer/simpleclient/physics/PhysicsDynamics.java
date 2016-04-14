@@ -62,6 +62,8 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	private MeshSource meshSource;
 
+	private boolean destroyed;
+
 	public PhysicsDynamics(InstRECOStore instRecoToNif, Vector3f gravity, BranchGroup rootGroup, AvatarCollisionInfo avatarCollisionInfo,
 			MeshSource meshSource)
 	{
@@ -112,18 +114,21 @@ public class PhysicsDynamics extends DynamicsEngine
 	{
 		if (displayDebug)
 		{
-			if (!debugOutputInited)
+			if (!destroyed)
 			{
-				DebugOutput.initDebug(dynamicsWorld, avatarLocation);
-				debugOutputInited = true;
-			}
+				if (!debugOutputInited)
+				{
+					DebugOutput.initDebug(dynamicsWorld, avatarLocation);
+					debugOutputInited = true;
+				}
 
-			synchronized (dynamicsWorld)
-			{
-				LWJGL.step();
-				//did it quit?
-				if (!LWJGL.isDoRun())
-					displayDebug = false;
+				synchronized (dynamicsWorld)
+				{
+					LWJGL.step();
+					//did it quit?
+					if (!LWJGL.isDoRun())
+						displayDebug = false;
+				}
 			}
 		}
 		else
@@ -150,6 +155,7 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	public void destroy()
 	{
+		this.destroyed = true;
 		clear();
 		dynamicsRootBranchGroup.detach();
 	}
