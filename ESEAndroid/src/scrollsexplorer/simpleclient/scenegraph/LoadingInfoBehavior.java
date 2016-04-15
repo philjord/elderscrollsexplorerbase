@@ -16,6 +16,8 @@ public class LoadingInfoBehavior extends Behavior
 
 	private HUDText hudText;
 
+	private long startTime = Long.MIN_VALUE;
+
 	public LoadingInfoBehavior(HUDText hudText)
 	{
 		this.hudText = hudText;
@@ -30,12 +32,17 @@ public class LoadingInfoBehavior extends Behavior
 	@SuppressWarnings({ "rawtypes" })
 	public void processStimulus(Enumeration critera)
 	{
+		if (startTime == Long.MIN_VALUE)
+			startTime = System.currentTimeMillis();
+
+		int elapsedSeconds = (int) ((System.currentTimeMillis() - startTime) / 1000);
+
 		// we just crazily go and ask the explorer, esm, bsa (bsaset) for a message
 		// explorer will return waiting if nothing happening or it'll describe the visual or physicsal load process somehow
 		// esm and bsa will just describe indexing process
 
 		//but for now just use the newtdashboard
-		String loadingNow = "";
+		String loadingNow = "" + elapsedSeconds + " : ";
 		if (IDashboard.dashboard.getEsmLoading() > 0)
 		{
 			loadingNow += "ESM file loading ";

@@ -16,7 +16,7 @@ public class GameConfig
 
 	public String skyTexture;
 
-	public String loadScreen;
+	public String[] loadScreens;
 
 	public float avatarYHeight;
 
@@ -32,13 +32,13 @@ public class GameConfig
 
 	public Vector3f startLocation;
 
-	public GameConfig(String gameName, J3dICellFactory j3dCellFactory, String skyTexture, String loadScreen, float avatarYHeight, String folderKey, String mainESMFile, String ftpFolderName,
-			int startCellId, Vector3f startLocation)
+	public GameConfig(String gameName, J3dICellFactory j3dCellFactory, String skyTexture, String[] loadScreens, float avatarYHeight,
+			String folderKey, String mainESMFile, String ftpFolderName, int startCellId, Vector3f startLocation)
 	{
 		this.gameName = gameName;
 		this.j3dCellFactory = j3dCellFactory;
 		this.skyTexture = skyTexture;
-		this.loadScreen = loadScreen;
+		this.loadScreens = loadScreens;
 		this.avatarYHeight = avatarYHeight;
 		this.folderKey = folderKey;
 		this.ftpFolderName = ftpFolderName;
@@ -63,7 +63,9 @@ public class GameConfig
 		allGameConfigs.add(new GameConfig("TESIII: Morrowind", //
 				new esmj3dtes3.j3d.cell.J3dCellFactory(), //
 				"textures\\tx_sky_clear.dds", //
-				"meshes\\i\\in_v_arena_01.nif", //
+				new String[] { "meshes\\f\\act_banner_ald_velothi.nif", //
+						"meshes\\f\\act_banner_gnaar_mok.nif", //
+						"meshes\\f\\flora_tree_gl_07.nif", "meshes\\a\\towershield_glass.nif" }, //
 				2.88f, //
 				"MorrowindFolder", //
 				"Morrowind.esm", //
@@ -72,7 +74,8 @@ public class GameConfig
 		allGameConfigs.add(new GameConfig("TESIV: Oblivion", //
 				new esmj3dtes4.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\cloudsclear.dds", //
-				"meshes\\architecture\\cloudrulertemple\\testcloudrulerint.nif", //
+				new String[] { "meshes\\furniture\\kvatch\\kvatchthrone01.nif", //
+						"meshes\\armor\\cowlofthegrayfox\\helmet_gnd.nif" }, //
 				2.28f, //
 				"OblivionFolder", //
 				"Oblivion.esm", //
@@ -81,7 +84,8 @@ public class GameConfig
 		allGameConfigs.add(new GameConfig("FO3: Fallout 3", //
 				new esmj3dfo3.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\urbancloudovercastlower01.dds", //
-				"meshes\\interface\\loading\\loadinganim01.nif", //
+				new String[] { "meshes\\pipboy3000\\pipboyarmfemale.nif", //
+						"meshes\\armor\\combatarmor\\m\\outfitm.nif" }, //
 				2.28f, //
 				"FallOut3Folder", //
 				"Fallout3.esm", //
@@ -90,7 +94,7 @@ public class GameConfig
 		allGameConfigs.add(new GameConfig("FONV: Fallout New Vegas", //
 				new esmj3dfo3.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\urbancloudovercastlower01.dds", //
-				"meshes\\interface\\loading\\loadinganim01.nif", //
+				new String[] { "meshes\\furniture\\tlpod01.nif" }, //
 				2.28f, //
 				"FalloutNVFolder", //
 				"FalloutNV.esm", //
@@ -99,7 +103,11 @@ public class GameConfig
 		allGameConfigs.add(new GameConfig("TESV: Skyrim", //
 				new esmj3dtes5.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\skyrimcloudsupper04.dds", //
-				"meshes\\loadscreenart\\loadscreenadventure01.nif", //
+				new String[] { "meshes\\loadscreenart\\loadscreenadventure01.nif", // 						
+						"meshes\\loadscreenart\\loadscreendraugrfemale.nif", //						
+						"meshes\\loadscreenart\\loadscreengiant01.nif", //
+						"meshes\\loadscreenart\\loadscreennoblebeddouble02.nif", //
+						"meshes\\loadscreenart\\loadscreenswampdragon1.nif" }, //
 				2.28f, //
 				"SkyrimFolder", //
 				"Skyrim.esm", //
@@ -108,7 +116,10 @@ public class GameConfig
 		allGameConfigs.add(new GameConfig("FO4: Fallout 4", //
 				new esmj3dfo4.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\skyrimcloudsupper04.dds", //hahhah!
-				"meshes\\LoadScreenArt\\Armor01PowerArmor1.nif", //
+				new String[] { "meshes\\LoadScreenArt\\Armor01PowerArmor1.nif", "meshes\\LoadScreenArt\\CreatureDeathclawRunForward.nif", //
+						"meshes\\LoadScreenArt\\CryoPodLoadScreenArt01.nif", //
+						"meshes\\LoadScreenArt\\LS_WorkstationArmorB01.nif", //
+						"meshes\\LoadScreenArt\\VaultExitLoadScreen.nif" }, //
 				2.88f, //
 				"FallOut4Folder", //
 				"Fallout4.esm", //
@@ -117,7 +128,7 @@ public class GameConfig
 		allGameConfigs.add(new GameConfig("Hunter Sneaker", //
 				new esmj3dtes4.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\cloudsclear.dds", //
-				"meshes\\architecture\\cloudrulertemple\\testcloudrulerint.nif", //
+				new String[] { "meshes\\architecture\\cloudrulertemple\\testcloudrulerint.nif" }, //
 				2.28f, //
 				"HunterSneakerFolder", //
 				"OblivionHS.esm", //
