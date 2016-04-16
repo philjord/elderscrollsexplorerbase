@@ -20,6 +20,8 @@ import com.bulletphysics.linearmath.Clock;
 
 public abstract class DynamicsEngine
 {
+	public static int MAX_SUB_STEPS = 2;
+
 	protected Clock timeKeeper = new Clock();
 
 	private BroadphaseInterface broadphase;
@@ -119,7 +121,7 @@ public abstract class DynamicsEngine
 
 						//note timeStep is seconds not ms AND you must have a sub step count! make him 5ish
 						long startOfStepSimulation = System.currentTimeMillis();
-						dynamicsWorld.stepSimulation(dtms / 1000000f, 5);
+						dynamicsWorld.stepSimulation(dtms / 1000000f, MAX_SUB_STEPS);
 						if (System.currentTimeMillis() - startOfStepSimulation > 300)
 							System.err.println("stepSimulation long " + (System.currentTimeMillis() - startOfStepSimulation));
 					}

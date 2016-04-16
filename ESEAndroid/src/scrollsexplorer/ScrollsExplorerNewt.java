@@ -23,14 +23,18 @@ import esmmanager.loader.IESMManager;
 import nativeLinker.LWJGLLinker;
 import nif.BgsmSource;
 import nif.appearance.NiGeometryAppearanceFactoryShader;
+import nif.character.NifCharacter;
+import nif.j3d.J3dNiTriBasedGeom;
 import scrollsexplorer.simpleclient.BethWorldVisualBranch;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
 import scrollsexplorer.simpleclient.SimpleWalkSetup;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
+import scrollsexplorer.simpleclient.physics.DynamicsEngine;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools.compressedtexture.CompressedTextureLoader;
 import tools.io.ConfigLoader;
 import tools3d.camera.Camera;
+import tools3d.utils.ShaderSourceIO;
 import tools3d.utils.YawPitch;
 import tools3d.utils.loader.PropertyCodec;
 import tools3d.utils.scenegraph.LocationUpdateListener;
@@ -61,7 +65,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	{
 		//Setting to emulate Android requirements
 		Camera.FRONT_CLIP = 0.2f;
-		Camera.BACK_CLIP = 2000f;
+		Camera.BACK_CLIP = 1000f;
 		Camera.MIN_FRAME_CYCLE_TIME = 15;
 
 		ESMManager.USE_FILE_MAPS = false;
@@ -75,14 +79,28 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		BethRenderSettings.setFarLoadGridCount(4);
 		BethRenderSettings.setNearLoadGridCount(2);
 		BethRenderSettings.setLOD_LOAD_DIST_MAX(32);
-		BethRenderSettings.setObjectFade(100);
-		BethRenderSettings.setItemFade(100);
-		BethRenderSettings.setActorFade(40); 
-		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = false;
-		PhysicsSystem.MIN_TIME_BETWEEN_STEPS_MS = 20;
+		BethRenderSettings.setObjectFade(150);
+		BethRenderSettings.setItemFade(150);
+		BethRenderSettings.setActorFade(50);
+		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
+		DynamicsEngine.MAX_SUB_STEPS = 2;
+		PhysicsSystem.MIN_TIME_BETWEEN_STEPS_MS = 40;
+		NiGeometryAppearanceFactoryShader.setAsDefault();
+		ShaderSourceIO.ES_SHADERS = false;// not the same!
+		J3dNiTriBasedGeom.USE_FIXED_BOUNDS = true;
+		// this definately doesn't help on desktop, but lots of methods calls so maybe?
+		NifCharacter.BULK_BUFFER_UPDATES = false;
 		
 		NiGeometryAppearanceFactoryShader.setAsDefault();
-		CompressedTextureLoader.setAnisotropicFilterDegree(8);
+		CompressedTextureLoader.setAnisotropicFilterDegree(4);
+
+		//for big games go low spec
+		if (!gameToLoad.equals("Morrowind"))
+		{
+			BethRenderSettings.setFarLoadGridCount(0);
+			BethRenderSettings.setNearLoadGridCount(2);
+			BethRenderSettings.setLOD_LOAD_DIST_MAX(0);
+		}
 
 		try
 		{
