@@ -115,14 +115,14 @@ public abstract class DynamicsEngine
 
 					if (!skipStepSim)
 					{
-						if (System.currentTimeMillis() - timeOfLastStep > 100)
+						if (System.currentTimeMillis() - timeOfLastStep > 200)
 							System.err.println("Physics step stuttered " + (System.currentTimeMillis() - timeOfLastStep));
 						timeOfLastStep = System.currentTimeMillis();
 
 						//note timeStep is seconds not ms AND you must have a sub step count! make him 5ish
 						long startOfStepSimulation = System.currentTimeMillis();
 						dynamicsWorld.stepSimulation(dtms / 1000000f, MAX_SUB_STEPS);
-						if (System.currentTimeMillis() - startOfStepSimulation > 100)
+						if (System.currentTimeMillis() - startOfStepSimulation > 200)
 							System.err.println("stepSimulation long " + (System.currentTimeMillis() - startOfStepSimulation));
 					}
 					else

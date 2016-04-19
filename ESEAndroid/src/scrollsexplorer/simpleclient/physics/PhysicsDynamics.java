@@ -86,10 +86,15 @@ public class PhysicsDynamics extends DynamicsEngine
 
 		Transform3D rootTrans = new Transform3D(avatarLocation.getTransform());
 		myNifBulletChar = new NBControlledChar(rootTrans, avatarCollisionInfo.getAvatarYHeight(), avatarCollisionInfo.getAvatarXZRadius());
+		clientNifBulletCharBinding = new ClientNifBulletCharBinding(avatarLocation, myNifBulletChar);
+
+		synchronized (instRecoBulletBindings)
+		{
+			instRecoBulletBindings.put(-999, clientNifBulletCharBinding);
+		}
 		synchronized (dynamicsWorld)
 		{
-			clientNifBulletCharBinding = new ClientNifBulletCharBinding(avatarLocation, myNifBulletChar);
-			instRecoBulletBindings.put(-999, clientNifBulletCharBinding);
+
 			myNifBulletChar.addToDynamicsWorld(dynamicsWorld);
 		}
 	}
@@ -394,13 +399,11 @@ public class PhysicsDynamics extends DynamicsEngine
 
 			if (nifBullet instanceof NBSimpleDynamicModel)
 			{
-				synchronized (dynamicsWorld)
+				NifBulletBinding irnbb = new InstRecoNifBulletBinding(j3dRECOInst, instRecoToNif, (NBSimpleDynamicModel) nifBullet);
+
+				synchronized (instRecoBulletBindings)
 				{
-					long startTimeInSynchBlock = System.currentTimeMillis();
-					NifBulletBinding irnbb = new InstRecoNifBulletBinding(j3dRECOInst, instRecoToNif, (NBSimpleDynamicModel) nifBullet);
 					instRecoBulletBindings.put(j3dRECOInst.getRecordId(), irnbb);
-					if (System.currentTimeMillis() - startTimeInSynchBlock > 50)
-						System.err.println("TimeInSynchBlock bad " + (System.currentTimeMillis() - startTimeInSynchBlock));
 				}
 			}
 		}
@@ -424,12 +427,14 @@ public class PhysicsDynamics extends DynamicsEngine
 			synchronized (dynamicsWorld)
 			{
 				long startTimeInSynchBlock = System.currentTimeMillis();
-
 				nifBullet.removeFromDynamicsWorld();
 				nifBullet.destroy();
-				instRecoBulletBindings.remove(recordId);
 				if (System.currentTimeMillis() - startTimeInSynchBlock > 50)
 					System.err.println("TimeInSynchBlock bad " + (System.currentTimeMillis() - startTimeInSynchBlock));
+			}
+			synchronized (instRecoBulletBindings)
+			{
+				instRecoBulletBindings.remove(recordId);
 			}
 			synchronized (recoIdToNifBullet)
 			{
@@ -442,7 +447,7 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	public void applyPhysicsToModel()
 	{
-		//synchronized (dynamicsWorld)
+		synchronized (instRecoBulletBindings)
 		{
 			for (int i = 0; i < instRecoBulletBindings.size(); i++)
 			{
