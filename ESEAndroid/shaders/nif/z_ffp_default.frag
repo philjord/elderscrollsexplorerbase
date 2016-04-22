@@ -1,33 +1,65 @@
-#version 120
+#version 140
 
 precision mediump float;
 
-uniform int alphaTestEnabled;
-uniform int alphaTestFunction;
-uniform float alphaTestValue;
+layout ( std140, shared ) uniform FFP_Uniform_Block
+{
+ mat4 glProjectionMatrix;
+ mat4 glProjectionMatrixInverse;
+ mat4 glViewMatrix;
+ mat4 glModelMatrix;
+ mat4 glModelViewMatrix;
+ mat4 glModelViewMatrixInverse;
+ mat4 glModelViewProjectionMatrix;				
+ mat3 glNormalMatrix;
+
+ vec4 glFrontMaterialdiffuse;
+ vec4 glFrontMaterialemission;
+ vec3 glFrontMaterialspecular;
+ float glFrontMaterialshininess;
+ 
+ int ignoreVertexColors;
+ 
+ vec4 glLightModelambient;
+ vec4 objectColor;
+  
+ vec4 glLightSource0position;
+ vec4 glLightSource0diffuse;
+
+ mat4 textureTransform;
+ 
+ int alphaTestEnabled;
+ int alphaTestFunction;
+ float alphaTestValue;
+};
+
+/*uniform int alphaTestEnabled2;
+uniform int alphaTestFunction2;
+uniform float alphaTestValue2;*/
 //End of FFP inputs
-varying vec2 glTexCoord0;
+in vec2 glTexCoord0;
 
 uniform sampler2D BaseMap;
 
-varying vec3 LightDir;
-varying vec3 ViewDir;
+in vec3 LightDir;
+in vec3 ViewDir;
 
-varying vec3 N;
+in vec3 N;
 
-varying vec4 A;
-varying vec4 C;
-varying vec4 D;
+in vec4 A;
+in vec4 C;
+in vec4 D;
 
 
-varying vec3 emissive;
-varying vec3 specular;
-varying float shininess;
+in vec3 emissive;
+in vec3 specular;
+in float shininess;
 
+out vec4 glFragColor;
 
 void main( void )
 {
-	vec4 baseMap = texture2D( BaseMap, glTexCoord0.st );
+	vec4 baseMap = texture( BaseMap, glTexCoord0.st );
 	
 	//web says the keyword discard in a shader is bad
 	//I could just gl_FragColor=vec(0,0,0,0); return;
@@ -73,5 +105,5 @@ void main( void )
 	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.a = C.a * baseMap.a;
 
-	gl_FragColor = color;
+	glFragColor = color;
 }

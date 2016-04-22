@@ -1,18 +1,49 @@
-#version 120 
+#version 140 
 //#version 120 is not optional, trouble otherwise
 
 //Note don't put if else constructs on one line or trouble
 
-attribute vec4 glVertex;         
-attribute vec4 glColor;       
-attribute vec3 glNormal;     
-attribute vec2 glMultiTexCoord0; 
+in vec4 glVertex;         
+in vec4 glColor;       
+in vec3 glNormal;     
+in vec2 glMultiTexCoord0; 
 
+layout ( std140, shared ) uniform FFP_Uniform_Block
+{
+ mat4 glProjectionMatrix;
+ mat4 glProjectionMatrixInverse;
+ mat4 glViewMatrix;
+ mat4 glModelMatrix;
+ mat4 glModelViewMatrix;
+ mat4 glModelViewMatrixInverse;
+ mat4 glModelViewProjectionMatrix;				
+ mat3 glNormalMatrix;
 
-//uniform mat4 glProjectionMatrix;
-//uniform mat4 glProjectionMatrixInverse;
-//uniform mat4 glModelMatrix;
+ vec4 glFrontMaterialdiffuse;
+ vec4 glFrontMaterialemission;
+ vec3 glFrontMaterialspecular;
+ float glFrontMaterialshininess;
+ 
+ int ignoreVertexColors;
+ 
+ vec4 glLightModelambient;
+ vec4 objectColor;
+  
+ vec4 glLightSource0position;
+ vec4 glLightSource0diffuse;
+
+ mat4 textureTransform;
+ 
+ int alphaTestEnabled;
+ int alphaTestFunction;
+ float alphaTestValue;
+};
+
+/*
+uniform mat4 glProjectionMatrix;
+uniform mat4 glProjectionMatrixInverse;
 //uniform mat4 glViewMatrix;
+//uniform mat4 glModelMatrix;
 uniform mat4 glModelViewMatrix;
 //uniform mat4 glModelViewMatrixInverse;
 uniform mat4 glModelViewProjectionMatrix;
@@ -31,30 +62,35 @@ uniform vec4 glLightSource0position;
 uniform vec4 glLightSource0diffuse;
 
 uniform mat4 textureTransform;
+ */
+//uniform int alphaTestEnabled;
+//uniform int alphaTestFunction;
+//uniform float alphaTestValue;
+
 //End of FFP inputs
 
 //The line above in not optional for parsing reasons
 
-varying vec2 glTexCoord0;
+out vec2 glTexCoord0;
 
-varying vec3 LightDir;
-varying vec3 ViewDir;
+out vec3 LightDir;
+out vec3 ViewDir;
 
-varying vec3 N;
+out vec3 N;
 
-varying vec4 A;
-varying vec4 C;
-varying vec4 D;
+out vec4 A;
+out vec4 C;
+out vec4 D;
 
-varying vec3 emissive;
-varying vec3 specular;
-varying float shininess;
+out vec3 emissive;
+out vec3 specular;
+out float shininess;
 
 void main( void )
 {
 	gl_Position = glModelViewProjectionMatrix * glVertex;
 	
-	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;	
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;		
 
 	N = normalize(glNormalMatrix * glNormal);
 		
@@ -67,11 +103,12 @@ void main( void )
 	if( ignoreVertexColors != 0) 
 		C = glFrontMaterialdiffuse; 
 	else 
-		C = glColor;
+		C = objectColor;
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;		
 	
 	emissive = glFrontMaterialemission.rgb;
 	specular = glFrontMaterialspecular;
 	shininess = glFrontMaterialshininess;
 	
+	 
 }
