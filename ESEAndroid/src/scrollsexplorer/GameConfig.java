@@ -66,7 +66,7 @@ public class GameConfig
 				new String[] { "meshes\\f\\act_banner_ald_velothi.nif", //
 						"meshes\\f\\act_banner_gnaar_mok.nif", //
 						"meshes\\f\\flora_tree_gl_07.nif", "meshes\\a\\towershield_glass.nif" }, //
-				2.88f, //
+				1.8f, //
 				"MorrowindFolder", //
 				"Morrowind.esm", //
 				"morrowind", 0, new Vector3f(-170, 5, 1470)));
@@ -76,7 +76,7 @@ public class GameConfig
 				"textures\\sky\\cloudsclear.dds", //
 				new String[] { "meshes\\furniture\\kvatch\\kvatchthrone01.nif", //
 						"meshes\\armor\\cowlofthegrayfox\\helmet_gnd.nif" }, //
-				2.28f, //
+				1.8f, //
 				"OblivionFolder", //
 				"Oblivion.esm", //
 				"oblivion", 60, new Vector3f(721, 66, -1523)));
@@ -86,7 +86,7 @@ public class GameConfig
 				"textures\\sky\\urbancloudovercastlower01.dds", //
 				new String[] { "meshes\\pipboy3000\\pipboyarmfemale.nif", //
 						"meshes\\armor\\combatarmor\\m\\outfitm.nif" }, //
-				2.28f, //
+				1.8f, //
 				"FallOut3Folder", //
 				"Fallout3.esm", //
 				"fallout3", 60, new Vector3f(-290, 288, 277)));
@@ -95,7 +95,7 @@ public class GameConfig
 				new esmj3dfo3.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\urbancloudovercastlower01.dds", //
 				new String[] { "meshes\\furniture\\tlpod01.nif" }, //
-				2.28f, //
+				1.8f, //
 				"FalloutNVFolder", //
 				"FalloutNV.esm", //
 				"falloutnv", 894758, new Vector3f(-1231, 207, -268)));
@@ -108,7 +108,7 @@ public class GameConfig
 						"meshes\\loadscreenart\\loadscreengiant01.nif", //
 						"meshes\\loadscreenart\\loadscreennoblebeddouble02.nif", //
 						"meshes\\loadscreenart\\loadscreenswampdragon1.nif" }, //
-				2.28f, //
+				1.8f, //
 				"SkyrimFolder", //
 				"Skyrim.esm", //
 				"skyrim", 60, new Vector3f(444, 280, 1888)));
@@ -120,7 +120,7 @@ public class GameConfig
 						"meshes\\LoadScreenArt\\CryoPodLoadScreenArt01.nif", //
 						"meshes\\LoadScreenArt\\LS_WorkstationArmorB01.nif", //
 						"meshes\\LoadScreenArt\\VaultExitLoadScreen.nif" }, //
-				2.88f, //
+				1.8f, //
 				"FallOut4Folder", //
 				"Fallout4.esm", //
 				"fallout4", 3988, new Vector3f(12, -28, 2)));
@@ -129,7 +129,7 @@ public class GameConfig
 				new esmj3dtes4.j3d.cell.J3dCellFactory(), //
 				"textures\\sky\\cloudsclear.dds", //
 				new String[] { "meshes\\architecture\\cloudrulertemple\\testcloudrulerint.nif" }, //
-				2.28f, //
+				1.8f, //
 				"HunterSneakerFolder", //
 				"OblivionHS.esm", //
 				"huntersneaker", 60, new Vector3f(0, 200, 0)));

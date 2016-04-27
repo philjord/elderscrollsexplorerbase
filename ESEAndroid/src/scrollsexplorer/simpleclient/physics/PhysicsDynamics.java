@@ -205,8 +205,7 @@ public class PhysicsDynamics extends DynamicsEngine
 	private NBSimpleModel createLand(J3dLAND j3dLAND)
 	{
 		Transform3D rootTrans = j3dLAND.getLocation(new Transform3D());
-		//NBSimpleModel nb = new NBSimpleModel(j3dLAND.getGeometryInfo(), rootTrans);
-		NBSimpleModel nb = new NBSimpleModel(j3dLAND.getHeights(), rootTrans);
+		NBSimpleModel nb = new NBSimpleModel(j3dLAND.getHeights(), rootTrans, J3dLAND.TERRIAN_SQUARE_SIZE);
 		if (nb != null)
 		{
 			synchronized (recoIdToNifBullet)
