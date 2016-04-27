@@ -29,8 +29,6 @@ public class LoadScreen extends BranchGroup
 
 	private TransformGroup currentLoadScreenTG;
 
-	private TransformGroup spinTransformGroup = new TransformGroup();
-
 	public LoadScreen(GameConfig gameConfig, MediaSources mediaSources)
 	{
 		this.gameConfig = gameConfig;
@@ -99,7 +97,8 @@ public class LoadScreen extends BranchGroup
 								System.out.println("automaticallly? perhaps it should, even without a character to cock about");
 							}
 						}
-
+						
+						TransformGroup spinTransformGroup = new TransformGroup();
 						spinTransformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 						spinTransformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 						spinTransformGroup.addChild(centreriser);

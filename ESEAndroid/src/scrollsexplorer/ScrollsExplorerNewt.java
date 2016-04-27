@@ -79,10 +79,10 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		BethRenderSettings.setFarLoadGridCount(4);
 		BethRenderSettings.setNearLoadGridCount(2);
 		BethRenderSettings.setLOD_LOAD_DIST_MAX(32);
-		BethRenderSettings.setObjectFade(50);
-		BethRenderSettings.setItemFade(50);
+		BethRenderSettings.setObjectFade(100);
+		BethRenderSettings.setItemFade(100);
 		BethRenderSettings.setActorFade(50);
-		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true;
+		BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = false;
 		DynamicsEngine.MAX_SUB_STEPS = 2;
 		PhysicsSystem.MIN_TIME_BETWEEN_STEPS_MS = 40;
 		NiGeometryAppearanceFactoryShader.setAsDefault();

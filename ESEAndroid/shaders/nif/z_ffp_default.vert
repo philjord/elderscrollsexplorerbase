@@ -101,9 +101,9 @@ void main( void )
 
 	A = glLightModelambient;
 	if( ignoreVertexColors != 0) 
-		C = glFrontMaterialdiffuse; 
+		C = glFrontMaterialdiffuse; // objectColor should be used if it is no lighting
 	else 
-		C = objectColor;
+		C = glColor; 
 	D = glLightSource0diffuse * glFrontMaterialdiffuse;		
 	
 	emissive = glFrontMaterialemission.rgb;
