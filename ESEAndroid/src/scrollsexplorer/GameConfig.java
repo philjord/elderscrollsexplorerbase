@@ -69,7 +69,7 @@ public class GameConfig
 				1.8f, //
 				"MorrowindFolder", //
 				"Morrowind.esm", //
-				"morrowind", 0, new Vector3f(-170, 5, 1470)));
+				"morrowind", 0, new Vector3f(-108, 3, 936)));
 
 		allGameConfigs.add(new GameConfig("TESIV: Oblivion", //
 				new esmj3dtes4.j3d.cell.J3dCellFactory(), //
@@ -79,7 +79,7 @@ public class GameConfig
 				1.8f, //
 				"OblivionFolder", //
 				"Oblivion.esm", //
-				"oblivion", 60, new Vector3f(721, 66, -1523)));
+				"oblivion", 186689, new Vector3f(57, 80, 0)));
 
 		allGameConfigs.add(new GameConfig("FO3: Fallout 3", //
 				new esmj3dfo3.j3d.cell.J3dCellFactory(), //
@@ -89,7 +89,7 @@ public class GameConfig
 				1.8f, //
 				"FallOut3Folder", //
 				"Fallout3.esm", //
-				"fallout3", 60, new Vector3f(-290, 288, 277)));
+				"fallout3", 60, new Vector3f(-162, 182, 155)));
 
 		allGameConfigs.add(new GameConfig("FONV: Fallout New Vegas", //
 				new esmj3dfo3.j3d.cell.J3dCellFactory(), //
@@ -98,7 +98,7 @@ public class GameConfig
 				1.8f, //
 				"FalloutNVFolder", //
 				"FalloutNV.esm", //
-				"falloutnv", 894758, new Vector3f(-1231, 207, -268)));
+				"falloutnv", 894758, new Vector3f(-927, 111, -16)));
 
 		allGameConfigs.add(new GameConfig("TESV: Skyrim", //
 				new esmj3dtes5.j3d.cell.J3dCellFactory(), //
@@ -111,7 +111,7 @@ public class GameConfig
 				1.8f, //
 				"SkyrimFolder", //
 				"Skyrim.esm", //
-				"skyrim", 60, new Vector3f(444, 280, 1888)));
+				"skyrim", 60, new Vector3f(346, 256, 1459)));
 
 		allGameConfigs.add(new GameConfig("FO4: Fallout 4", //
 				new esmj3dfo4.j3d.cell.J3dCellFactory(), //
@@ -123,7 +123,7 @@ public class GameConfig
 				1.8f, //
 				"FallOut4Folder", //
 				"Fallout4.esm", //
-				"fallout4", 3988, new Vector3f(12, -28, 2)));
+				"fallout4", 3988, new Vector3f(40, -18, -10)));
 
 		allGameConfigs.add(new GameConfig("Hunter Sneaker", //
 				new esmj3dtes4.j3d.cell.J3dCellFactory(), //

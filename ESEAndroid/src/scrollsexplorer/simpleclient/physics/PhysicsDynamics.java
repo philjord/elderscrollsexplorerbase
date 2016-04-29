@@ -391,8 +391,6 @@ public class PhysicsDynamics extends DynamicsEngine
 				{
 					new Throwable("PhysicsDynamics attempt to re-add a node to scene! recordId " + recordId + " " + nifBullet)
 							.printStackTrace();
-					for (Object o : structureUpdateBehavior.getQueue())
-						System.out.println("On queue " + o);
 				}
 			}
 
@@ -501,6 +499,7 @@ public class PhysicsDynamics extends DynamicsEngine
 		catch (NullPointerException e)
 		{
 			System.out.println("findRayIntersect null again! something something ObjectPools");
+			e.printStackTrace();
 			return null;
 		}
 	}

@@ -62,25 +62,20 @@ public abstract class MouseOverHandler implements WindowListener
 				new PeriodicallyUpdated() {
 					public void runUpdate()
 					{
-						try
+
+						if (lastMouseEvent != null)
 						{
-							if (lastMouseEvent != null)
+							try
 							{
-								try
-								{
-									processMouseOver(lastMouseEvent);
-								}
-								catch (Exception e)
-								{
-									System.out.println("MouseOverHandler.processMouseOver exception: " + e);
-									e.printStackTrace();
-								}
+								processMouseOver(lastMouseEvent);
+							}
+							catch (Exception e)
+							{
+								System.out.println("MouseOverHandler.processMouseOver exception: " + e);
+								e.printStackTrace(); 
 							}
 						}
-						catch (Exception e)
-						{
-							System.out.println("PhysicsSystem exception " + e + " " + e.getStackTrace()[0]);
-						}
+
 					}
 				});
 		mouseOverHandlerThread.start();
@@ -91,7 +86,7 @@ public abstract class MouseOverHandler implements WindowListener
 	{
 		// record the mouse move for the picker to use when it next wakes up
 		lastMouseEvent = e;
-		
+
 		//System.out.println("lastMouseEvent "+lastMouseEvent);
 	}
 
@@ -120,21 +115,19 @@ public abstract class MouseOverHandler implements WindowListener
 
 			canvas3D.getGLWindow().addMouseListener(mouseAdapter);
 			canvas3D.getGLWindow().addWindowListener(this);
-			
+
 			//System.out.println("MouseOverHandler setconfig");
 		}
 
 	}
-	
-	
+
 	//deburners, better be single thread
 	private Point3d o = new Point3d();
 	private Vector3d d = new Vector3d();
 	private Vector3f diff = new Vector3f();
 	private Vector3f rayFrom = new Vector3f();
 	private Vector3f rayTo = new Vector3f();
-	
-	
+
 	protected ClosestRayResultCallback findRayIntersect(MouseEvent mouseEvent)
 	{
 		if (clientPhysicsSystem != null)
@@ -150,7 +143,7 @@ public abstract class MouseOverHandler implements WindowListener
 			}
 
 			PickRay pr = (PickRay) selectPickCanvas.getPickShape();
-			
+
 			pr.get(o, d);
 
 			// make a to point by adding 100 meters of the direction normal on

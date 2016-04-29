@@ -148,6 +148,8 @@ public abstract class DynamicsEngine
 				//DbvtBroadphase.setAabb being crazy
 				if (e.getStackTrace().length > 0)
 					System.out.println("DbvtBroadphase.setAabb being crazy" + e + " " + e.getStackTrace()[0]);
+				
+				e.printStackTrace();
 			}
 			catch (ClassCastException e)
 			{
