@@ -8,7 +8,7 @@ in vec4 glColor;
 in vec3 glNormal;     
 in vec2 glMultiTexCoord0; 
 
-layout ( std140, shared ) uniform FFP_Uniform_Block
+/*layout ( std140, shared ) uniform FFP_Uniform_Block
 {
  mat4 glProjectionMatrix;
  mat4 glProjectionMatrixInverse;
@@ -37,11 +37,11 @@ layout ( std140, shared ) uniform FFP_Uniform_Block
  int alphaTestEnabled;
  int alphaTestFunction;
  float alphaTestValue;
-};
+};*/
 
-/*
-uniform mat4 glProjectionMatrix;
-uniform mat4 glProjectionMatrixInverse;
+
+//uniform mat4 glProjectionMatrix;
+//uniform mat4 glProjectionMatrixInverse;
 //uniform mat4 glViewMatrix;
 //uniform mat4 glModelMatrix;
 uniform mat4 glModelViewMatrix;
@@ -62,7 +62,7 @@ uniform vec4 glLightSource0position;
 uniform vec4 glLightSource0diffuse;
 
 uniform mat4 textureTransform;
- */
+ 
 //uniform int alphaTestEnabled;
 //uniform int alphaTestFunction;
 //uniform float alphaTestValue;

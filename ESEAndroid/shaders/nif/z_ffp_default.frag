@@ -2,7 +2,7 @@
 
 precision mediump float;
 
-layout ( std140, shared ) uniform FFP_Uniform_Block
+/*layout ( std140, shared ) uniform FFP_Uniform_Block
 {
  mat4 glProjectionMatrix;
  mat4 glProjectionMatrixInverse;
@@ -31,11 +31,11 @@ layout ( std140, shared ) uniform FFP_Uniform_Block
  int alphaTestEnabled;
  int alphaTestFunction;
  float alphaTestValue;
-};
+};*/
 
-/*uniform int alphaTestEnabled2;
-uniform int alphaTestFunction2;
-uniform float alphaTestValue2;*/
+uniform int alphaTestEnabled;
+uniform int alphaTestFunction;
+uniform float alphaTestValue;
 //End of FFP inputs
 in vec2 glTexCoord0;
 
