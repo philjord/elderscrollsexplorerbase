@@ -142,7 +142,6 @@ public class NiGeometryAppearanceShader
 
 		//ensure tangents loaded to geometries
 		J3dNiTriBasedGeom.TANGENTS_BITANGENTS = true;
-		J3dNiTriBasedGeom.INTERLEAVE = false;
 
 		//configure app defaults	
 		mat.setLightingEnable(true);
