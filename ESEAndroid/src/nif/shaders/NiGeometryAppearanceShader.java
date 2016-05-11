@@ -89,6 +89,8 @@ public class NiGeometryAppearanceShader
 {
 	public static boolean OUTPUT_BINDINGS = false;
 
+	public static Material defaultMaterial = null;
+
 	private NiGeometry niGeometry;
 	private NiToJ3dData niToJ3dData;
 	private TextureSource textureSource;
@@ -98,7 +100,6 @@ public class NiGeometryAppearanceShader
 	private PropertyList props;
 
 	private ShaderAppearance app = new ShaderAppearance();
-	private Material mat = new Material();
 	private RenderingAttributes ra = new RenderingAttributes();
 	private PolygonAttributes pa = new PolygonAttributes();
 	private Vector2f textureScale = new Vector2f(1, 1);
@@ -143,14 +144,22 @@ public class NiGeometryAppearanceShader
 		//ensure tangents loaded to geometries
 		J3dNiTriBasedGeom.TANGENTS_BITANGENTS = true;
 
-		//configure app defaults	
-		mat.setLightingEnable(true);
-		mat.setColorTarget(Material.AMBIENT_AND_DIFFUSE);
+		//configure app defaults
+		if (defaultMaterial == null)
+		{
+			defaultMaterial = new Material();
+			defaultMaterial.setLightingEnable(true);
+			defaultMaterial.setColorTarget(Material.AMBIENT_AND_DIFFUSE);
+			defaultMaterial.setAmbientColor(new Color3f(0.4f, 0.4f, 0.4f));
+			defaultMaterial.setDiffuseColor(new Color3f(0.8f, 0.8f, 0.8f));
+			defaultMaterial.setSpecularColor(new Color3f(1.0f, 1.0f, 1.0f));
 
-		app.setMaterial(mat);
+			defaultMaterial.setShininess(33f);//33 cos jonwd7 says it's a good default
+			defaultMaterial.clearCapabilities();
+		}
+		app.setMaterial(defaultMaterial);
 
 		// These three are only set if it moves from the default values  
-		//MUST always be set on everything (stencils!) PJ - now possibly not!
 		//app.setRenderingAttributes(ra);
 		//app.setPolygonAttributes(pa);	
 		//app.setTransparencyAttributes(ta);
@@ -158,10 +167,10 @@ public class NiGeometryAppearanceShader
 		// let's clear all capabilities for a laugh
 		shape.clearCapabilities();
 		app.clearCapabilities();
-		mat.clearCapabilities();
+
 		ra.clearCapabilities();
 		pa.clearCapabilities();
-		//ta.clearCapabilities();
+		ta.clearCapabilities();
 
 	}
 
@@ -1018,6 +1027,10 @@ public class NiGeometryAppearanceShader
 	{
 		if (nmp != null)
 		{
+			Material mat = new Material();
+			mat.setLightingEnable(true);
+			mat.setColorTarget(Material.AMBIENT_AND_DIFFUSE);
+
 			if (!(nmp.nVer.LOAD_VER == NifVer.VER_20_2_0_7 && (nmp.nVer.LOAD_USER_VER == 11 || nmp.nVer.LOAD_USER_VER == 12)
 					&& nmp.nVer.LOAD_USER_VER2 > 21))
 			{
@@ -1044,14 +1057,8 @@ public class NiGeometryAppearanceShader
 				mat.setShininess(nmp.glossiness);
 				mat.setSpecularColor(nmp.specularColor.r, nmp.specularColor.g, nmp.specularColor.b);
 			}
-		}
-		else
-		{
-			mat.setAmbientColor(new Color3f(0.4f, 0.4f, 0.4f));
-			mat.setDiffuseColor(new Color3f(0.8f, 0.8f, 0.8f));
-			mat.setSpecularColor(new Color3f(1.0f, 1.0f, 1.0f));
 
-			mat.setShininess(33f);//33 cos jonwd7 says it's a good default
+			app.setMaterial(mat);
 		}
 
 	}
@@ -1060,9 +1067,16 @@ public class NiGeometryAppearanceShader
 	{
 		if (m != null)
 		{
-			//TODO: where are ambient and diffuse?
 			if (m instanceof ShaderMaterial)
 			{
+				Material mat = new Material();
+				mat.setLightingEnable(true);
+				mat.setColorTarget(Material.AMBIENT_AND_DIFFUSE);
+
+				//TODO: where are ambient and diffuse?
+				mat.setAmbientColor(new Color3f(0.4f, 0.4f, 0.4f));
+				mat.setDiffuseColor(new Color3f(0.8f, 0.8f, 0.8f));
+
 				ShaderMaterial sm = (ShaderMaterial) m;
 				if (sm.bEmitEnabled != 0)
 					mat.setEmissiveColor(sm.cEmittanceColor.r, sm.cEmittanceColor.g, sm.cEmittanceColor.b);
@@ -1072,15 +1086,9 @@ public class NiGeometryAppearanceShader
 					mat.setShininess(sm.fSmoothness);
 					mat.setSpecularColor(sm.cSpecularColor.r, sm.cSpecularColor.g, sm.cSpecularColor.b);
 				}
+				app.setMaterial(mat);
 			}
-		}
-		else
-		{
-			mat.setAmbientColor(new Color3f(0.4f, 0.4f, 0.4f));
-			mat.setDiffuseColor(new Color3f(0.8f, 0.8f, 0.8f));
-			mat.setSpecularColor(new Color3f(1.0f, 1.0f, 1.0f));
 
-			mat.setShininess(33f);//33 cos jonwd7 says it's a good default
 		}
 
 	}
