@@ -103,7 +103,7 @@ public class NiGeometryAppearanceShader
 	private PolygonAttributes pa = new PolygonAttributes();
 	private Vector2f textureScale = new Vector2f(1, 1);
 	private Vector2f textureOffset = new Vector2f(0, 0);
-	private TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NONE, 0f);
+	private TransparencyAttributes ta = new TransparencyAttributes();
 
 	private GLSLShaderProgram2 shaderProgram = null;
 
@@ -149,12 +149,11 @@ public class NiGeometryAppearanceShader
 
 		app.setMaterial(mat);
 
-		//MUST always be set on everything (stencils!)
-		app.setRenderingAttributes(ra);
-
-		app.setPolygonAttributes(pa);
-
-		app.setTransparencyAttributes(ta);
+		// These three are only set if it moves from the default values  
+		//MUST always be set on everything (stencils!) PJ - now possibly not!
+		//app.setRenderingAttributes(ra);
+		//app.setPolygonAttributes(pa);	
+		//app.setTransparencyAttributes(ta);
 
 		// let's clear all capabilities for a laugh
 		shape.clearCapabilities();
@@ -162,7 +161,7 @@ public class NiGeometryAppearanceShader
 		mat.clearCapabilities();
 		ra.clearCapabilities();
 		pa.clearCapabilities();
-		ta.clearCapabilities();
+		//ta.clearCapabilities();
 
 	}
 
@@ -841,6 +840,16 @@ public class NiGeometryAppearanceShader
 		app.setTextureUnitState(tus);
 		app.setShaderProgram(shaderProgram);
 		app.setShaderAttributeSet(shaderAttributeSet);
+
+		if (ra.getDepthBufferEnable() != true || ra.getStencilEnable() == true || ra.getDepthBufferEnable() != true
+				|| ra.getDepthBufferWriteEnable() != true || ra.getAlphaTestFunction() != RenderingAttributes.ALWAYS)
+			app.setRenderingAttributes(ra);
+
+		if (pa.getCullFace() != PolygonAttributes.CULL_BACK || pa.getPolygonOffset() != 0.0 || pa.getPolygonOffsetFactor() != 0.0)
+			app.setPolygonAttributes(pa);
+
+		if (ta.getTransparencyMode() != TransparencyAttributes.NONE)
+			app.setTransparencyAttributes(ta);
 
 		// empty these 2 temps
 		allShaderAttributeValues.clear();
