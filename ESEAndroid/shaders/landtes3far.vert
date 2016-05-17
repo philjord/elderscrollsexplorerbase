@@ -9,9 +9,9 @@ attribute vec4 samplers1;
 attribute vec4 samplers2;
 attribute vec4 samplers3;
 
+uniform mat4 glProjectionMatrix;
 uniform mat4 glViewMatrix;
 uniform mat4 glModelMatrix;
-uniform mat4 glProjectionMatrix;
 //uniform mat4 glModelViewMatrix;
 //uniform mat4 glModelViewProjectionMatrix;
 //uniform mat3 glNormalMatrix;
