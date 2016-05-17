@@ -1,4 +1,4 @@
-#version 140 
+#version 150 
 //#version 120 is not optional, trouble otherwise
 
 //Note don't put if else constructs on one line or trouble
@@ -40,15 +40,15 @@ in vec2 glMultiTexCoord0;
 };*/
 
 
-//uniform mat4 glProjectionMatrix;
+uniform mat4 glProjectionMatrix;
 //uniform mat4 glProjectionMatrixInverse;
-//uniform mat4 glViewMatrix;
-//uniform mat4 glModelMatrix;
-uniform mat4 glModelViewMatrix;
+uniform mat4 glViewMatrix;
+uniform mat4 glModelMatrix;
+//uniform mat4 glModelViewMatrix;
 //uniform mat4 glModelViewMatrixInverse;
-uniform mat4 glModelViewProjectionMatrix;
+//uniform mat4 glModelViewProjectionMatrix;
 				
-uniform mat3 glNormalMatrix;
+//uniform mat3 glNormalMatrix;
 
 uniform vec4 glFrontMaterialdiffuse;
 uniform vec4 glFrontMaterialemission;
@@ -88,10 +88,12 @@ out float shininess;
 
 void main( void )
 {
-	gl_Position = glModelViewProjectionMatrix * glVertex;
+mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;
+	gl_Position = glProjectionMatrix*glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
 	
 	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;		
 
+mat3 glNormalMatrix =  mat3(transpose(inverse(glModelViewMatrix)));
 	N = normalize(glNormalMatrix * glNormal);
 		
 	vec3 v = vec3(glModelViewMatrix * glVertex);
