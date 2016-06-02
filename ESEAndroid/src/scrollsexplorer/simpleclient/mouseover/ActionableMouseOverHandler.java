@@ -43,10 +43,17 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 	private static Object currentActionableMonitor = new Object();
 
 	private HUDText HUDText;
-
+	
 	public ActionableMouseOverHandler(PhysicsSystem clientPhysicsSystem, SimpleBethCellManager simpleBethCellManager)
 	{
 		super(clientPhysicsSystem);
+		this.simpleBethCellManager = simpleBethCellManager;
+	}
+
+	public ActionableMouseOverHandler(PhysicsSystem clientPhysicsSystem, SimpleBethCellManager simpleBethCellManager,
+			boolean includeFixedCenterhandling)
+	{
+		super(clientPhysicsSystem, includeFixedCenterhandling);
 		this.simpleBethCellManager = simpleBethCellManager;
 	}
 
@@ -448,10 +455,15 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 					currentActionTargetData.clear();
 				}
 			}
-			if (currentActionTargetData.currentActionable == null)
-				HUDText.setTextGreyed(currentActionTargetData.hudText);
-			else
-				HUDText.setText(currentActionTargetData.hudText);
+
+			//ensure setConfig has been called
+			if (HUDText != null)
+			{
+				if (currentActionTargetData.currentActionable == null)
+					HUDText.setTextGreyed(currentActionTargetData.hudText);
+				else
+					HUDText.setText(currentActionTargetData.hudText);
+			}
 		}
 
 	}

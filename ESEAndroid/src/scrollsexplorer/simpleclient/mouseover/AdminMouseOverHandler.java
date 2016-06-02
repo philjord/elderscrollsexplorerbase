@@ -23,6 +23,11 @@ public class AdminMouseOverHandler extends MouseOverHandler
 		super(clientPhysicsSystem);
 	}
 
+	public AdminMouseOverHandler(PhysicsSystem clientPhysicsSystem, boolean includeFixedCenterhandling)
+	{
+		super(clientPhysicsSystem, includeFixedCenterhandling);
+	}
+
 	@Override
 	public void doMouseReleased(MouseEvent e)
 	{

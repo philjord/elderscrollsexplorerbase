@@ -23,9 +23,9 @@ import tools3d.mixed3d2d.CanvasPickRayGen;
 //and this would be totally generic and able to be put in nifbullet
 public abstract class MouseOverHandler implements WindowListener
 {
-	public static final float MAX_MOUSE_RAY_DIST = 100f;// max pick dist 100 meters?
+	public static float MAX_MOUSE_RAY_DIST = 20f;// max pick dist 100 meters?
 
-	private static final long MIN_TIME_BETWEEN_STEPS_MS = 125;
+	public static long MIN_TIME_BETWEEN_STEPS_MS = 1250;
 
 	protected Canvas3D canvas3D;
 
@@ -37,17 +37,22 @@ public abstract class MouseOverHandler implements WindowListener
 
 	private PeriodicThread mouseOverHandlerThread;
 
+	private boolean includeFixedCenterHandling = false;
+
 	private MouseAdapter mouseAdapter = new MouseAdapter() {
+		@Override
 		public void mouseExited(MouseEvent e)
 		{
 			doMouseExited(e);
 		}
 
+		@Override
 		public void mouseReleased(MouseEvent e)
 		{
 			doMouseReleased(e);
 		}
 
+		@Override
 		public void mouseMoved(MouseEvent e)
 		{
 			doMouseMoved(e);
@@ -56,24 +61,37 @@ public abstract class MouseOverHandler implements WindowListener
 
 	public MouseOverHandler(PhysicsSystem clientPhysicsSystem)
 	{
+		this(clientPhysicsSystem, false);
+	}
+
+	public MouseOverHandler(PhysicsSystem clientPhysicsSystem, boolean _includeFixedCenterHandling)
+	{
+		this.includeFixedCenterHandling = _includeFixedCenterHandling;
 		this.clientPhysicsSystem = clientPhysicsSystem;
 
 		mouseOverHandlerThread = new PeriodicThread("Thread For " + this.getClass().getSimpleName(), MIN_TIME_BETWEEN_STEPS_MS,
 				new PeriodicallyUpdated() {
+					@Override
 					public void runUpdate()
 					{
-
 						if (lastMouseEvent != null)
 						{
 							try
 							{
+								//System.out.println("processMouseOver " +this);
 								processMouseOver(lastMouseEvent);
 							}
 							catch (Exception e)
 							{
-								System.out.println("MouseOverHandler.processMouseOver exception: " + e);
-								e.printStackTrace(); 
+								//System.out.println("MouseOverHandler.processMouseOver exception: " + e);
+								e.printStackTrace();
 							}
+						}
+
+						if (includeFixedCenterHandling)
+						{
+							// null should use screen center
+							processMouseOver(null);
 						}
 
 					}
@@ -87,7 +105,7 @@ public abstract class MouseOverHandler implements WindowListener
 		// record the mouse move for the picker to use when it next wakes up
 		lastMouseEvent = e;
 
-		//System.out.println("lastMouseEvent "+lastMouseEvent);
+		//System.out.println("lastMouseEvent "+lastMouseEvent + " "+ this);
 	}
 
 	public void doMouseExited(MouseEvent e)
@@ -116,7 +134,7 @@ public abstract class MouseOverHandler implements WindowListener
 			canvas3D.getGLWindow().addMouseListener(mouseAdapter);
 			canvas3D.getGLWindow().addWindowListener(this);
 
-			//System.out.println("MouseOverHandler setconfig");
+			//System.out.println("MouseOverHandler setconfig " + this);
 		}
 
 	}
@@ -130,7 +148,7 @@ public abstract class MouseOverHandler implements WindowListener
 
 	protected ClosestRayResultCallback findRayIntersect(MouseEvent mouseEvent)
 	{
-		if (clientPhysicsSystem != null)
+		if (clientPhysicsSystem != null && selectPickCanvas != null)
 		{
 			if (mouseEvent != null)
 			{
