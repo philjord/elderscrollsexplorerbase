@@ -67,6 +67,14 @@ uniform mat4 textureTransform;
 //uniform int alphaTestFunction;
 //uniform float alphaTestValue;
 
+
+//uniform int fogEnabled;
+//uniform vec4 expColor;
+//uniform float expDensity;
+//uniform vec4 linearColor;
+//uniform float linearStart;
+//uniform float linearEnd;
+
 //End of FFP inputs
 
 //The line above in not optional for parsing reasons
@@ -88,12 +96,12 @@ out float shininess;
 
 void main( void )
 {
-mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;
+	mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;
 	gl_Position = glProjectionMatrix*glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
 	
 	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;		
 
-mat3 glNormalMatrix =  mat3(transpose(inverse(glModelViewMatrix)));
+	mat3 glNormalMatrix =  mat3(transpose(inverse(glModelViewMatrix)));
 	N = normalize(glNormalMatrix * glNormal);
 		
 	vec3 v = vec3(glModelViewMatrix * glVertex);
@@ -111,6 +119,5 @@ mat3 glNormalMatrix =  mat3(transpose(inverse(glModelViewMatrix)));
 	emissive = glFrontMaterialemission.rgb;
 	specular = glFrontMaterialspecular;
 	shininess = glFrontMaterialshininess;
-	
-	 
+		 
 }

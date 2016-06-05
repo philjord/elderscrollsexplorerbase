@@ -26,6 +26,8 @@ uniform vec4 glLightSource0diffuse;
 
 varying vec2 glTexCoord0;
 
+varying vec3 ViewDir;
+
 varying vec4 A;
 varying vec4 C;
 varying vec4 D;
@@ -38,9 +40,14 @@ varying vec4 fragSamplers3;
 
 void main( void )
 {	
-mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;
+	mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;
 	gl_Position = glProjectionMatrix*glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
+	
 	glTexCoord0 = glMultiTexCoord0.st; 
+	
+	vec3 v = vec3(glModelViewMatrix * glVertex);
+
+	ViewDir = -v.xyz;
 	
 	A = glLightModelambient;
 	if( ignoreVertexColors != 0 ) 

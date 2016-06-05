@@ -80,7 +80,7 @@ public class SimpleBethCellManager implements InstRECOStore
 		j3dCellFactory = gameConfig.j3dCellFactory;
 		j3dCellFactory.setSources(esmManager, mediaSources);
 
-		simpleSky = new SimpleSky(gameConfig, mediaSources.getTextureSource());
+		simpleSky = new SimpleSky(gameConfig, mediaSources );
 		simpleWalkSetup.getVisualBranch().addChild(simpleSky);
 
 		loadScreen = new LoadScreen(gameConfig, mediaSources);

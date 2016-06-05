@@ -11,7 +11,9 @@ import java.util.Set;
 
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
+import javax.media.j3d.LinearFog;
 import javax.media.j3d.Transform3D;
+import javax.vecmath.Color3f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -34,6 +36,7 @@ import javaawt.Rectangle;
 import scrollsexplorer.IDashboard;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools.QueuingThread;
+import tools3d.utils.Utils3D;
 import tools3d.utils.scenegraph.LocationUpdateListener;
 import tools3d.utils.scenegraph.StructureUpdateBehavior;
 
@@ -48,6 +51,12 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	//when set true the havok data will only be loaded once for physics
 	// and the red lines will not be able to be seen 
 	public static boolean LOAD_PHYS_FROM_VIS = false;
+
+	public static Color3f FOG_COLOR = new Color3f(0.8f, 0.8f, 0.8f);
+
+	public static float FOG_START = 100;
+
+	public static float FOG_END = 300;
 
 	private int worldFormId;
 
@@ -75,10 +84,13 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	private PhysicsSystem clientPhysicsSystem;
 
+	private LinearFog fog = new LinearFog(FOG_COLOR, FOG_START, FOG_END);
+
 	// TODO: on change don't dump gross until we forcable need a different one
 	public static BethLodManager bethLodManager;
 
 	private BethRenderSettings.UpdateListener listener = new BethRenderSettings.UpdateListener() {
+		@Override
 		public void renderSettingsUpdated()
 		{
 			updateFromCurrent();
@@ -95,6 +107,10 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		this.setCapability(BranchGroup.ALLOW_DETACH);
 		this.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		this.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+
+		fog.addScope(this);
+		fog.setInfluencingBounds(Utils3D.defaultBounds);
+		addChild(fog);
 
 		IDashboard.dashboard.setLodLoading(1);
 		//Expensive to load, so keep it around and only change when must
@@ -142,6 +158,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			}
 
 			QueuingThread.CallBack nearCallBack = new QueuingThread.CallBack() {
+				@Override
 				public void run(Object parameter)
 				{
 					updateNear((Point3f) parameter);
@@ -155,6 +172,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			nearUpdateThread.start();
 
 			QueuingThread.CallBack grossCallBack = new QueuingThread.CallBack() {
+				@Override
 				public void run(Object parameter)
 				{
 					updateGross((Point3f) parameter);
@@ -320,6 +338,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 					//let's split -up we can do more damage that way
 					Thread t = new Thread() {
+						@Override
 						public void run()
 						{
 							J3dCELLGeneral bg = j3dCellFactory.makeBGWRLDTemporary(worldFormId, key.x, key.y, false);
@@ -459,6 +478,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 					loadingFars.add(key);
 					//long start = System.currentTimeMillis();
 					Thread t = new Thread() {
+						@Override
 						public void run()
 						{
 							//System.out.println("updateFar3 " + key);

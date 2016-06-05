@@ -20,11 +20,20 @@ uniform sampler2D sampler12;
 uniform sampler2D sampler13;
 uniform sampler2D sampler14;
 uniform sampler2D sampler15;
+
+uniform int fogEnabled;
+uniform vec4 expColor;
+uniform float expDensity;
+uniform vec4 linearColor;
+uniform float linearStart;
+uniform float linearEnd;
  
+varying vec3 ViewDir;
  
 varying vec4 A;
 varying vec4 C;
 varying vec4 D;
+
 
 //glsles requires highp for a shared uniform
 //uniform highp int layerCount;
@@ -69,6 +78,34 @@ void main( void )
 	vec4 color;
 	color.rgb = albedo * diffuse ;
 	color.a = 1.0;
+	
+	if(fogEnabled == 1)
+	{
+		//distance
+		float dist = 0.0;
+		float fogFactor = 0.0;
+		 
+		//compute distance used in fog equations
+		dist = length(ViewDir);		 
+		 
+		if(linearEnd > 0.0)//linear fog
+		{
+		   fogFactor = (linearEnd - dist)/(linearEnd - linearStart);
+		   fogFactor = clamp( fogFactor, 0.0, 1.0 );
+		 
+		   //if you inverse color in glsl mix function you have to put 1.0 - fogFactor
+		   color = mix(linearColor, color, fogFactor);
+		}
+		else if( expDensity > 0.0)// exponential fog
+		{
+		    fogFactor = 1.0 /exp(dist * expDensity);
+		    fogFactor = clamp( fogFactor, 0.0, 1.0 );
+		 
+		    // mix function fogColor-(1-fogFactor) + lightColor-fogFactor
+		    color = mix(expColor, color, fogFactor);
+		}
+	}
+	
 
 	gl_FragColor = color;	
 	//gl_FragColor = baseMapTex;

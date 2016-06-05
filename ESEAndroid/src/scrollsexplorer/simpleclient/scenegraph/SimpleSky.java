@@ -17,7 +17,7 @@ import com.sun.j3d.utils.geometry.Sphere;
 import scrollsexplorer.GameConfig;
 import tools3d.utils.SimpleShaderAppearance;
 import tools3d.utils.Utils3D;
-import utils.source.TextureSource;
+import utils.source.MediaSources;
 
 public class SimpleSky extends BranchGroup
 {
@@ -32,7 +32,7 @@ public class SimpleSky extends BranchGroup
 	  * apply a texture image onto the inside of the Sphere
 	  * to serve as a graphical backdrop for the scene.
 	  */
-	public SimpleSky(GameConfig gameConfig1, TextureSource textureSource)
+	public SimpleSky(GameConfig gameConfig1, MediaSources mediaSources)
 	{
 		this.gameConfig = gameConfig1;
 
@@ -56,7 +56,7 @@ public class SimpleSky extends BranchGroup
 
 		Texture tex = null;
 		// load a texture image 		
-		tex = textureSource.getTexture(gameConfig.skyTexture);
+		tex = mediaSources.getTextureSource().getTexture(gameConfig.skyTexture);
 
 		// apply the texture to the Appearance
 		app.setTexture(tex);
@@ -151,7 +151,7 @@ public class SimpleSky extends BranchGroup
 		ShaderAppearance app = new SimpleShaderAppearance(true);
 		app.setMaterial(null);
 		app.setRenderingAttributes(new RenderingAttributes());
- 
+
 		return app;
 	}
 }
