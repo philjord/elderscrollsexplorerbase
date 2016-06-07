@@ -36,6 +36,7 @@ varying vec3 worldNormal;
 varying vec3 eyeNormal;
 varying vec3 lightDir;
 
+varying vec3 ViewDir;
 
 varying vec4 A;
 varying vec4 C;
@@ -92,6 +93,9 @@ void main() {
     eyeNormal = glNormalMatrix * worldNormal;
     glTexCoord0 = glMultiTexCoord0.st;
     gl_Position = glModelViewProjectionMatrix * pos;
+    
+    vec3 v = vec3(glModelViewMatrix * glVertex);
+	ViewDir = -v.xyz;
 
     
     lightDir = normalize(vec3(glLightSource0position));    
