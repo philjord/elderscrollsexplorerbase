@@ -1040,10 +1040,10 @@ public class NiGeometryAppearanceShader
 
 			mat.setEmissiveColor(nmp.emissiveColor.r, nmp.emissiveColor.g, nmp.emissiveColor.b);
 
-			//jonwd7 says this is part of above, but I can't
-			if (nmp.alpha != 1.0f)
+			//in nifskope they blend teh nmp.alpha value with teh colors but that makes evrythign dissappear for me when alpha is 0
+				 
+			if (nmp.alpha != 1.0)
 			{
-				ta.setTransparency(1 - nmp.alpha);
 				ta.setTransparencyMode(TransparencyAttributes.BLENDED);
 			}
 
