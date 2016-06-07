@@ -77,7 +77,7 @@ void main()
 		    color = mix(expColor, color, fogFactor);
 		}
 		
-		af = fogFactor*2;// terrible but there  you go.
+		af = fogFactor*2.0;// terrible but there  you go.
 	}
 	
 		 
