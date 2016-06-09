@@ -1,79 +1,41 @@
-#version 120 
+#version 150 
 //#version 120 is not optional, trouble otherwise
 
 //Note don't put if else constructs on one line or trouble
 
-attribute vec4 glVertex;         
-attribute vec4 glColor;       
-attribute vec3 glNormal;     
-attribute vec2 glMultiTexCoord0; 
+in vec4 glVertex;         
+in vec4 glColor;       
+in vec3 glNormal;     
+in vec2 glMultiTexCoord0; 
 
-
-//uniform mat4 glProjectionMatrix;
+uniform mat4 glProjectionMatrix;
 //uniform mat4 glProjectionMatrixInverse;
-//uniform mat4 modelMatrix;
-//uniform mat4 viewMatrix;
-uniform mat4 glModelViewMatrix;
-//uniform mat4 glModelViewMatrixInverse;
-uniform mat4 glModelViewProjectionMatrix;
-				
-uniform mat3 glNormalMatrix;
-
-uniform vec4 glFrontMaterialdiffuse;
-uniform vec3 glFrontMaterialemission;
-uniform vec3 glFrontMaterialspecular;
-uniform float glFrontMaterialshininess;
-uniform int ignoreVertexColors;
-
-uniform vec4 glLightModelambient;
-
-uniform vec4 glLightSource0position;
-uniform vec4 glLightSource0diffuse;
+uniform mat4 glViewMatrix;
+uniform mat4 glModelMatrix;
+	
 
 uniform mat4 textureTransform;
 //End of FFP inputs
 
-//The line above in not optional for parsing reasons
+// The size of the sprite being rendered. My sprites are square
+// so I'm just passing in a float.  For non-square sprites pass in
+// the width and height as a vec2.
+//uniform float TextureCoordPointSize;
 
-varying vec2 glTexCoord0;
-
-varying vec3 LightDir;
-varying vec3 ViewDir;
-
-varying vec3 N;
-
-varying vec4 A;
-varying vec4 C;
-varying vec4 D;
-
-varying vec3 emissive;
-varying vec3 specular;
-varying float shininess;
+//out vec2 glTexCoord0;
+//out vec2 TextureSize;
 
 void main( void )
 {
-	gl_Position = glModelViewProjectionMatrix * glVertex;
+	mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;
+	gl_Position = glProjectionMatrix*glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
 	
-	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;	
-
-	N = normalize(glNormalMatrix * glNormal);
-		
-	vec3 v = vec3(glModelViewMatrix * glVertex);
-
-	ViewDir = -v.xyz;
-	LightDir = glLightSource0position.xyz;
-
-	A = glLightModelambient;
-	if( ignoreVertexColors != 0) 
-		C = glFrontMaterialdiffuse; 
-	else 
-		C = glColor;
-	D = glLightSource0diffuse * glFrontMaterialdiffuse;		
+	//glTexCoord0 = glMultiTexCoord0;
+	//TextureSize = vec2(TextureCoordPointSize, TextureCoordPointSize);
 	
-	emissive = glFrontMaterialemission;
-	specular = glFrontMaterialspecular;
-	shininess = glFrontMaterialshininess;
+	//TODO: must hand is as an attribute
+	gl_PointSize = 30.0 / glVertex.w;;
+	//TODO: must also hand in a rotation
 	
-	gl_PointSize = 10;
 	
 }
