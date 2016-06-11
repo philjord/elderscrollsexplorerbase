@@ -9,6 +9,8 @@ uniform sampler2D BaseMap;
  
 in mediump vec2 TextureSize;
 
+in vec4 C;
+
 out vec4 glFragColor;
 
 
@@ -18,5 +20,5 @@ void main( void )
 	mediump vec2 realTexCoord = gl_PointCoord;
     mediump vec4 fragColor = texture(BaseMap, realTexCoord ); 
 
-    glFragColor = fragColor;	 
+    glFragColor = fragColor * C;
 }
