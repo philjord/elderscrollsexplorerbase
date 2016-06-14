@@ -12,12 +12,16 @@ uniform mat4 glProjectionMatrix;
 //uniform mat4 glProjectionMatrixInverse;
 uniform mat4 glViewMatrix;
 uniform mat4 glModelMatrix;
+
+uniform int ignoreVertexColors;
 	
 uniform mat4 textureTransform;
 //End of FFP inputs
 
 in float Size;
+in float Rotation;
 
+out mat3 v_rotationMatrix;
 out vec4 C;
 
 // The size of the sprite being rendered. My sprites are square
@@ -42,9 +46,16 @@ void main( void )
 			
 	gl_PointSize = Size / dist;	 
 	
-	//TODO: must also hand in a rotation
-	
-	
+	if(ignoreVertexColors == 0)
 	C = glColor; 
+	else
+	C = vec4(1.0,1.0,1.0,1.0);
+	
+	//Expensive??
+	float cos = cos(Rotation);
+    float sin = sin(Rotation);
+    v_rotationMatrix = mat3(cos, sin, 0.0,
+                        -sin, cos, 0.0,
+                        (sin-cos+1.0)*0.5, (-sin-cos+1.0)*0.5, 1.0);
 	
 }
