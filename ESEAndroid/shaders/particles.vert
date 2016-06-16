@@ -47,9 +47,9 @@ void main( void )
 	gl_PointSize = Size / dist;	 
 	
 	if(ignoreVertexColors == 0)
-	C = glColor; 
+		C = glColor; 
 	else
-	C = vec4(1.0,1.0,1.0,1.0);
+		C = vec4(1.0, 1.0, 1.0, 1.0);
 	
 	//Expensive??
 	float cos = cos(Rotation);
@@ -57,5 +57,6 @@ void main( void )
     v_rotationMatrix = mat3(cos, sin, 0.0,
                         -sin, cos, 0.0,
                         (sin-cos+1.0)*0.5, (-sin-cos+1.0)*0.5, 1.0);
-	
+                        
+
 }
