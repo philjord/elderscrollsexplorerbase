@@ -3,11 +3,14 @@ package scrollsexplorer.simpleclient.scenegraph;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Background;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.GLSLShaderProgram;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
 import javax.media.j3d.J3DBuffer;
 import javax.media.j3d.RenderingAttributes;
+import javax.media.j3d.Shader;
 import javax.media.j3d.ShaderAppearance;
+import javax.media.j3d.SourceCodeShader;
 import javax.media.j3d.Texture;
 import javax.media.j3d.TriangleStripArray;
 
@@ -15,6 +18,7 @@ import com.sun.j3d.utils.geometry.Primitive;
 import com.sun.j3d.utils.geometry.Sphere;
 
 import scrollsexplorer.GameConfig;
+import tools3d.utils.ShaderSourceIO;
 import tools3d.utils.SimpleShaderAppearance;
 import tools3d.utils.Utils3D;
 import utils.source.MediaSources;
@@ -149,9 +153,40 @@ public class SimpleSky extends BranchGroup
 	private static Appearance makeAppearance()
 	{
 		ShaderAppearance app = new SimpleShaderAppearance(true);
+		app.clearCapabilities();
 		app.setMaterial(null);
 		app.setRenderingAttributes(new RenderingAttributes());
 
+		String vertexProgram = ShaderSourceIO.getTextFileAsString("shaders/sky.vert");
+		String fragmentProgram = ShaderSourceIO.getTextFileAsString("shaders/sky.frag");
+
+		Shader[] shaders = new Shader[2];
+		shaders[0] = new SourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, Shader.SHADER_TYPE_VERTEX, vertexProgram) {
+			@Override
+			public String toString()
+			{
+				return "vertexProgram";
+			}
+		};
+		shaders[1] = new SourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, Shader.SHADER_TYPE_FRAGMENT, fragmentProgram) {
+			@Override
+			public String toString()
+			{
+				return "fragmentProgram";
+			}
+		};
+
+		GLSLShaderProgram shaderProgram = new GLSLShaderProgram() {
+			@Override
+			public String toString()
+			{
+				return "Sky Shader Program";
+			}
+		};
+		shaderProgram.setShaders(shaders);
+		shaderProgram.setShaderAttrNames(new String[] { "BaseMap" });
+
+		app.setShaderProgram(shaderProgram);
 		return app;
 	}
 }
