@@ -6,6 +6,7 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
 import javax.media.j3d.Node;
 import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
@@ -16,7 +17,9 @@ import com.frostwire.util.SparseArray;
 import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
+import esmj3d.j3d.j3drecords.type.J3dDOOR;
 import esmj3d.j3d.j3drecords.type.J3dRECOType;
+import esmj3dtes3.j3d.j3drecords.type.J3dPivotDOOR;
 import nif.NifFile;
 import nif.NifToJ3d;
 import nif.j3d.animation.J3dNiControllerManager;
@@ -188,7 +191,16 @@ public class PhysicsDynamics extends DynamicsEngine
 
 			if (j3dRECOType != null && j3dRECOType.physNifFile != null)
 			{
-				return createStaticOrDynamic(j3dRECOInst, j3dRECOType.physNifFile);
+				// look for tes3 door with no controllers
+				if (j3dRECOType instanceof J3dPivotDOOR)
+				{
+					// Look out! this is visual TG being used by physics!!!!
+					return createStaticOrDynamic(j3dRECOInst, j3dRECOType.physNifFile, true);
+				}
+				else
+				{
+					return createStaticOrDynamic(j3dRECOInst, j3dRECOType.physNifFile, false);
+				}
 			}
 			else
 			{
@@ -225,7 +237,7 @@ public class PhysicsDynamics extends DynamicsEngine
 	 * @param j3dRECOInst
 	 * @param physNifFile
 	 */
-	private BulletNifModel createStaticOrDynamic(J3dRECOInst j3dRECOInst, String physNifFile)
+	private BulletNifModel createStaticOrDynamic(J3dRECOInst j3dRECOInst, String physNifFile, boolean hasPivot)
 	{
 		BulletNifModel nb = null;
 
@@ -238,7 +250,7 @@ public class PhysicsDynamics extends DynamicsEngine
 			if (BulletNifModelClassifier.isStaticModel(nifFile))
 			{
 				// the nif file will have mass of 0 making this static
-				nb = new NBSimpleModel(physNifFile, meshSource, rootTrans);
+				nb = new NBSimpleModel(physNifFile, meshSource, rootTrans, hasPivot);
 			}
 			else if (BulletNifModelClassifier.isKinematicModel(nifFile))
 			{
@@ -352,11 +364,18 @@ public class PhysicsDynamics extends DynamicsEngine
 			}
 			else
 			{
-				//wow TES3 door have no animation, they look like they just artifically pivot around 
-				System.out.println(
-						"updateRECOToggleOpen door with no controller, probably travel door " + j3dRECOInst.getJ3dRECOType().getName());
+				if (nbKinematicModel.hasPivot())
+				{
+					nbKinematicModel.pivotTes3Door(isOpen);
+				}
+				else
+				{
+					//wow TES3 door have no animation, they look like they just artifically pivot around 
+					System.out.println(
+							"updateRECOToggleOpen door with no controller, probably travel door " + j3dRECOInst.getJ3dRECOType().getName());
 
-				// drawers and chest in oblivion get the same issue
+					// drawers and chest in oblivion get the same issue
+				}
 			}
 		}
 
