@@ -148,7 +148,7 @@ public abstract class MouseOverHandler implements WindowListener
 
 	protected ClosestRayResultCallback findRayIntersect(MouseEvent mouseEvent)
 	{
-		if (clientPhysicsSystem != null && selectPickCanvas != null)
+		if (clientPhysicsSystem != null && selectPickCanvas != null && canvas3D != null)
 		{
 			if (mouseEvent != null)
 			{
