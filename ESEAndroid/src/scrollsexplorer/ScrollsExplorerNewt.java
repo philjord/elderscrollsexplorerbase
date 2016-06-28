@@ -90,7 +90,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		J3dNiTriBasedGeom.USE_FIXED_BOUNDS = true;
 		// this definately doesn't help on desktop, but lots of methods calls so maybe?
 		NifCharacter.BULK_BUFFER_UPDATES = false;
-		
+
 		NiGeometryAppearanceFactoryShader.setAsDefault();
 		CompressedTextureLoader.setAnisotropicFilterDegree(4);
 
@@ -334,6 +334,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	public static void main(String[] args)
 	{
 		System.setProperty("sun.awt.noerasebackground", "true");
+		System.setProperty("j3d.cacheAutoComputeBounds", "true");
 
 		ConfigLoader.loadConfig(args);
 
