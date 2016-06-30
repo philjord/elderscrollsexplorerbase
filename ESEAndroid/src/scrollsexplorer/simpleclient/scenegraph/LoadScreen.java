@@ -118,35 +118,39 @@ public class LoadScreen extends BranchGroup
 							}
 						}
 
-						inputSkeleton = new NifJ3dSkeletonRoot(nif);
-						// create skins from the skeleton and skin nif
-						allSkins = J3dNiSkinInstance.createSkins(nif.getNiToJ3dData(), inputSkeleton);
-
-						if (allSkins.size() > 0)
+						if (NifJ3dSkeletonRoot.hasSkeletonRoot(nif.getNiToJ3dData()))
 						{
-							// add the skins to the scene
-							for (J3dNiSkinInstance j3dNiSkinInstance : allSkins)
+							inputSkeleton = new NifJ3dSkeletonRoot(nif);
+							// create skins from the skeleton and skin nif
+							allSkins = J3dNiSkinInstance.createSkins(nif.getNiToJ3dData(), inputSkeleton);
+							System.out.println("CHEEEEEEEEEECCCKK SKINS");
+							if (allSkins.size() > 0)
 							{
-								centreriser.addChild(j3dNiSkinInstance);
-							}
-
-							PerFrameUpdateBehavior pub = new PerFrameUpdateBehavior(new CallBack() {
-								@Override
-								public void update()
+								System.out.println("SKIN!!");
+								// add the skins to the scene
+								for (J3dNiSkinInstance j3dNiSkinInstance : allSkins)
 								{
-									// must be called to update the accum transform
-									inputSkeleton.updateBones();
-									for (J3dNiSkinInstance j3dNiSkinInstance : allSkins)
-									{
-										j3dNiSkinInstance.processSkinInstance();
-									}
+									centreriser.addChild(j3dNiSkinInstance);
 								}
 
-							});
-							currentLoadScreenTG.addChild(pub);
-						}
+								PerFrameUpdateBehavior pub = new PerFrameUpdateBehavior(new CallBack() {
+									@Override
+									public void update()
+									{
+										// must be called to update the accum transform
+										inputSkeleton.updateBones();
+										for (J3dNiSkinInstance j3dNiSkinInstance : allSkins)
+										{
+											j3dNiSkinInstance.processSkinInstance();
+										}
+									}
 
-						centreriser.addChild(inputSkeleton);
+								});
+								currentLoadScreenTG.addChild(pub);
+							}
+
+							centreriser.addChild(inputSkeleton);
+						}
 					}
 
 				}
