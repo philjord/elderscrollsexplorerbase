@@ -1,5 +1,6 @@
 package scrollsexplorer.simpleclient.scenegraph;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import javax.media.j3d.BoundingSphere;
@@ -13,10 +14,14 @@ import javax.vecmath.Vector3f;
 
 import nif.NifJ3dVisRoot;
 import nif.NifToJ3d;
+import nif.character.NifJ3dSkeletonRoot;
 import nif.j3d.J3dNiAVObject;
+import nif.j3d.J3dNiSkinInstance;
 import nif.j3d.animation.J3dNiControllerManager;
 import scrollsexplorer.GameConfig;
 import tools3d.utils.scenegraph.SpinTransform;
+import utils.PerFrameUpdateBehavior;
+import utils.PerFrameUpdateBehavior.CallBack;
 import utils.source.MediaSources;
 
 public class LoadScreen extends BranchGroup
@@ -64,6 +69,7 @@ public class LoadScreen extends BranchGroup
 				NifJ3dVisRoot nif = NifToJ3d.loadShapes(nifFile, mediaSources.getMeshSource(), mediaSources.getTextureSource());
 				if (nif != null)
 				{
+
 					J3dNiAVObject j3dNiAVObject = nif.getVisualRoot();
 
 					if (j3dNiAVObject != null)
@@ -80,24 +86,6 @@ public class LoadScreen extends BranchGroup
 						tc.setTranslation(vtc);
 						centreriser.setTransform(tc);
 
-						for (J3dNiAVObject av : nif.getNiToJ3dData().j3dNiAVObjectValues())
-						{
-							if (av.getJ3dNiControllerManager() != null)
-							{
-								//note self cleaning uping
-								ControllerInvokerThread controllerInvokerThread = new ControllerInvokerThread(nif.getVisualRoot().getName(),
-										av.getJ3dNiControllerManager(), null);
-								controllerInvokerThread.start();
-							}
-							if (av.getJ3dNiTimeController() != null)
-							{
-								System.out.println("I wish I could fire this :( " + av.getJ3dNiTimeController());
-								System.out.println("But it's a skin instance so I need like a character!");
-								System.out.println("Or are they in fact being fired, but the skins not listening t the bones");
-								System.out.println("automaticallly? perhaps it should, even without a character to cock about");
-							}
-						}
-						
 						TransformGroup spinTransformGroup = new TransformGroup();
 						spinTransformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 						spinTransformGroup.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -119,6 +107,46 @@ public class LoadScreen extends BranchGroup
 
 						currentLoadScreenTG.setTransform(t);
 
+						for (J3dNiAVObject av : nif.getNiToJ3dData().j3dNiAVObjectValues())
+						{
+							if (av.getJ3dNiControllerManager() != null)
+							{
+								//note self cleaning uping
+								ControllerInvokerThread controllerInvokerThread = new ControllerInvokerThread(nif.getVisualRoot().getName(),
+										av.getJ3dNiControllerManager(), null);
+								controllerInvokerThread.start();
+							}
+						}
+
+						inputSkeleton = new NifJ3dSkeletonRoot(nif);
+						// create skins from the skeleton and skin nif
+						allSkins = J3dNiSkinInstance.createSkins(nif.getNiToJ3dData(), inputSkeleton);
+
+						if (allSkins.size() > 0)
+						{
+							// add the skins to the scene
+							for (J3dNiSkinInstance j3dNiSkinInstance : allSkins)
+							{
+								centreriser.addChild(j3dNiSkinInstance);
+							}
+
+							PerFrameUpdateBehavior pub = new PerFrameUpdateBehavior(new CallBack() {
+								@Override
+								public void update()
+								{
+									// must be called to update the accum transform
+									inputSkeleton.updateBones();
+									for (J3dNiSkinInstance j3dNiSkinInstance : allSkins)
+									{
+										j3dNiSkinInstance.processSkinInstance();
+									}
+								}
+
+							});
+							currentLoadScreenTG.addChild(pub);
+						}
+
+						centreriser.addChild(inputSkeleton);
 					}
 
 				}
@@ -128,6 +156,9 @@ public class LoadScreen extends BranchGroup
 		}
 
 	}
+
+	private ArrayList<J3dNiSkinInstance> allSkins;
+	private NifJ3dSkeletonRoot inputSkeleton;
 
 	public static String getRandom(String[] array)
 	{
