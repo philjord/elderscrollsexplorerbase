@@ -1040,11 +1040,12 @@ public class NiGeometryAppearanceShader
 
 			mat.setEmissiveColor(nmp.emissiveColor.r, nmp.emissiveColor.g, nmp.emissiveColor.b);
 
-			//in nifskope they blend teh nmp.alpha value with teh colors but that makes evrythign dissappear for me when alpha is 0
-				 
+			//in nifskope they blend the nmp.alpha value with the colors but that makes everything disappear for me when alpha is 0
+
 			if (nmp.alpha != 1.0)
 			{
 				ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+				ta.setTransparency(1.0f - nmp.alpha); // notice the reversal of value here
 			}
 
 			if (nsp != null && (nsp.flags.flags & 0x01) == 0)
@@ -1081,6 +1082,15 @@ public class NiGeometryAppearanceShader
 				if (sm.bEmitEnabled != 0)
 					mat.setEmissiveColor(sm.cEmittanceColor.r, sm.cEmittanceColor.g, sm.cEmittanceColor.b);
 
+			/*	should this be like nialphaproperty above??
+			 if (n.fAlpha != 1.0)
+				{
+					ta.setTransparencyMode(TransparencyAttributes.BLENDED);
+					ta.setTransparency(1.0f - m.fAlpha); // notice the reversal of value here
+				}*/
+				
+				
+				
 				if (sm.bSpecularEnabled != 0)
 				{
 					mat.setShininess(sm.fSmoothness);

@@ -123,10 +123,8 @@ public class LoadScreen extends BranchGroup
 							inputSkeleton = new NifJ3dSkeletonRoot(nif);
 							// create skins from the skeleton and skin nif
 							allSkins = J3dNiSkinInstance.createSkins(nif.getNiToJ3dData(), inputSkeleton);
-							System.out.println("CHEEEEEEEEEECCCKK SKINS");
 							if (allSkins.size() > 0)
 							{
-								System.out.println("SKIN!!");
 								// add the skins to the scene
 								for (J3dNiSkinInstance j3dNiSkinInstance : allSkins)
 								{
