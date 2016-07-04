@@ -84,5 +84,5 @@ void main()
      
 	ct = color.rgb * C.rgb;
 	at = color.a;
-	gl_FragColor = vec4(ct * cf, at * af);
+	gl_FragColor = vec4(ct * cf, C.a);//, at * af); why is the alpha wrong now?
 }

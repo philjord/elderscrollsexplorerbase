@@ -31,6 +31,7 @@ import scrollsexplorer.simpleclient.SimpleWalkSetup;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
 import scrollsexplorer.simpleclient.physics.DynamicsEngine;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
+import scrollsexplorer.simpleclient.tes3.Tes3Extensions;
 import tools.compressedtexture.CompressedTextureLoader;
 import tools.io.ConfigLoader;
 import tools3d.camera.Camera;
@@ -60,6 +61,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	public BSArchiveSet bsaFileSet;
 
 	private GameConfig selectedGameConfig = null;
+
+	private Tes3Extensions tes3Extensions;
 
 	public ScrollsExplorerNewt(String gameToLoad)
 	{
@@ -277,6 +280,13 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 						// I could use the j3dcellfactory now? with the cached cell records?
 						simpleBethCellManager.setSources(selectedGameConfig, esmManager, mediaSources);
+
+						if (selectedGameConfig == GameConfig.allGameConfigs.get(0))
+						{
+							System.out.println("Adding Tes3 extensions");
+							tes3Extensions = new Tes3Extensions(selectedGameConfig, esmManager, mediaSources, simpleWalkSetup,
+									simpleBethCellManager);
+						}
 
 						display(prevCellformid);
 
