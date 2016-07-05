@@ -25,6 +25,7 @@ import nif.BgsmSource;
 import nif.appearance.NiGeometryAppearanceFactoryShader;
 import nif.character.NifCharacter;
 import nif.j3d.J3dNiTriBasedGeom;
+import nif.j3d.particles.tes3.J3dNiParticles;
 import scrollsexplorer.simpleclient.BethWorldVisualBranch;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
 import scrollsexplorer.simpleclient.SimpleWalkSetup;
@@ -264,7 +265,14 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 								System.exit(0);
 							}
 
+							@Override
+							public void windowResized(final WindowEvent e)
+							{
+								J3dNiParticles.screenWidth = simpleWalkSetup.getWindow().getWidth();
+							}
+
 						});
+						J3dNiParticles.screenWidth = simpleWalkSetup.getWindow().getWidth();
 						simpleWalkSetup.getWindow().addKeyListener(new KeyAdapter() {
 							@Override
 							public void keyPressed(KeyEvent e)

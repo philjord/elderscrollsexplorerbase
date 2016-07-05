@@ -32,6 +32,9 @@ out vec4 C;
 //out vec2 glTexCoord0;
 //out vec2 TextureSize;
 
+ 
+uniform float screenWidth;      //screen width in pixels
+
 void main( void )
 {
 	mat4 glModelViewMatrix = glViewMatrix * glModelMatrix;
@@ -40,11 +43,9 @@ void main( void )
 	//glTexCoord0 = glMultiTexCoord0;
 	//TextureSize = vec2(TextureCoordPointSize, TextureCoordPointSize);
 	
-	vec3 v = vec3(glModelViewMatrix * glVertex);
-	vec3 ViewDir = -v.xyz;
-	float dist = length(ViewDir);
-			
-	gl_PointSize = Size / dist;	 
+	vec4 v2 =  glModelViewMatrix * glVertex;
+	vec4 projCorner = glProjectionMatrix * vec4(0.5*Size, 0.5*Size, v2.z, v2.w);
+	gl_PointSize = screenWidth * projCorner.x / projCorner.w;
 	
 	if(ignoreVertexColors == 0)
 		C = glColor; 
