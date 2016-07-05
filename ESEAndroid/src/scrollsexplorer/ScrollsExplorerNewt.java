@@ -268,11 +268,11 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							@Override
 							public void windowResized(final WindowEvent e)
 							{
-								J3dNiParticles.screenWidth = simpleWalkSetup.getWindow().getWidth();
+								J3dNiParticles.setScreenWidth(simpleWalkSetup.getWindow().getWidth());
 							}
 
 						});
-						J3dNiParticles.screenWidth = simpleWalkSetup.getWindow().getWidth();
+						J3dNiParticles.setScreenWidth(simpleWalkSetup.getWindow().getWidth());
 						simpleWalkSetup.getWindow().addKeyListener(new KeyAdapter() {
 							@Override
 							public void keyPressed(KeyEvent e)

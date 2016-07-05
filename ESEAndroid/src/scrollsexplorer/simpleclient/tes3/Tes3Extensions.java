@@ -41,6 +41,7 @@ public class Tes3Extensions
 		//npcos.add(new NPCO(1, "bonemold_bracer_left"));
 		//npcos.add(new NPCO(1, "bonemold_bracer_right"));
 		//npcos.add(new NPCO(1, "dragonscale_towershield"));
+		//npcos.add(new NPCO(1, "imperial broadsword"));
 		npcos.add(new NPCO(1, "steel battle axe"));
 
 		characterSheet = new CharacterSheet(false, "Breton", "b\\b_n_breton_f_head_01.nif", "b\\b_n_breton_f_hair_01.nif", npcos);
@@ -60,7 +61,11 @@ public class Tes3Extensions
 
 		simpleWalkSetup.getViewingPlatform().getPlatformGeometry().addChild(bg);
 
-		avatarFirstPerson.playAnimation("idlespell", true);
+		//avatarFirstPerson.playAnimation("idlespell", true);
+		avatarFirstPerson.playAnimation("idle1h", true);
+		
+		//TODO: how do 2 handed weapons work what is idle2c and idle2w? close and wide?
+		// yep WEAP type has the types
 		
 		//idle1h
 		//idle2c
