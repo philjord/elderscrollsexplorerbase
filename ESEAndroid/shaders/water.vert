@@ -87,7 +87,7 @@ vec3 waveNormal(float x, float z) {
 
 void main() {
     vec4 pos = glVertex;
-    pos.y = pos.y + waveHeight(pos.x, pos.z);
+    pos.y = pos.y;// turned off for demo + waveHeight(pos.x, pos.z);
     position = pos.xyz / pos.w;
     worldNormal = waveNormal(pos.x, pos.z);
     eyeNormal = glNormalMatrix * worldNormal;
