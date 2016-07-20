@@ -6,18 +6,19 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
 import javax.media.j3d.Node;
 import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
+import com.bulletphysics.collision.broadphase.BroadphaseProxy;
+import com.bulletphysics.collision.broadphase.DbvtProxy;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
+import com.bulletphysics.dynamics.RigidBody;
 import com.frostwire.util.SparseArray;
 
 import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
-import esmj3d.j3d.j3drecords.type.J3dDOOR;
 import esmj3d.j3d.j3drecords.type.J3dRECOType;
 import esmj3dtes3.j3d.j3drecords.type.J3dPivotDOOR;
 import nif.NifFile;
@@ -27,6 +28,7 @@ import nif.j3d.animation.J3dNiControllerSequence;
 import nifbullet.BulletNifModel;
 import nifbullet.BulletNifModelClassifier;
 import nifbullet.cha.NBControlledChar;
+import nifbullet.cha.NBNonControlledChar;
 import nifbullet.dyn.NBSimpleDynamicModel;
 import nifbullet.simple.NBSimpleModel;
 import nifbullet.util.debug.opengl.DebugOutput;
@@ -161,6 +163,7 @@ public class PhysicsDynamics extends DynamicsEngine
 		destroy();
 	}
 
+	@Override
 	public void destroy()
 	{
 		this.destroyed = true;
@@ -175,6 +178,7 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	public BulletNifModel createRECO(J3dRECOInst j3dRECOInst)
 	{
+
 		if (recoIdToNifBullet.get(j3dRECOInst.getRecordId()) != null)
 		{
 			System.out.println("PhysicsDynamics, already loaded key " + j3dRECOInst.getRecordId() + " of " + j3dRECOInst);
@@ -202,11 +206,15 @@ public class PhysicsDynamics extends DynamicsEngine
 					return createStaticOrDynamic(j3dRECOInst, j3dRECOType.physNifFile, false);
 				}
 			}
+			else if (j3dRECOInst instanceof J3dRECOChaInst)
+			{
+				createCharacter(j3dRECOInst);
+			}
 			else
 			{
-				if (!(j3dRECOInst instanceof J3dRECOChaInst))
-					System.out.println(
-							"j3dRECOType null or null phys " + j3dRECOType + " for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
+
+				System.out.println(
+						"j3dRECOType null or null phys " + j3dRECOType + " for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
 
 			}
 		}
@@ -226,6 +234,28 @@ public class PhysicsDynamics extends DynamicsEngine
 				nifBulletToRecoId.put(nb, j3dLAND.getRecordId());
 			}
 		}
+		return nb;
+	}
+
+	private BulletNifModel createCharacter(J3dRECOInst j3dRECOInst)
+	{
+		BulletNifModel nb = null;
+
+		//root should have scale in it
+		Transform3D rootTrans = j3dRECOInst.getLocation(new Transform3D());
+
+		// the nif file will have mass of 0 making this kinematic
+		nb = new NBNonControlledChar(rootTrans, 0, j3dRECOInst.getRecordId());
+
+		if (nb != null)
+		{
+			synchronized (recoIdToNifBullet)
+			{
+				recoIdToNifBullet.put(j3dRECOInst.getRecordId(), nb);
+				nifBulletToRecoId.put(nb, j3dRECOInst.getRecordId());
+			}
+		}
+
 		return nb;
 	}
 
@@ -388,6 +418,7 @@ public class PhysicsDynamics extends DynamicsEngine
 	{
 		//NOTE a create must have been called for this J3dRECOInst
 		int recordId = j3dRECOInst.getRecordId();
+
 		BulletNifModel nifBullet = recoIdToNifBullet.get(recordId);
 		if (nifBullet != null)
 		{
@@ -503,12 +534,12 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	}
 
-	public ClosestRayResultCallback findRayIntersect(Vector3f rayFrom, Vector3f rayTo)
+	public ClosestRayResultCallback findRayIntersect(Vector3f rayFrom, Vector3f rayTo, int characterRecordIdToIgnore)
 	{
-
 		try
 		{
-			CollisionWorld.ClosestRayResultCallback rayCallback = new CollisionWorld.ClosestRayResultCallback(rayFrom, rayTo);
+			CollisionWorld.ClosestRayResultCallback rayCallback = new ClosestRayResultCallbackChar(rayFrom, rayTo,
+					characterRecordIdToIgnore);
 			synchronized (dynamicsWorld)
 			{
 				dynamicsWorld.rayTest(rayFrom, rayTo, rayCallback);
@@ -520,6 +551,40 @@ public class PhysicsDynamics extends DynamicsEngine
 			System.out.println("findRayIntersect null again! something something ObjectPools");
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public static class ClosestRayResultCallbackChar extends CollisionWorld.ClosestRayResultCallback
+	{
+		public int characterRecordIdToIgnore;
+
+		public ClosestRayResultCallbackChar(Vector3f rayFromWorld, Vector3f rayToWorld, int characterRecordIdToIgnore)
+		{
+			super(rayFromWorld, rayToWorld);
+			this.characterRecordIdToIgnore = characterRecordIdToIgnore;
+		}
+
+		@Override
+		public boolean needsCollision(BroadphaseProxy proxy0)
+		{
+			//FIXME: the id system should be much more general, for now only characters
+			if (characterRecordIdToIgnore != -1)
+			{
+				if (proxy0.clientObject instanceof RigidBody)
+				{
+					RigidBody rb = (RigidBody) proxy0.clientObject;
+					if (rb.getUserPointer() instanceof NBNonControlledChar)
+					{
+						NBNonControlledChar nbncc = (NBNonControlledChar) rb.getUserPointer();
+						if (nbncc.getRecordId() == characterRecordIdToIgnore)
+						{
+							return false;
+						}
+					}
+				}
+			}
+
+			return super.needsCollision(proxy0);
 		}
 	}
 

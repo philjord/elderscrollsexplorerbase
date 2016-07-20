@@ -2,7 +2,10 @@ package scrollsexplorer.simpleclient;
 
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Group;
+import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
 
+import esmj3d.ai.AIActor;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICELLPersistent;
 import esmj3d.j3d.cell.J3dICellFactory;
@@ -10,6 +13,7 @@ import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmmanager.common.data.record.Record;
 import esmmanager.common.data.record.Subrecord;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
+import tools3d.utils.YawPitch;
 
 public class BethInteriorVisualBranch extends BranchGroup
 {
@@ -83,6 +87,18 @@ public class BethInteriorVisualBranch extends BranchGroup
 		}
 
 		return j3dCELLPersistent.getGridSpaces().getJ3dInstRECO(recoId);
+	}
+
+	public void setLocationForActor(AIActor aiActor, Vector3f location, YawPitch yawPitch)
+	{
+		J3dRECOInst j3dRECOInst = getJ3dInstRECO(aiActor.getActorFormId());
+		if (j3dRECOInst != null)
+		{
+			Quat4f q = new Quat4f();
+			yawPitch.get(q);
+			j3dRECOInst.setLocation(new Vector3f(location.x, location.y, location.z), q);
+		}
+		
 	}
 
 }

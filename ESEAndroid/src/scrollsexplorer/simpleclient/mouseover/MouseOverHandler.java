@@ -173,7 +173,7 @@ public abstract class MouseOverHandler implements WindowListener
 			rayTo.set(o);
 			rayTo.add(diff);
 
-			CollisionWorld.ClosestRayResultCallback rayCallback = clientPhysicsSystem.findRayIntersect(rayFrom, rayTo);
+			CollisionWorld.ClosestRayResultCallback rayCallback = clientPhysicsSystem.findRayIntersect(rayFrom, rayTo, -1);
 			return rayCallback;
 		}
 		return null;

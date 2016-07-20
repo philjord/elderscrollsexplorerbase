@@ -8,8 +8,11 @@ import javax.media.j3d.Transform3D;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
+import esmj3d.ai.AIActor;
 import esmj3d.data.shared.subrecords.LString;
 import esmj3d.j3d.BethRenderSettings;
+import esmj3d.j3d.cell.AIActorLocator;
+import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICellFactory;
 import esmj3d.j3d.j3drecords.inst.J3dRECODynInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
@@ -24,9 +27,10 @@ import scrollsexplorer.simpleclient.physics.InstRECOStore;
 import scrollsexplorer.simpleclient.scenegraph.LoadScreen;
 import scrollsexplorer.simpleclient.scenegraph.SimpleSky;
 import tools3d.navigation.AvatarLocation;
+import tools3d.utils.YawPitch;
 import utils.source.MediaSources;
 
-public class SimpleBethCellManager implements InstRECOStore
+public class SimpleBethCellManager implements InstRECOStore, AIActorLocator
 {
 	//TODO: bad form only for ActionableMouseOverHandler
 	public static BethWorldVisualBranch currentBethWorldVisualBranch;
@@ -36,6 +40,8 @@ public class SimpleBethCellManager implements InstRECOStore
 	public static BethInteriorVisualBranch currentBethInteriorVisualBranch;
 
 	public static BethInteriorPhysicalBranch currentBethInteriorPhysicalBranch;
+
+	public static BethAIControl bethAIControl;
 
 	private SimpleWalkSetupInterface simpleWalkSetup;
 
@@ -80,14 +86,15 @@ public class SimpleBethCellManager implements InstRECOStore
 		j3dCellFactory = gameConfig.j3dCellFactory;
 		j3dCellFactory.setSources(esmManager, mediaSources);
 
-		simpleSky = new SimpleSky(gameConfig, mediaSources );
+		simpleSky = new SimpleSky(gameConfig, mediaSources);
 		simpleWalkSetup.getVisualBranch().addChild(simpleSky);
 
 		loadScreen = new LoadScreen(gameConfig, mediaSources);
 		simpleWalkSetup.getViewingPlatform().getPlatformGeometry().addChild(loadScreen);
 
-		simpleWalkSetup.setVisualDisplayed(true);
+		bethAIControl = new BethAIControl(simpleWalkSetup, this, j3dCellFactory, simpleWalkSetup.getPhysicsSystem());
 
+		simpleWalkSetup.setVisualDisplayed(true);
 	}
 
 	public String getCellNameFormIdOf(int doorFormId)
@@ -198,6 +205,7 @@ public class SimpleBethCellManager implements InstRECOStore
 		{
 			// use a new thread as generally the Awt thread is coming in and better to let it go
 			Thread thread = new Thread() {
+				@Override
 				public void run()
 				{
 					canChangeCell = false;
@@ -212,6 +220,10 @@ public class SimpleBethCellManager implements InstRECOStore
 					if (currentCellFormId != -1 && currentCellFormId != newCellFormId)
 					{
 						System.out.println("unloading cell " + currentCellFormId + "...");
+
+						avatarLocation.removeAvatarLocationListener(bethAIControl);
+						bethAIControl.unload();
+
 						// unload current
 						if (currentBethWorldVisualBranch != null)
 						{
@@ -259,6 +271,11 @@ public class SimpleBethCellManager implements InstRECOStore
 							PluginRecord cell = esmManager.getWRLD(currentCellFormId);
 							if (cell != null)
 							{
+
+								bethAIControl.cellChanged(currentCellFormId, true);
+								bethAIControl.init(avatarLocation.getTransform());
+								avatarLocation.addAvatarLocationListener(bethAIControl);
+
 								// outside is light
 								BethRenderSettings.setGlobalAmbLightLevel(50f / 100f);
 								simpleWalkSetup.setGlobalAmbLightLevel(50f / 100f);
@@ -288,6 +305,11 @@ public class SimpleBethCellManager implements InstRECOStore
 							}
 							else
 							{
+
+								bethAIControl.cellChanged(currentCellFormId, false);
+								bethAIControl.init(avatarLocation.getTransform());
+								avatarLocation.addAvatarLocationListener(bethAIControl);
+
 								//must be interior?
 								// inside is dim
 								BethRenderSettings.setGlobalAmbLightLevel(30f / 100f);
@@ -395,4 +417,26 @@ public class SimpleBethCellManager implements InstRECOStore
 		loadScreen.setShowLoadScreen(false);
 	}
 
+	@Override
+	public void setLocationForActor(AIActor aiActor, Vector3f location, YawPitch yawPitch)
+	{
+		if (currentBethInteriorPhysicalBranch != null)
+		{
+			currentBethInteriorPhysicalBranch.setLocationForActor(aiActor, location, yawPitch);
+		}
+		else if (currentBethWorldPhysicalBranch != null)
+		{
+			currentBethWorldPhysicalBranch.setLocationForActor(aiActor, location, yawPitch);
+		}
+
+		if (currentBethInteriorVisualBranch != null)
+		{
+			currentBethInteriorVisualBranch.setLocationForActor(aiActor, location, yawPitch);
+		}
+		else if (currentBethWorldVisualBranch != null)
+		{
+			currentBethWorldVisualBranch.setLocationForActor(aiActor, location, yawPitch);
+		}
+
+	}
 }

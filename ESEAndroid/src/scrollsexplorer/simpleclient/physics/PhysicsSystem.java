@@ -11,6 +11,8 @@ import com.frostwire.util.SparseArray;
 import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
+import esmj3d.physics.PhysicsSystemInterface;
+import esmj3d.physics.RayIntersectResult;
 import nifbullet.BulletNifModel;
 import nifbullet.NavigationProcessorBullet.NbccProvider;
 import nifbullet.cha.NBControlledChar;
@@ -21,7 +23,7 @@ import tools.clock.PeriodicallyUpdated;
 import tools3d.navigation.AvatarCollisionInfo;
 import utils.source.MeshSource;
 
-public class PhysicsSystem implements NbccProvider
+public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 {
 	public static long MIN_TIME_BETWEEN_STEPS_MS = 20;
 
@@ -65,6 +67,7 @@ public class PhysicsSystem implements NbccProvider
 		physicsSimThread = new PeriodicThread("Physics Sim Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
 			private long startOfLastUpdate = System.currentTimeMillis() * 2;
 
+			@Override
 			public void runUpdate()
 			{
 				if (System.currentTimeMillis() - startOfLastUpdate > 300)
@@ -88,6 +91,7 @@ public class PhysicsSystem implements NbccProvider
 		physicsSimThread.start();
 
 		physicsToModelThread = new PeriodicThread("Physics To Model Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
+			@Override
 			public void runUpdate()
 			{
 				try
@@ -248,7 +252,7 @@ public class PhysicsSystem implements NbccProvider
 					// assumes cell id and stmodel set properly by now
 					for (int i = 0; i < pu.collection.size(); i++)
 					{
-						J3dRECOInst instReco = pu.collection.get(pu.collection.keyAt(i));					 
+						J3dRECOInst instReco = pu.collection.get(pu.collection.keyAt(i));
 						physicsLocaleDynamics.addRECO(instReco);
 					}
 
@@ -262,7 +266,7 @@ public class PhysicsSystem implements NbccProvider
 					// assumes cell id and stmodel set properly by now
 					for (int i = 0; i < pu.collection.size(); i++)
 					{
-						J3dRECOInst instReco = pu.collection.get(pu.collection.keyAt(i));	
+						J3dRECOInst instReco = pu.collection.get(pu.collection.keyAt(i));
 						physicsLocaleDynamics.removeRECO(instReco);
 					}
 					//	if (!prevIsPaused)
@@ -333,17 +337,39 @@ public class PhysicsSystem implements NbccProvider
 		return false;
 	}
 
-	public ClosestRayResultCallback findRayIntersect(Vector3f rayFrom, Vector3f rayTo)
+	public ClosestRayResultCallback findRayIntersect(Vector3f rayFrom, Vector3f rayTo, int characterRecordIdToIgnore)
 	{
 		if (physicsLocaleDynamics != null)
 		{
-			return physicsLocaleDynamics.findRayIntersect(rayFrom, rayTo);
+			return physicsLocaleDynamics.findRayIntersect(rayFrom, rayTo, characterRecordIdToIgnore);
 		}
 		else
 		{
 			return null;
 		}
 
+	}
+
+	@Override
+	public RayIntersectResult findRayIntersectResult(Vector3f rayFrom, Vector3f rayTo)
+	{
+		return findRayIntersectResult(rayFrom, rayTo, -1);
+	}
+
+	@Override
+	public RayIntersectResult findRayIntersectResult(Vector3f rayFrom, Vector3f rayTo, int characterRecordIdToIgnore)
+	{
+		RayIntersectResult rayIntersectResult = new RayIntersectResult();
+		ClosestRayResultCallback crrc = findRayIntersect(rayFrom, rayTo, characterRecordIdToIgnore);
+		if (crrc != null)
+		{
+			rayIntersectResult.closestHitFraction = crrc.closestHitFraction;
+			rayIntersectResult.hitNormalWorld.set(crrc.hitNormalWorld);
+			rayIntersectResult.hitPointWorld.set(crrc.hitPointWorld);
+			return rayIntersectResult;
+		}
+
+		return null;
 	}
 
 	/**

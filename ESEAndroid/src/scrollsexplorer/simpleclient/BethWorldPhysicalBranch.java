@@ -15,6 +15,7 @@ import javax.vecmath.Point3f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
+import esmj3d.ai.AIActor;
 import esmj3d.j3d.BethRenderSettings;
 import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
@@ -28,6 +29,7 @@ import javaawt.Point;
 import javaawt.Rectangle;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools.QueuingThread;
+import tools3d.utils.YawPitch;
 import tools3d.utils.scenegraph.LocationUpdateListener;
 import tools3d.utils.scenegraph.StructureUpdateBehavior;
 
@@ -351,6 +353,18 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 
 		//ok try the persistent cell as well, it'll return null if it's really not here
 		return j3dCELLPersistent.getGridSpaces().getJ3dInstRECO(recordId);
+	}
+
+	public void setLocationForActor(AIActor aiActor, Vector3f location, YawPitch yawPitch)
+	{
+		J3dRECOInst j3dRECOInst = getJ3dInstRECO(aiActor.getActorFormId());
+		if (j3dRECOInst != null)
+		{
+			Quat4f q = new Quat4f();
+			yawPitch.get(q);
+			j3dRECOInst.setLocation(new Vector3f(location.x, location.y, location.z), q);
+		}
+
 	}
 
 }

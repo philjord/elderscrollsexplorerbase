@@ -18,6 +18,10 @@ import bsa.source.BsaMeshSource;
 import bsa.source.BsaSoundSource;
 import bsa.source.BsaTextureSource;
 import esmj3d.j3d.BethRenderSettings;
+import esmj3d.j3d.cell.Beth32LodManager;
+import esmj3d.j3d.cell.Beth32_4LodManager;
+import esmj3d.j3d.cell.BethNoLodManager;
+import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmmanager.loader.ESMManager;
 import esmmanager.loader.IESMManager;
 import nativeLinker.LWJGLLinker;
@@ -208,6 +212,15 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 					bsaFileSet = null;
 					if (esmManager != null)
 					{
+						
+						//TODO: all these should be connected strongly to GameConfig
+						if (esmManager.getName().indexOf("Morrowind") != -1)
+						{							
+							J3dLAND.setTes3();
+							BethRenderSettings.setTes3(true);
+						}						
+						
+						
 						YawPitch yp = YawPitch
 								.parse(PropertyLoader.properties.getProperty("YawPitch" + esmManager.getName(), new YawPitch().toString()));
 						Vector3f trans = PropertyCodec.vector3fOut(PropertyLoader.properties.getProperty("Trans" + esmManager.getName(),
