@@ -53,6 +53,8 @@ public class BethAIControl implements LocationUpdateListener
 
 	private PeriodicThread actingThread;
 
+	private boolean isPaused = true;
+
 	public BethAIControl(SimpleWalkSetupInterface simpleWalkSetup2, SimpleBethCellManager simpleBethCellManager,
 			J3dICellFactory j3dCellFactory, PhysicsSystem clientPhysicsSystem)
 	{
@@ -231,11 +233,15 @@ public class BethAIControl implements LocationUpdateListener
 
 	private void doAllThoughts()
 	{
-		synchronized (loadedNears)
+		if (!isPaused)
 		{
-			for (AICellGeneral aiCell : loadedNears.values())
+
+			synchronized (loadedNears)
 			{
-				aiCell.doAllThoughts(lastUpdatedTranslation, clientPhysicsSystem);
+				for (AICellGeneral aiCell : loadedNears.values())
+				{
+					aiCell.doAllThoughts(lastUpdatedTranslation, clientPhysicsSystem);
+				}
 			}
 		}
 
@@ -243,13 +249,26 @@ public class BethAIControl implements LocationUpdateListener
 
 	private void doAllActions()
 	{
-		synchronized (loadedNears)
+		if (!isPaused)
 		{
-			for (AICellGeneral aiCell : loadedNears.values())
+			synchronized (loadedNears)
 			{
-				aiCell.doAllActions(lastUpdatedTranslation, clientPhysicsSystem);
+				for (AICellGeneral aiCell : loadedNears.values())
+				{
+					aiCell.doAllActions(lastUpdatedTranslation, clientPhysicsSystem);
+				}
 			}
 		}
+	}
+
+	public void pause()
+	{
+		isPaused = true;
+	}
+
+	public void resume()
+	{
+		isPaused = false;
 	}
 
 }

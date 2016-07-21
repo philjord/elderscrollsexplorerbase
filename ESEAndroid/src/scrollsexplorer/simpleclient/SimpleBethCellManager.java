@@ -212,6 +212,7 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorLocator
 
 					simpleWalkSetup.setEnabled(false);
 					simpleWalkSetup.setVisualDisplayed(false);
+					bethAIControl.pause();
 					showLoadScreen();
 
 					//NOTE no structure thread as visual are not displayed now from call above (not live at all)
@@ -357,7 +358,7 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorLocator
 					}
 					simpleWalkSetup.setVisualDisplayed(true);
 					simpleWalkSetup.setEnabled(true);
-
+					bethAIControl.resume();
 					dropLoadScreen();
 
 					canChangeCell = true;
