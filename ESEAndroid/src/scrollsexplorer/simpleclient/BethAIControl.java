@@ -3,10 +3,8 @@ package scrollsexplorer.simpleclient;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3f;
@@ -17,7 +15,6 @@ import esmj3d.j3d.BethRenderSettings;
 import esmj3d.j3d.cell.AICellGeneral;
 import esmj3d.j3d.cell.Beth32LodManager;
 import esmj3d.j3d.cell.J3dICellFactory;
-import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import javaawt.Point;
 import javaawt.Rectangle;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
@@ -149,8 +146,10 @@ public class BethAIControl implements LocationUpdateListener
 			System.out.println("Interior loaded up?? " + curentCellId);
 			// interiors are just a single cell loaded
 			AICellGeneral bg = j3dCellFactory.makeAICell(curentCellId, simpleBethCellManager);
-			System.out.println("bg " + bg);
-			loadedNears.put(new Point(0, 0), bg);
+			if (bg != null)
+			{
+				loadedNears.put(new Point(0, 0), bg);
+			}
 		}
 
 	}
@@ -223,12 +222,15 @@ public class BethAIControl implements LocationUpdateListener
 
 	public void unload()
 	{
-		for (AICellGeneral aiCell : loadedNears.values())
+		pause();
+		synchronized (loadedNears)
 		{
-			aiCell.unloadCell();
+			for (AICellGeneral aiCell : loadedNears.values())
+			{
+				aiCell.unloadCell();
+			}
 		}
 		loadedNears.clear();
-
 	}
 
 	private void doAllThoughts()

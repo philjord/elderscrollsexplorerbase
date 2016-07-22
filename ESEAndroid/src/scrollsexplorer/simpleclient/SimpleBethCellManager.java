@@ -12,7 +12,6 @@ import esmj3d.ai.AIActor;
 import esmj3d.data.shared.subrecords.LString;
 import esmj3d.j3d.BethRenderSettings;
 import esmj3d.j3d.cell.AIActorLocator;
-import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICellFactory;
 import esmj3d.j3d.j3drecords.inst.J3dRECODynInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;

@@ -109,8 +109,13 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		this.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		this.setCapability(Group.ALLOW_CHILDREN_EXTEND);
 
+		// not no scope is universal so not a system for disabling
 		fog.addScope(this);
-		fog.setInfluencingBounds(Utils3D.defaultBounds);
+		fog.setCapability(LinearFog.ALLOW_INFLUENCING_BOUNDS_WRITE);
+		if (BethRenderSettings.isFogEnabled())
+		{
+			fog.setInfluencingBounds(Utils3D.defaultBounds);
+		}		
 		addChild(fog);
 
 		IDashboard.dashboard.setLodLoading(1);
@@ -525,6 +530,16 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			Point3f updatePoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
 			nearUpdateThread.addToQueue(updatePoint);
 			grossUpdateThread.addToQueue(updatePoint);
+
+			if (BethRenderSettings.isFogEnabled())
+			{
+
+				fog.setInfluencingBounds(Utils3D.defaultBounds);
+			}
+			else
+			{
+				fog.setInfluencingBounds(null);
+			}
 		}
 	}
 

@@ -71,7 +71,7 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 			public void runUpdate()
 			{
 				if (System.currentTimeMillis() - startOfLastUpdate > 300)
-					System.err.println("PeriodicThread slow " + (System.currentTimeMillis() - startOfLastUpdate));
+					System.err.println("Physics Sim Thread slow " + (System.currentTimeMillis() - startOfLastUpdate));
 				startOfLastUpdate = System.currentTimeMillis();
 
 				try

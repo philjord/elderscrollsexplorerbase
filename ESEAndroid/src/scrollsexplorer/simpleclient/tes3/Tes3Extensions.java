@@ -49,8 +49,8 @@ public class Tes3Extensions
 
 		TransformGroup tg = new TransformGroup();
 		Transform3D t = new Transform3D();
-		t.rotY(Math.PI / 2f);
-		t.setTranslation(new Vector3f(0, -1.65f, -0.0f));
+		//t.rotY(Math.PI / 2f);
+		t.setTranslation(new Vector3f(0, -1.50f, -0.0f));
 		//t.rotY(Math.PI / -2f);
 		//t.setTranslation(new Vector3f(0, 0, -3f));
 		tg.setTransform(t);

@@ -118,7 +118,7 @@ public class LoadScreen extends BranchGroup
 							}
 						}
 
-						if (NifJ3dSkeletonRoot.hasSkeletonRoot(nif.getNiToJ3dData()))
+						if (NifJ3dSkeletonRoot.isSkeleton(nif.getNiToJ3dData()))
 						{
 							inputSkeleton = new NifJ3dSkeletonRoot(nif);
 							// create skins from the skeleton and skin nif

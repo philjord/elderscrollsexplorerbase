@@ -80,6 +80,8 @@ public class GameConfig
 				"OblivionFolder", //
 				"Oblivion.esm", //
 				"oblivion", 186689, new Vector3f(57, 80, 0)));
+		
+		//Android TESIV: Oblivion = 143176, (425,43,-912)
 
 		allGameConfigs.add(new GameConfig("FO3: Fallout 3", //
 				new esmj3dfo3.j3d.cell.J3dCellFactory(), //
@@ -90,6 +92,8 @@ public class GameConfig
 				"FallOut3Folder", //
 				"Fallout3.esm", //
 				"fallout3", 60, new Vector3f(-162, 182, 155)));
+		
+		//Android FO3: Fallout 3 = 2676, (-37, 165, 281)
 
 		allGameConfigs.add(new GameConfig("FONV: Fallout New Vegas", //
 				new esmj3dfo3.j3d.cell.J3dCellFactory(), //
@@ -99,6 +103,7 @@ public class GameConfig
 				"FalloutNVFolder", //
 				"FalloutNV.esm", //
 				"falloutnv", 894758, new Vector3f(-927, 111, -16)));
+		//Android FONV: Fallout New Vegas = 1064441, (23, 94, -24)
 
 		allGameConfigs.add(new GameConfig("TESV: Skyrim", //
 				new esmj3dtes5.j3d.cell.J3dCellFactory(), //
@@ -112,6 +117,7 @@ public class GameConfig
 				"SkyrimFolder", //
 				"Skyrim.esm", //
 				"skyrim", 60, new Vector3f(346, 256, 1459)));
+		//Android TESV: Skyrim = 107119, (251, -44, 94)
 
 		allGameConfigs.add(new GameConfig("FO4: Fallout 4", //
 				new esmj3dfo4.j3d.cell.J3dCellFactory(), //
@@ -124,6 +130,8 @@ public class GameConfig
 				"FallOut4Folder", //
 				"Fallout4.esm", //
 				"fallout4", 3988, new Vector3f(40, -18, -10)));
+		
+		//Android FO4: Fallout 4 = 7768, (19, 1, 5)
 
 		allGameConfigs.add(new GameConfig("Hunter Sneaker", //
 				new esmj3dtes4.j3d.cell.J3dCellFactory(), //
