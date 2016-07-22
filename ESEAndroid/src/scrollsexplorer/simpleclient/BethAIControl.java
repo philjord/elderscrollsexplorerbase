@@ -127,6 +127,8 @@ public class BethAIControl implements LocationUpdateListener
 	public void cellChanged(int newCellId, boolean isWRLD)
 	{
 		this.isWRLD = isWRLD;
+		
+		//TODO: fixme I saw whiterun world loading up and thinking it was an interior!
 
 		//new cell AI will be loaded on the location update call 
 		curentCellId = newCellId;
@@ -143,7 +145,6 @@ public class BethAIControl implements LocationUpdateListener
 		// interior just get loaded now
 		if (!isWRLD)
 		{
-			System.out.println("Interior loaded up?? " + curentCellId);
 			// interiors are just a single cell loaded
 			AICellGeneral bg = j3dCellFactory.makeAICell(curentCellId, simpleBethCellManager);
 			if (bg != null)

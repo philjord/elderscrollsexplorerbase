@@ -123,6 +123,8 @@ void main( void )
 	vec2 offset = glTexCoord0.st;
 
 	vec4 baseMap = texture2D( BaseMap, offset );	
+	gl_FragColor = baseMap;
+	return;
 	
 	if(alphaTestEnabled != 0)
 	{				
@@ -151,7 +153,7 @@ void main( void )
 	//https://www.reddit.com/r/FalloutMods/comments/3uaq1l/fo4_lets_talk_about_texture_creation_editing/
 	vec2 specMap = texture2D( SpecularMap, offset ).ag ; 
 	 
-	
+	 
 	vec3 normal = normalize(normalMap.rgb * 2.0 - 1.0);
 	if ( !gl_FrontFacing && bool(doubleSided) ) {
 		normal *= -1.0;	
@@ -202,7 +204,8 @@ void main( void )
 	}
 	
 	// Environment
-	vec4 cube = textureCubeLod( CubeMap, reflectedWS, 8.0 - g * 8.0 );
+	// TODO: why does textureCube not work on Android?
+	vec4 cube = vec4(1,1,1,1);//textureCube( CubeMap, reflectedWS );// gles doesn't have this in the frag shader textureCubeLod( CubeMap, reflectedWS, 8.0 - g * 8.0 );
 	vec4 env = texture2D( EnvironmentMap, offset );
 	if ( bool(hasCubeMap) ) {
 		cube.rgb *= envReflection * specStrength * sqrt(g) * 0.9;
@@ -218,7 +221,7 @@ void main( void )
 	//	
 	//	emissive += backlight * D.rgb;
 	//}
-
+ 
 	vec4 mask = vec4(0.0);
 	if ( bool(hasRimlight) || bool(hasSoftlight) ) {
 		mask = vec4( s );
@@ -241,12 +244,12 @@ void main( void )
 	//	
 	//	emissive += soft * D.rgb;
 	//}
-
+ 
 	color.rgb = albedo * (diffuse + emissive);
 	color.rgb += spec;
 	color.rgb = tonemap( color.rgb ) / tonemap( vec3(1.0) );
 	color.a = C.a * baseMap.a;
 
 	gl_FragColor = color;
-	gl_FragColor.a *= alpha;
+	gl_FragColor.a *= alpha; 
 }
