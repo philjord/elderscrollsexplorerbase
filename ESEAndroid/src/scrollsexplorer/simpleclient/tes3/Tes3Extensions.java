@@ -29,7 +29,7 @@ import utils.source.MediaSources;
 
 public class Tes3Extensions
 {
-	private static final boolean FIRST_PERSON = false;
+	private static final boolean FIRST_PERSON = true;
 	private GameConfig selectedGameConfig;
 	private IESMManager esmManager;
 	private MediaSources mediaSources;
