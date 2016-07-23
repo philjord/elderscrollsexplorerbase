@@ -12,8 +12,10 @@ import javax.vecmath.Color3f;
 import javax.vecmath.Point2f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
+import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 import com.jogamp.newt.Window;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
@@ -34,6 +36,8 @@ import tools3d.camera.HMDCamDolly;
 import tools3d.camera.HMDCameraPanel;
 import tools3d.camera.HeadCamDolly;
 import tools3d.camera.ICameraPanel;
+import tools3d.camera.TrailerCamDolly;
+import tools3d.camera.TrailerCamDolly.TrailorCamCollider;
 import tools3d.mixed3d2d.Canvas3D2D;
 import tools3d.mixed3d2d.curvehud.elements.HUDCompass;
 import tools3d.mixed3d2d.curvehud.elements.HUDCrossHair;
@@ -61,6 +65,7 @@ import utils.source.MeshSource;
 public class SimpleWalkSetup implements SimpleWalkSetupInterface
 {
 	public static boolean HMD_MODE = true;
+	public static boolean TRAILER_CAM = false;
 
 	//	private JFrame frame = new JFrame();
 
@@ -243,13 +248,13 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 
 		// Add a ShaderErrorListener
 		universe.addShaderErrorListener(new ShaderErrorListener() {
+			@Override
 			public void errorOccurred(ShaderError error)
 			{
 				error.printVerbose();
 				//JOptionPane.showMessageDialog(null, error.toString(), "ShaderError", JOptionPane.ERROR_MESSAGE);
 			}
 		});
-
 
 		setupGraphicsSetting();
 		cameraPanel.getCanvas3D2D().getGLWindow().setSize(1200, 1000);
@@ -429,8 +434,16 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 				}
 
 				// and the dolly it rides on
-				HeadCamDolly headCamDolly = new HeadCamDolly(avatarCollisionInfo);
-				cameraPanel.setDolly(headCamDolly);
+				if (TRAILER_CAM)
+				{
+					TrailerCamDolly trailerCamDolly = new TrailerCamDolly(avatarCollisionInfo, new WalkTrailorCamCollider());
+					cameraPanel.setDolly(trailerCamDolly);
+				}
+				else
+				{
+					HeadCamDolly headCamDolly = new HeadCamDolly(avatarCollisionInfo);
+					cameraPanel.setDolly(headCamDolly);
+				}
 			}
 
 			//frame.getContentPane().add((JPanel) cameraPanel);
@@ -714,6 +727,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			System.out.println("F11 send output to oculus");
 		}
 
+		@Override
 		public void keyPressed(KeyEvent e)
 		{
 			if (e.getKeyCode() == KeyEvent.VK_MINUS)
@@ -758,6 +772,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			System.out.println("J display jbullet debug");*/
 		}
 
+		@Override
 		public void keyPressed(KeyEvent e)
 		{
 			if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
@@ -820,6 +835,34 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		public void keyReleased(KeyEvent arg0)
 		{
 
+		}
+	}
+
+	private class WalkTrailorCamCollider implements TrailorCamCollider
+	{
+		private Vector3f rayFrom = new Vector3f();
+
+		private Vector3f rayTo = new Vector3f();
+
+		@Override
+		public float getCollisionFraction(Point3d lookAt, Vector3d cameraVector)
+		{
+			rayFrom.set(lookAt);
+			//CAREFUL!!! 3d and 3f conversion requires non-trivial container usage!!!only the set method takes a 3d,
+			//the add doesn't, so rayFrom is being used as a temp holder			
+			rayTo.set(cameraVector);
+			rayTo.add(rayFrom, rayTo);
+
+			if (physicsSystem != null)
+			{
+				ClosestRayResultCallback crrc = physicsSystem.findRayIntersect(rayFrom, rayTo, -1);
+				if (crrc != null)
+				{
+					return crrc.closestHitFraction;
+				}
+			}
+
+			return 1f;
 		}
 	}
 
