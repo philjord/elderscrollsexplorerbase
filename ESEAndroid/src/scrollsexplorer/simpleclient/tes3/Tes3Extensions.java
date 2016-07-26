@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 import javax.media.j3d.Behavior;
+import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.PointSound;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.WakeupOnElapsedFrames;
+import javax.vecmath.Point3d;
+import javax.vecmath.Point3f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
@@ -39,8 +43,9 @@ public class Tes3Extensions
 	private CharacterSheet characterSheet;
 	private CharacterAvatar avatarFirstPerson;
 	private CharacterAvatar avatarThirdPerson;
+	private BranchGroup botBg = new BranchGroup();
 
-	public Tes3Extensions(GameConfig selectedGameConfig, IESMManager esmManager, MediaSources mediaSources,
+	public Tes3Extensions(GameConfig selectedGameConfig, IESMManager esmManager, final MediaSources mediaSources,
 			SimpleWalkSetupInterface simpleWalkSetup, SimpleBethCellManager simpleBethCellManager)
 	{
 		this.selectedGameConfig = selectedGameConfig;
@@ -48,6 +53,9 @@ public class Tes3Extensions
 		this.mediaSources = mediaSources;
 		this.simpleWalkSetup = simpleWalkSetup;
 		this.simpleBethCellManager = simpleBethCellManager;
+
+		botBg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
+		botBg.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
 		ArrayList<NPCO> npcos = new ArrayList<NPCO>();
 
@@ -76,10 +84,9 @@ public class Tes3Extensions
 			tg.setTransform(t);
 			tg.addChild(avatarFirstPerson);
 
-			BranchGroup bg = new BranchGroup();
-			bg.addChild(tg);
+			botBg.addChild(tg);
 
-			simpleWalkSetup.getViewingPlatform().getPlatformGeometry().addChild(bg);
+			simpleWalkSetup.getViewingPlatform().getPlatformGeometry().addChild(botBg);
 
 			//avatarFirstPerson.playAnimation("idlespell", true);
 			avatarFirstPerson.playAnimation("idle1h", true);
@@ -113,7 +120,6 @@ public class Tes3Extensions
 			af.setSchedulingBounds(Utils3D.defaultBounds);
 			af.setEnable(true);
 
-			BranchGroup botBg = new BranchGroup();
 			cameraTG.addChild(botBg);
 
 			avatarThirdPerson = new CharacterAvatar(characterSheet, esmManager, mediaSources, false);
@@ -156,6 +162,25 @@ public class Tes3Extensions
 			}
 
 		});
+
+		Thread t = new Thread() {
+			public void run()
+			{
+				try
+				{
+					Thread.sleep(5000);
+
+						//playSound("Sound\\Fx\\_Thunder0.wav");
+ 
+
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		};
+		t.start();
 
 	}
 
@@ -204,6 +229,32 @@ public class Tes3Extensions
 
 			t.set(ypRot, trans, 1);
 		}
+	}
+
+	public void playSound(String fileName)
+	{
+		System.out.println("playing sound " + fileName);
+
+		PointSound ps = new PointSound();
+		ps.setSoundData(mediaSources.getSoundSource().getMediaContainer(fileName));
+		ps.setPosition(new Point3f(0, 0, 0));
+		float staticAttenuation = 10;
+		float maxGain = staticAttenuation / 100f;
+		ps.setInitialGain(1);
+		int minimumAttenuationDistance = 1;
+		int maximumAttenuationDistance = 10;
+		ps.setDistanceGain(new float[] { 0, minimumAttenuationDistance, maximumAttenuationDistance }, new float[] { maxGain, maxGain, 0 });
+		ps.setEnable(true);
+		ps.setPause(false);
+
+		ps.setSchedulingBounds(new BoundingSphere(new Point3d(), Double.POSITIVE_INFINITY));
+		ps.setLoop(-1);
+		ps.setContinuousEnable(true);
+
+		BranchGroup bg = new BranchGroup();
+		bg.addChild(ps);
+		botBg.addChild(bg);
+
 	}
 
 }
