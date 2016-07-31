@@ -866,4 +866,10 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		}
 	}
 
+	@Override
+	public boolean isTrailorCam()
+	{	
+		return TRAILER_CAM;
+	}
+
 }

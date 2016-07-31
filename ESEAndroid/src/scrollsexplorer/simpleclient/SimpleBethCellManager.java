@@ -11,8 +11,9 @@ import javax.vecmath.Vector3f;
 import esmj3d.ai.AIActor;
 import esmj3d.data.shared.subrecords.LString;
 import esmj3d.j3d.BethRenderSettings;
-import esmj3d.j3d.cell.AIActorLocator;
+import esmj3d.j3d.cell.AIActorServices;
 import esmj3d.j3d.cell.J3dICellFactory;
+import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECODynInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmmanager.common.PluginException;
@@ -29,7 +30,7 @@ import tools3d.navigation.AvatarLocation;
 import tools3d.utils.YawPitch;
 import utils.source.MediaSources;
 
-public class SimpleBethCellManager implements InstRECOStore, AIActorLocator
+public class SimpleBethCellManager implements InstRECOStore, AIActorServices
 {
 	//TODO: bad form only for ActionableMouseOverHandler
 	public static BethWorldVisualBranch currentBethWorldVisualBranch;
@@ -438,5 +439,36 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorLocator
 			currentBethWorldVisualBranch.setLocationForActor(aiActor, location, yawPitch);
 		}
 
+	}
+
+	@Override
+	public J3dRECOChaInst getPhysicalActor(AIActor aiActor)
+	{
+		if (currentBethInteriorPhysicalBranch != null)
+		{
+			return currentBethInteriorPhysicalBranch.getVisualActor(aiActor);
+		}
+		else if (currentBethWorldPhysicalBranch != null)
+		{
+			return currentBethWorldPhysicalBranch.getVisualActor(aiActor);
+		}
+		System.out.println("getPhysicalActor AIActor not found! " + aiActor);
+		return null;
+	}
+
+	@Override
+	public J3dRECOChaInst getVisualActor(AIActor aiActor)
+	{
+		if (currentBethInteriorVisualBranch != null)
+		{
+			return currentBethInteriorVisualBranch.getVisualActor(aiActor);
+		}
+		else if (currentBethWorldVisualBranch != null)
+		{
+			return currentBethWorldVisualBranch.getVisualActor(aiActor);
+		}
+
+		System.out.println("getVisualActor AIActor not found! " + aiActor);
+		return null;
 	}
 }

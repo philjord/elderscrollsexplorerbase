@@ -63,4 +63,6 @@ public interface SimpleWalkSetupInterface
 
 	void setMouseLock(boolean mouseLock);
 
+	boolean isTrailorCam();
+
 }

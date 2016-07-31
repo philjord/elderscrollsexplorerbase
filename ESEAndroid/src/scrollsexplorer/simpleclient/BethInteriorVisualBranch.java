@@ -9,6 +9,7 @@ import esmj3d.ai.AIActor;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICELLPersistent;
 import esmj3d.j3d.cell.J3dICellFactory;
+import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmmanager.common.data.record.Record;
 import esmmanager.common.data.record.Subrecord;
@@ -99,6 +100,11 @@ public class BethInteriorVisualBranch extends BranchGroup
 			j3dRECOInst.setLocation(new Vector3f(location.x, location.y, location.z), q);
 		}
 		
+	}
+
+	public J3dRECOChaInst getVisualActor(AIActor aiActor)
+	{
+		return (J3dRECOChaInst) getJ3dInstRECO(aiActor.getActorFormId());
 	}
 
 }
