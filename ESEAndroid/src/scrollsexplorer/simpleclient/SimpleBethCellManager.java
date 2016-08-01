@@ -313,8 +313,8 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices
 
 								//must be interior?
 								// inside is dim
-								BethRenderSettings.setGlobalAmbLightLevel(30f / 100f);
-								simpleWalkSetup.setGlobalAmbLightLevel(15f / 100f);
+								BethRenderSettings.setGlobalAmbLightLevel(50f / 100f);
+								simpleWalkSetup.setGlobalAmbLightLevel(35f / 100f);
 
 								cell = esmManager.getInteriorCELL(currentCellFormId);
 								if (cell != null)
