@@ -13,6 +13,8 @@ import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmmanager.common.data.record.Record;
 import esmmanager.common.data.record.Subrecord;
+import nifbullet.BulletNifModel;
+import nifbullet.cha.NBNonControlledChar;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools3d.utils.YawPitch;
 
@@ -22,12 +24,16 @@ public class BethInteriorPhysicalBranch extends BranchGroup
 
 	private J3dCELLGeneral j3dCELLTemporary;
 
+	private PhysicsSystem clientPhysicsSystem;
+
 	public BethInteriorPhysicalBranch(PhysicsSystem clientPhysicsSystem, int interiorCellFormId, J3dICellFactory j3dCellFactory)
 	{
 		this.setName("BethInteriorPhysicalBranch" + interiorCellFormId);
 		this.setCapability(BranchGroup.ALLOW_DETACH);
 		this.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		this.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+
+		this.clientPhysicsSystem = clientPhysicsSystem;
 
 		j3dCELLPersistent = j3dCellFactory.makeBGInteriorCELLPersistent(interiorCellFormId, true);
 		j3dCELLPersistent.getGridSpaces().updateAll();//force add all
@@ -91,6 +97,16 @@ public class BethInteriorPhysicalBranch extends BranchGroup
 			Quat4f q = new Quat4f();
 			yawPitch.get(q);
 			j3dRECOInst.setLocation(new Vector3f(location.x, location.y, location.z), q);
+			BulletNifModel nbm = clientPhysicsSystem.getNifBullet(aiActor.getActorFormId());
+			if (nbm instanceof NBNonControlledChar)
+			{
+				NBNonControlledChar ncc = (NBNonControlledChar) nbm;
+				ncc.setTransform(q, location);
+			}
+			else
+			{
+				System.out.println("setting location for non actor!! " + nbm);
+			}
 		}
 
 	}

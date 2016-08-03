@@ -18,12 +18,16 @@ import javax.vecmath.Vector3f;
 import com.jogamp.newt.event.MouseAdapter;
 import com.jogamp.newt.event.MouseEvent;
 
+import esmj3d.j3d.J3dEffectNode;
 import esmj3dtes3.character.CharacterSheet;
 import esmj3dtes3.data.records.NPCO;
 import esmj3dtes3.j3d.character.CharacterAvatar;
 import esmmanager.loader.IESMManager;
+import nif.j3d.J3dNiAVObject;
+import nif.j3d.animation.J3dNiGeomMorpherController;
 import scrollsexplorer.GameConfig;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
+import scrollsexplorer.simpleclient.SimpleWalkSetup;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
 import tools3d.navigation.AvatarLocation;
 import tools3d.utils.Utils3D;
@@ -33,7 +37,8 @@ import utils.source.MediaSources;
 
 public class Tes3Extensions
 {
-	private static final boolean FIRST_PERSON = true;
+
+	private static boolean FIRST_PERSON = false;;
 	private GameConfig selectedGameConfig;
 	private IESMManager esmManager;
 	private MediaSources mediaSources;
@@ -53,6 +58,8 @@ public class Tes3Extensions
 		this.mediaSources = mediaSources;
 		this.simpleWalkSetup = simpleWalkSetup;
 		this.simpleBethCellManager = simpleBethCellManager;
+
+		FIRST_PERSON = !simpleWalkSetup.isTrailorCam();
 
 		botBg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
 		botBg.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
@@ -170,8 +177,8 @@ public class Tes3Extensions
 				{
 					Thread.sleep(5000);
 
-						//playSound("Sound\\Fx\\_Thunder0.wav");
- 
+					playSound("Sound\\Fx\\envrn\\watr_wave.wav");
+					playSound("Sound\\Cr\\silt\\silt01.wav");
 
 				}
 				catch (InterruptedException e)
@@ -181,6 +188,46 @@ public class Tes3Extensions
 			}
 		};
 		t.start();
+
+		Thread t2 = new Thread() {
+			public void run()
+			{
+				try
+				{
+					Thread.sleep(10000);
+
+					J3dEffectNode jen = new J3dEffectNode("e\\magic_cast_restore.nif", mediaSources);
+
+					for (J3dNiAVObject j3dNiAVObject : jen.nvr.getNiToJ3dData().j3dNiAVObjectValues())
+					{
+						if (j3dNiAVObject.getJ3dNiTimeController() != null
+								&& j3dNiAVObject.getJ3dNiTimeController() instanceof J3dNiGeomMorpherController)
+						{
+							((J3dNiGeomMorpherController) j3dNiAVObject.getJ3dNiTimeController()).fireFrameName("Frame_1");
+						}
+					}
+
+					TransformGroup tg = new TransformGroup();
+					Transform3D t = new Transform3D();
+					t.setTranslation(new Vector3f(0, -0.9f, -0.0f));
+					tg.setTransform(t);
+					tg.addChild(jen);
+
+					BranchGroup bg = new BranchGroup();
+					bg.setCapability(BranchGroup.ALLOW_DETACH);
+					bg.addChild(tg);
+					botBg.addChild(bg);
+					Thread.sleep(2000);
+
+					bg.detach();
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		};
+		t2.start();
 
 	}
 
@@ -240,7 +287,7 @@ public class Tes3Extensions
 		ps.setPosition(new Point3f(0, 0, 0));
 		float staticAttenuation = 10;
 		float maxGain = staticAttenuation / 100f;
-		ps.setInitialGain(1);
+		ps.setInitialGain(0.2f);
 		int minimumAttenuationDistance = 1;
 		int maximumAttenuationDistance = 10;
 		ps.setDistanceGain(new float[] { 0, minimumAttenuationDistance, maximumAttenuationDistance }, new float[] { maxGain, maxGain, 0 });

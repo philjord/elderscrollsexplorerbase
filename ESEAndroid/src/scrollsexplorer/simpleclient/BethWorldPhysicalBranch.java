@@ -28,6 +28,8 @@ import esmmanager.common.data.record.Record;
 import esmmanager.common.data.record.Subrecord;
 import javaawt.Point;
 import javaawt.Rectangle;
+import nifbullet.BulletNifModel;
+import nifbullet.cha.NBNonControlledChar;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools.QueuingThread;
 import tools3d.utils.YawPitch;
@@ -364,6 +366,16 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 			Quat4f q = new Quat4f();
 			yawPitch.get(q);
 			j3dRECOInst.setLocation(new Vector3f(location.x, location.y, location.z), q);
+			BulletNifModel nbm = clientPhysicsSystem.getNifBullet(aiActor.getActorFormId());
+			if (nbm instanceof NBNonControlledChar)
+			{
+				NBNonControlledChar ncc = (NBNonControlledChar) nbm;
+				ncc.setTransform(q, location);
+			}
+			else
+			{
+				System.out.println("setting location for non actor!! " + nbm);
+			}
 		}
 
 	}
