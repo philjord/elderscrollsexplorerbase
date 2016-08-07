@@ -29,6 +29,7 @@ import scrollsexplorer.GameConfig;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
 import scrollsexplorer.simpleclient.SimpleWalkSetup;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
+import tools3d.audio.SimpleSounds;
 import tools3d.navigation.AvatarLocation;
 import tools3d.utils.Utils3D;
 import tools3d.utils.YawPitch;
@@ -177,8 +178,11 @@ public class Tes3Extensions
 				{
 					Thread.sleep(5000);
 
-					playSound("Sound\\Fx\\envrn\\watr_wave.wav");
-					playSound("Sound\\Cr\\silt\\silt01.wav");
+					BranchGroup soundBG = SimpleSounds
+							.createPointSound(mediaSources.getSoundSource().getMediaContainer("Sound\\Fx\\envrn\\watr_wave.wav"));
+					botBg.addChild(soundBG);
+					soundBG = SimpleSounds.createPointSound(mediaSources.getSoundSource().getMediaContainer("Sound\\Cr\\silt\\silt01.wav"));
+					botBg.addChild(soundBG);
 
 				}
 				catch (InterruptedException e)
@@ -276,32 +280,6 @@ public class Tes3Extensions
 
 			t.set(ypRot, trans, 1);
 		}
-	}
-
-	public void playSound(String fileName)
-	{
-		System.out.println("playing sound " + fileName);
-
-		PointSound ps = new PointSound();
-		ps.setSoundData(mediaSources.getSoundSource().getMediaContainer(fileName));
-		ps.setPosition(new Point3f(0, 0, 0));
-		float staticAttenuation = 10;
-		float maxGain = staticAttenuation / 100f;
-		ps.setInitialGain(0.2f);
-		int minimumAttenuationDistance = 1;
-		int maximumAttenuationDistance = 10;
-		ps.setDistanceGain(new float[] { 0, minimumAttenuationDistance, maximumAttenuationDistance }, new float[] { maxGain, maxGain, 0 });
-		ps.setEnable(true);
-		ps.setPause(false);
-
-		ps.setSchedulingBounds(new BoundingSphere(new Point3d(), Double.POSITIVE_INFINITY));
-		ps.setLoop(-1);
-		ps.setContinuousEnable(true);
-
-		BranchGroup bg = new BranchGroup();
-		bg.addChild(ps);
-		botBg.addChild(bg);
-
 	}
 
 }
