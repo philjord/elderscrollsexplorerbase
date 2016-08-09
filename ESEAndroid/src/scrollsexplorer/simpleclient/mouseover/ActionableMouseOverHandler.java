@@ -12,13 +12,12 @@ import com.jogamp.newt.event.MouseEvent;
 
 import esmj3d.data.shared.records.CommonREFR;
 import esmj3d.data.shared.records.GenericCONT;
-import esmj3d.data.shared.records.GenericDOOR;
 import esmj3d.data.shared.subrecords.XTEL;
 import esmj3d.j3d.BethRenderSettings;
+import esmj3d.j3d.j3drecords.Doorable;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOStatInst;
 import esmj3d.j3d.j3drecords.type.J3dCONT;
-import esmj3d.j3d.j3drecords.type.J3dDOOR;
 import esmj3d.j3d.j3drecords.type.J3dRECOType;
 import esmj3d.j3d.j3drecords.type.J3dRECOTypeActionable;
 import esmj3d.j3d.j3drecords.type.J3dRECOTypeDynamic;
@@ -43,7 +42,7 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 	private static Object currentActionableMonitor = new Object();
 
 	private HUDText HUDText;
-	
+
 	public ActionableMouseOverHandler(PhysicsSystem clientPhysicsSystem, SimpleBethCellManager simpleBethCellManager)
 	{
 		super(clientPhysicsSystem);
@@ -117,13 +116,18 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 									J3dRECOInst j3dInstRECO = currentActionTargetData.currentActionable;
 									J3dRECOType j3dRECOType = j3dInstRECO.getJ3dRECOType();
 									j3dRECOType.setOutlined(false);
+									
+									// play sounds for fun
+									if (j3dRECOType instanceof Doorable)
+									{
+										Doorable doorable = (Doorable)j3dRECOType;
+										doorable.playBothSounds();
+									}
 								}
 								currentActionTargetData.clear();
 								HUDText.setText("");
 
 								Vector3f t = getTrans(xtel.x, xtel.y, xtel.z);
-								// TODO: for now lift up, but when pelvis set right stop this
-								t.y += 0.75;
 								Quat4f r = getRot(xtel.rx, xtel.ry, xtel.rz);
 
 								if (xtel.doorFormId != 0)
@@ -144,6 +148,8 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 										simpleBethCellManager.changeToCell(null, t, r);
 									}
 								}
+								
+								
 
 							}
 							else
@@ -152,9 +158,9 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 								J3dRECOType j3dRECOType = j3dRECOStatInst.getJ3dRECOType();
 
 								//possibly a door that needs opening/closing etc
-								if (j3dRECOType instanceof J3dDOOR)
+								if (j3dRECOType instanceof Doorable)
 								{
-									J3dDOOR j3dDOOR = (J3dDOOR) j3dRECOType;
+									Doorable j3dDOOR = (Doorable) j3dRECOType;
 									j3dDOOR.toggleOpen();
 
 									clientPhysicsSystem.getPhysicsLocaleDynamics().updateRECOToggleOpen(j3dRECOStatInst, j3dDOOR.isOpen());
@@ -175,7 +181,7 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 									{
 										J3dRECOStatInst phyJ3dRECOStatInst = (J3dRECOStatInst) phyJ3dInstRECO;
 										J3dRECOType phyJ3dRECOType = phyJ3dRECOStatInst.getJ3dRECOType();
-										J3dDOOR phyJ3dDOOR = (J3dDOOR) phyJ3dRECOType;
+										Doorable phyJ3dDOOR = (Doorable) phyJ3dRECOType;
 										phyJ3dDOOR.toggleOpen();
 									}
 
@@ -289,10 +295,9 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 									J3dRECOType j3dRECOType = j3dInstRECO.getJ3dRECOType();
 									currentActionTargetData.distance = MAX_MOUSE_RAY_DIST * rayCallback.closestHitFraction;
 
-									if (j3dRECOType instanceof J3dDOOR)
+									if (j3dRECOType instanceof Doorable)
 									{
-										J3dDOOR j3dDOOR = (J3dDOOR) j3dRECOType;
-										GenericDOOR genericDOOR = (GenericDOOR) j3dDOOR.getRECO();
+										Doorable j3dDOOR = (Doorable) j3dRECOType;
 
 										if (xtel != null)
 										{
@@ -349,10 +354,8 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 										else
 										{
 
-											String ext = "";
-											if (genericDOOR.FULL != null)
-												ext = " " + genericDOOR.FULL.str;
-											currentActionTargetData.hudText = (j3dDOOR.isOpen() ? "Close" : "Open") + ext;
+											currentActionTargetData.hudText = (j3dDOOR.isOpen() ? "Close " : "Open ")
+													+ j3dDOOR.getDoorName();
 
 											if (currentActionTargetData.distance < INTERACT_MAX_DIST)
 											{

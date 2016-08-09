@@ -172,17 +172,16 @@ public class Tes3Extensions
 		});
 
 		Thread t = new Thread() {
+			@Override
 			public void run()
 			{
 				try
 				{
 					Thread.sleep(5000);
 
-					BranchGroup soundBG = SimpleSounds
-							.createPointSound(mediaSources.getSoundSource().getMediaContainer("Sound\\Fx\\envrn\\watr_wave.wav"));
-					botBg.addChild(soundBG);
-					soundBG = SimpleSounds.createPointSound(mediaSources.getSoundSource().getMediaContainer("Sound\\Cr\\silt\\silt01.wav"));
-					botBg.addChild(soundBG);
+					//	BranchGroup soundBG = SimpleSounds
+					//			.createPointSound(mediaSources.getSoundSource().getMediaContainer("Sound\\Fx\\envrn\\watr_wave.wav"),10,-1);
+					//	botBg.addChild(soundBG);
 
 				}
 				catch (InterruptedException e)
@@ -194,6 +193,7 @@ public class Tes3Extensions
 		t.start();
 
 		Thread t2 = new Thread() {
+			@Override
 			public void run()
 			{
 				try
@@ -220,6 +220,11 @@ public class Tes3Extensions
 					BranchGroup bg = new BranchGroup();
 					bg.setCapability(BranchGroup.ALLOW_DETACH);
 					bg.addChild(tg);
+
+					BranchGroup soundBG = SimpleSounds
+							.createPointSound(mediaSources.getSoundSource().getMediaContainer("Sound\\Fx\\magic\\restC.wav"), 10, 1);
+					bg.addChild(soundBG);
+
 					botBg.addChild(bg);
 					Thread.sleep(2000);
 
@@ -250,7 +255,7 @@ public class Tes3Extensions
 			this.cameraTG = cameraTG;
 			avatarLocation.addAvatarLocationListener(this);
 
-			//initialise
+			//Initialize
 			Quat4f rot = new Quat4f();
 			Vector3f trans = new Vector3f();
 			avatarLocation.get(rot, trans);
