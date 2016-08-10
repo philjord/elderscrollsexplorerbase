@@ -4,14 +4,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 import javax.media.j3d.Behavior;
-import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
-import javax.media.j3d.PointSound;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.WakeupOnElapsedFrames;
-import javax.vecmath.Point3d;
-import javax.vecmath.Point3f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
@@ -27,7 +23,6 @@ import nif.j3d.J3dNiAVObject;
 import nif.j3d.animation.J3dNiGeomMorpherController;
 import scrollsexplorer.GameConfig;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
-import scrollsexplorer.simpleclient.SimpleWalkSetup;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
 import tools3d.audio.SimpleSounds;
 import tools3d.navigation.AvatarLocation;
@@ -207,7 +202,7 @@ public class Tes3Extensions
 						if (j3dNiAVObject.getJ3dNiTimeController() != null
 								&& j3dNiAVObject.getJ3dNiTimeController() instanceof J3dNiGeomMorpherController)
 						{
-							((J3dNiGeomMorpherController) j3dNiAVObject.getJ3dNiTimeController()).fireFrameName("Frame_1");
+							((J3dNiGeomMorpherController) j3dNiAVObject.getJ3dNiTimeController()).fireFrameName("Frame_1", false);
 						}
 					}
 
