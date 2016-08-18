@@ -100,7 +100,11 @@ public class LoadScreen extends BranchGroup
 
 						// forward  a bit and down a bit
 						float radius = (float) bounds.getRadius();
-						Vector3f v = new Vector3f(0, -radius / 2f, -radius * 2f);
+						//System.out.println("radius = " +radius); 
+						// radius too big for animated stuff due to 
+						// oversizing to ensure render
+						radius = 2f;
+						Vector3f v = new Vector3f(0, 0, -radius * 2f);
 						Quat4f q = new Quat4f(0, 0, 0, 1);
 						Transform3D t = new Transform3D();
 						t.set(q, v, 1f);
