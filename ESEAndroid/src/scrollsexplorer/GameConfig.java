@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javax.vecmath.Vector3f;
 
 import esmj3d.j3d.cell.J3dICellFactory;
+import tools3d.utils.YawPitch;
 
 public class GameConfig
 {
@@ -32,8 +33,10 @@ public class GameConfig
 
 	public Vector3f startLocation;
 
+	public YawPitch startYP;
+
 	public GameConfig(String gameName, J3dICellFactory j3dCellFactory, String skyTexture, String[] loadScreens, float avatarYHeight,
-			String folderKey, String mainESMFile, String ftpFolderName, int startCellId, Vector3f startLocation)
+			String folderKey, String mainESMFile, String ftpFolderName, int startCellId, Vector3f startLocation, YawPitch startYP)
 	{
 		this.gameName = gameName;
 		this.j3dCellFactory = j3dCellFactory;
@@ -45,6 +48,7 @@ public class GameConfig
 		this.mainESMFile = mainESMFile;
 		this.startCellId = startCellId;
 		this.startLocation = startLocation;
+		this.startYP = startYP;
 		update();
 	}
 
@@ -63,13 +67,13 @@ public class GameConfig
 		allGameConfigs.add(new GameConfig("TESIII: Morrowind", //
 				new esmj3dtes3.j3d.cell.J3dCellFactory(), //
 				"textures\\tx_sky_clear.dds", //
-				new String[] { "meshes\\f\\act_banner_ald_velothi.nif", //
-						"meshes\\f\\act_banner_gnaar_mok.nif", //
-						"meshes\\f\\flora_tree_gl_07.nif", "meshes\\a\\towershield_glass.nif" }, //
+				new String[] { "meshes\\f\\act_banner_ald_velothi.nif" }, 
+				//"meshes\\f\\act_banner_gnaar_mok.nif", //
+				//"meshes\\f\\flora_tree_gl_07.nif", "meshes\\a\\towershield_glass.nif" }, //
 				1.8f, //
 				"MorrowindFolder", //
 				"Morrowind.esm", //
-				"morrowind", 0, new Vector3f(-108, 3, 936)));
+				"morrowind", 0, new Vector3f(-108, 3, 936), new YawPitch()));
 
 		allGameConfigs.add(new GameConfig("TESIV: Oblivion", //
 				new esmj3dtes4.j3d.cell.J3dCellFactory(), //
@@ -79,8 +83,8 @@ public class GameConfig
 				1.8f, //
 				"OblivionFolder", //
 				"Oblivion.esm", //
-				"oblivion", 186689, new Vector3f(57, 80, 0)));
-		
+				"oblivion", 186689, new Vector3f(57, 80, 0), new YawPitch()));
+
 		//Android TESIV: Oblivion = 143176, (425,43,-912)
 
 		allGameConfigs.add(new GameConfig("FO3: Fallout 3", //
@@ -91,8 +95,8 @@ public class GameConfig
 				1.8f, //
 				"FallOut3Folder", //
 				"Fallout3.esm", //
-				"fallout3", 60, new Vector3f(-162, 182, 155)));
-		
+				"fallout3", 60, new Vector3f(-162, 182, 155), new YawPitch()));
+
 		//Android FO3: Fallout 3 = 2676, (-37, 165, 281)
 
 		allGameConfigs.add(new GameConfig("FONV: Fallout New Vegas", //
@@ -102,7 +106,7 @@ public class GameConfig
 				1.8f, //
 				"FalloutNVFolder", //
 				"FalloutNV.esm", //
-				"falloutnv", 894758, new Vector3f(-927, 111, -16)));
+				"falloutnv", 894758, new Vector3f(-927, 111, -16), new YawPitch()));
 		//Android FONV: Fallout New Vegas = 1064441, (23, 94, -24)
 
 		allGameConfigs.add(new GameConfig("TESV: Skyrim", //
@@ -116,7 +120,7 @@ public class GameConfig
 				1.8f, //
 				"SkyrimFolder", //
 				"Skyrim.esm", //
-				"skyrim", 60, new Vector3f(346, 256, 1459)));
+				"skyrim", 60, new Vector3f(346, 256, 1459), new YawPitch()));
 		//Android TESV: Skyrim = 107119, (251, -44, 94)
 
 		allGameConfigs.add(new GameConfig("FO4: Fallout 4", //
@@ -129,8 +133,8 @@ public class GameConfig
 				1.8f, //
 				"FallOut4Folder", //
 				"Fallout4.esm", //
-				"fallout4", 3988, new Vector3f(40, -18, -10)));
-		
+				"fallout4", 3988, new Vector3f(40, -18, -10), new YawPitch()));
+
 		//Android FO4: Fallout 4 = 7768, (19, 1, 5)
 
 		allGameConfigs.add(new GameConfig("Hunter Sneaker", //
@@ -140,7 +144,7 @@ public class GameConfig
 				1.8f, //
 				"HunterSneakerFolder", //
 				"OblivionHS.esm", //
-				"huntersneaker", 60, new Vector3f(0, 200, 0)));
+				"huntersneaker", 60, new Vector3f(0, 200, 0), new YawPitch()));
 	}
 	//morrowind
 	//meshes\i\in_v_arena.nif

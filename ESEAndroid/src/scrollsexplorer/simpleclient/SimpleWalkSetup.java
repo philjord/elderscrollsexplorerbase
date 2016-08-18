@@ -64,7 +64,7 @@ import utils.source.MeshSource;
  */
 public class SimpleWalkSetup implements SimpleWalkSetupInterface
 {
-	public static boolean HMD_MODE = true;
+	public static boolean HMD_MODE = false;
 	public static boolean TRAILER_CAM = false;
 
 	//	private JFrame frame = new JFrame();
@@ -257,7 +257,9 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		});
 
 		setupGraphicsSetting();
-		cameraPanel.getCanvas3D2D().getGLWindow().setSize(1200, 1000);
+		cameraPanel.getCanvas3D2D().getGLWindow().setSize(1280, 720);//16:9 on this screen
+		//cameraPanel.getCanvas3D2D().getGLWindow().setUndecorated(true);//better for demo
+		cameraPanel.getCanvas3D2D().getGLWindow().setPosition(10, 10);
 		cameraPanel.startRendering();
 		cameraPanel.getCanvas3D2D().addNotify();
 

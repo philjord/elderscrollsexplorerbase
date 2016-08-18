@@ -34,6 +34,8 @@ public class BethAIControl implements LocationUpdateListener
 
 	private Vector3f lastUpdatedTranslation = new Vector3f(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
 
+	private Vector3f currentCharLocation = new Vector3f(Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE);
+
 	private Map<Point, AICellGeneral> loadedNears = Collections.synchronizedMap(new HashMap<Point, AICellGeneral>());
 
 	private QueuingThread nearUpdateThread;
@@ -103,6 +105,8 @@ public class BethAIControl implements LocationUpdateListener
 	@Override
 	public void locationUpdated(Quat4f rot, Vector3f trans)
 	{
+		currentCharLocation.set(trans);
+
 		if (isWRLD)
 		{
 			newTranslation.set(trans);
@@ -119,15 +123,14 @@ public class BethAIControl implements LocationUpdateListener
 		}
 		else
 		{
-			// notice in thread
-			updateNear(0, 0);
+
 		}
 	}
 
 	public void cellChanged(int newCellId, boolean isWRLD)
 	{
 		this.isWRLD = isWRLD;
-		
+
 		//TODO: fixme I saw whiterun world loading up and thinking it was an interior!
 
 		//new cell AI will be loaded on the location update call 
@@ -136,8 +139,10 @@ public class BethAIControl implements LocationUpdateListener
 
 	public void init(Transform3D charLocation)
 	{
+		
 		charLocation.get(newTranslation);
 		lastUpdatedTranslation.set(newTranslation);
+		currentCharLocation.set(newTranslation);
 
 		Point3f updatePoint = new Point3f(lastUpdatedTranslation.x, 0, lastUpdatedTranslation.z);
 		updateNear(updatePoint);
@@ -258,7 +263,7 @@ public class BethAIControl implements LocationUpdateListener
 			{
 				for (AICellGeneral aiCell : loadedNears.values())
 				{
-					aiCell.doAllActions(lastUpdatedTranslation, clientPhysicsSystem);
+					aiCell.doAllActions(currentCharLocation, clientPhysicsSystem);
 				}
 			}
 		}
