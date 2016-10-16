@@ -50,6 +50,7 @@ uniform mat4 glModelMatrix;
 				
 //uniform mat3 glNormalMatrix;
 
+//uniform vec4 glFrontMaterialambient;
 uniform vec4 glFrontMaterialdiffuse;
 uniform vec4 glFrontMaterialemission;
 uniform vec3 glFrontMaterialspecular;
@@ -76,8 +77,39 @@ uniform mat4 textureTransform;
 //uniform float linearEnd;
 
 //End of FFP inputs
-
 //The line above in not optional for parsing reasons
+
+//Fixed function pipeline pre-calculated values not available
+//vec3 halfVector = normalize(vec3(gl_LightSource[0].halfVector));
+//http://stackoverflow.com/questions/3744038/what-is-half-vector-in-modern-glsl
+// vec3 ecPos = vec3(glModelViewMatrix * glVertex);	
+// vec3 ecL;
+// if(	glLightSource0position.w == 0.0)
+// 	ecL = vec3(glLightSource0position.xyz);// no -ecPos in case of dir lights?
+//	else
+//	ecL = vec3(glLightSource0position.xyz - ecPos);
+//  vec3 L = normalize(ecL.xyz); 
+//	vec3 V = -ecPos.xyz; 
+//	vec3 halfVector = normalize(L + V);
+
+// gl_FrontLightModelProduct.sceneColor  // Derived. Ecm + Acm * Acs (Acs is normal glLightModelambient)
+// use vec4 sceneColor = glFrontMaterialemission + glFrontMaterialambient * glLightModelambient;
+
+
+//gl_LightSource[i].specular
+//use glFrontMaterialspecular
+
+//gl_LightSource[i].ambient
+//use glLightModelambient
+
+//gl_FrontLightProduct[i]
+//vec4 ambient;    // Acm * Acli (Acli does not exist)
+//vec4 diffuse;    // Dcm * Dcli
+//vec4 specular;   // Scm * Scli (Scli does not exist)
+// calculate yourself
+
+
+
 
 out vec2 glTexCoord0;
 
