@@ -155,7 +155,6 @@ public class NiGeometryAppearanceShader
 			defaultMaterial.setSpecularColor(new Color3f(1.0f, 1.0f, 1.0f));
 
 			defaultMaterial.setShininess(33f);//33 cos jonwd7 says it's a good default
-			defaultMaterial.clearCapabilities();
 		}
 		app.setMaterial(defaultMaterial);
 
@@ -163,14 +162,6 @@ public class NiGeometryAppearanceShader
 		//app.setRenderingAttributes(ra);
 		//app.setPolygonAttributes(pa);	
 		//app.setTransparencyAttributes(ta);
-
-		// let's clear all capabilities for a laugh
-		shape.clearCapabilities();
-		app.clearCapabilities();
-
-		ra.clearCapabilities();
-		pa.clearCapabilities();
-		ta.clearCapabilities();
 
 	}
 
@@ -936,6 +927,7 @@ public class NiGeometryAppearanceShader
 		if (sas == null)
 		{
 			sas = new ShaderAttributeSet();
+			sas.setCapability(ShaderAttributeSet.ALLOW_ATTRIBUTES_READ);
 			for (ShaderAttributeValue sav : newShaderAttributeValues)
 			{
 				if (OUTPUT_BINDINGS)
@@ -1259,7 +1251,6 @@ public class NiGeometryAppearanceShader
 					for (int l = 0; l < ics.length; l++)
 						tcm.setImage(l, f, (ImageComponent2D) ics[l]);
 				tus = new TextureUnitState();
-				tus.clearCapabilities();
 				tus.setTexture(tcm);
 				tus.setName(binding.fileName);
 			}

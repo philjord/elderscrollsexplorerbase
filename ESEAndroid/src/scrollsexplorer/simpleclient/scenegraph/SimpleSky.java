@@ -153,7 +153,6 @@ public class SimpleSky extends BranchGroup
 	private static Appearance makeAppearance()
 	{
 		ShaderAppearance app = new SimpleShaderAppearance(true);
-		app.clearCapabilities();
 		app.setMaterial(null);
 		app.setRenderingAttributes(new RenderingAttributes());
 

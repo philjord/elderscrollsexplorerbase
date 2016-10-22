@@ -15,6 +15,8 @@ public class GLSLShaderProgram2 extends GLSLShaderProgram
 	public void setShaders(Shader[] shaders)
 	{
 		super.setShaders(shaders);
+		
+		this.setCapability(GLSLShaderProgram.ALLOW_SHADERS_READ);
 
 		ArrayList<String> allShaderUniformNames = new ArrayList<String>();
 		for (Shader s : shaders)

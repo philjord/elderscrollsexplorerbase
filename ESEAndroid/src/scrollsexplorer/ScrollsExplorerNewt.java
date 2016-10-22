@@ -366,6 +366,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	{
 		System.setProperty("sun.awt.noerasebackground", "true");
 		System.setProperty("j3d.cacheAutoComputeBounds", "true");
+		System.setProperty("j3d.defaultReadCapability", "false");
 
 		ConfigLoader.loadConfig(args);
 

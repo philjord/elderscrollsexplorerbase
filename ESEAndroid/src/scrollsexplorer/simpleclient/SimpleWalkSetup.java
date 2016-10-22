@@ -168,6 +168,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		visualGroup.setCapability(BranchGroup.ALLOW_DETACH);
 		visualGroup.setCapability(Group.ALLOW_CHILDREN_EXTEND);
 		visualGroup.setCapability(Group.ALLOW_CHILDREN_WRITE);
+		visualGroup.setCapability(Group.ALLOW_PARENT_READ);
 		modelGroup.addChild(visualGroup);
 
 		universe.addToVisualBranch(modelGroup);
