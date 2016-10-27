@@ -8,6 +8,7 @@ import org.jogamp.java3d.Group;
 import org.jogamp.java3d.Light;
 import org.jogamp.java3d.ShaderError;
 import org.jogamp.java3d.ShaderErrorListener;
+import org.jogamp.java3d.utils.universe.ViewingPlatform;
 import org.jogamp.vecmath.Color3f;
 import org.jogamp.vecmath.Point2f;
 import org.jogamp.vecmath.Point3d;
@@ -20,7 +21,6 @@ import com.jogamp.newt.Window;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.opengl.GLWindow;
-import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import esmj3d.j3d.BethRenderSettings;
 import nifbullet.NavigationProcessorBullet;

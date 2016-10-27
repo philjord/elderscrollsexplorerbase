@@ -1,11 +1,11 @@
 package scrollsexplorer.simpleclient;
 
 import org.jogamp.java3d.BranchGroup;
+import org.jogamp.java3d.utils.universe.ViewingPlatform;
 import org.jogamp.vecmath.Quat4f;
 import org.jogamp.vecmath.Vector3f;
 
 import com.jogamp.newt.Window;
-import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools3d.navigation.AvatarCollisionInfo;

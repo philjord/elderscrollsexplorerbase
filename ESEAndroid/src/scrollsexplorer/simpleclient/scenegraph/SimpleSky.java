@@ -13,9 +13,8 @@ import org.jogamp.java3d.ShaderAppearance;
 import org.jogamp.java3d.SourceCodeShader;
 import org.jogamp.java3d.Texture;
 import org.jogamp.java3d.TriangleStripArray;
-
-import com.sun.j3d.utils.geometry.Primitive;
-import com.sun.j3d.utils.geometry.Sphere;
+import org.jogamp.java3d.utils.geometry.Primitive;
+import org.jogamp.java3d.utils.geometry.Sphere;
 
 import scrollsexplorer.GameConfig;
 import tools3d.utils.ShaderSourceIO;
