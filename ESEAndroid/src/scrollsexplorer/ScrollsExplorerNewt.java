@@ -3,8 +3,8 @@ package scrollsexplorer;
 import java.io.File;
 import java.io.IOException;
 
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
 
 import com.jogamp.nativewindow.WindowClosingProtocol.WindowClosingMode;
 import com.jogamp.newt.event.KeyAdapter;

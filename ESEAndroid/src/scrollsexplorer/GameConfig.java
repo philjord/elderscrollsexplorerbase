@@ -2,7 +2,7 @@ package scrollsexplorer;
 
 import java.util.ArrayList;
 
-import javax.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector3f;
 
 import esmj3d.j3d.cell.J3dICellFactory;
 import tools3d.utils.YawPitch;

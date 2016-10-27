@@ -6,14 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.WeakHashMap;
 
-import javax.vecmath.Color3f;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector2f;
-import javax.vecmath.Vector3d;
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
-
 import org.jogamp.java3d.Appearance;
 import org.jogamp.java3d.ImageComponent;
 import org.jogamp.java3d.ImageComponent2D;
@@ -31,6 +23,13 @@ import org.jogamp.java3d.TextureCubeMap;
 import org.jogamp.java3d.TextureUnitState;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransparencyAttributes;
+import org.jogamp.vecmath.Color3f;
+import org.jogamp.vecmath.Matrix3f;
+import org.jogamp.vecmath.Matrix4f;
+import org.jogamp.vecmath.Vector2f;
+import org.jogamp.vecmath.Vector3d;
+import org.jogamp.vecmath.Vector3f;
+import org.jogamp.vecmath.Vector4f;
 
 import nif.BgsmSource;
 import nif.NifVer;

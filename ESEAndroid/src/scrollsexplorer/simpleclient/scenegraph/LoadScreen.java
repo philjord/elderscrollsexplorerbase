@@ -3,15 +3,14 @@ package scrollsexplorer.simpleclient.scenegraph;
 import java.util.ArrayList;
 import java.util.Random;
 
-import javax.vecmath.Point3d;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
-
 import org.jogamp.java3d.BoundingSphere;
 import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.Group;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransformGroup;
+import org.jogamp.vecmath.Point3d;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
 
 import nif.NifJ3dVisRoot;
 import nif.NifToJ3d;

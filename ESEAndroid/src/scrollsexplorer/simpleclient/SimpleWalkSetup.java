@@ -1,12 +1,5 @@
 package scrollsexplorer.simpleclient;
 
-import javax.vecmath.Color3f;
-import javax.vecmath.Point2f;
-import javax.vecmath.Point3d;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3d;
-import javax.vecmath.Vector3f;
-
 import org.jogamp.java3d.AmbientLight;
 import org.jogamp.java3d.BoundingSphere;
 import org.jogamp.java3d.BranchGroup;
@@ -15,6 +8,12 @@ import org.jogamp.java3d.Group;
 import org.jogamp.java3d.Light;
 import org.jogamp.java3d.ShaderError;
 import org.jogamp.java3d.ShaderErrorListener;
+import org.jogamp.vecmath.Color3f;
+import org.jogamp.vecmath.Point2f;
+import org.jogamp.vecmath.Point3d;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3d;
+import org.jogamp.vecmath.Vector3f;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 import com.jogamp.newt.Window;

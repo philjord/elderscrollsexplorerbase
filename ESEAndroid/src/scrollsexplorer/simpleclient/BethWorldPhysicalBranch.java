@@ -8,13 +8,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.vecmath.Point3f;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
-
 import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.Group;
 import org.jogamp.java3d.Transform3D;
+import org.jogamp.vecmath.Point3f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
 
 import esmj3d.ai.AIActor;
 import esmj3d.j3d.BethRenderSettings;

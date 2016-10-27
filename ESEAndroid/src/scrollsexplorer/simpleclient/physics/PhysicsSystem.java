@@ -2,9 +2,8 @@ package scrollsexplorer.simpleclient.physics;
 
 import java.util.ArrayList;
 
-import javax.vecmath.Vector3f;
-
 import org.jogamp.java3d.BranchGroup;
+import org.jogamp.vecmath.Vector3f;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 import com.frostwire.util.SparseArray;

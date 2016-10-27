@@ -1,11 +1,10 @@
 package scrollsexplorer.simpleclient.mouseover;
 
-import javax.vecmath.Point2f;
-import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
-
 import org.jogamp.java3d.Canvas3D;
 import org.jogamp.java3d.Transform3D;
+import org.jogamp.vecmath.Point2f;
+import org.jogamp.vecmath.Quat4f;
+import org.jogamp.vecmath.Vector3f;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 import com.bulletphysics.dynamics.RigidBody;
