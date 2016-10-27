@@ -1,10 +1,11 @@
 package scrollsexplorer.simpleclient.mouseover;
 
-import javax.media.j3d.Canvas3D;
-import javax.media.j3d.PickRay;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
+
+import org.jogamp.java3d.Canvas3D;
+import org.jogamp.java3d.PickRay;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;

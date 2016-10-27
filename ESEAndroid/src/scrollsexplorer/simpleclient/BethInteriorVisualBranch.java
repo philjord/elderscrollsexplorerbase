@@ -1,9 +1,10 @@
 package scrollsexplorer.simpleclient;
 
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Group;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
+
+import org.jogamp.java3d.BranchGroup;
+import org.jogamp.java3d.Group;
 
 import esmj3d.ai.AIActor;
 import esmj3d.j3d.cell.J3dCELLGeneral;

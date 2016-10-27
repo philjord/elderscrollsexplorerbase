@@ -1,18 +1,18 @@
 package scrollsexplorer.simpleclient.scenegraph;
 
-import javax.media.j3d.Appearance;
-import javax.media.j3d.Background;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.GLSLShaderProgram;
-import javax.media.j3d.GeometryArray;
-import javax.media.j3d.Group;
-import javax.media.j3d.J3DBuffer;
-import javax.media.j3d.RenderingAttributes;
-import javax.media.j3d.Shader;
-import javax.media.j3d.ShaderAppearance;
-import javax.media.j3d.SourceCodeShader;
-import javax.media.j3d.Texture;
-import javax.media.j3d.TriangleStripArray;
+import org.jogamp.java3d.Appearance;
+import org.jogamp.java3d.Background;
+import org.jogamp.java3d.BranchGroup;
+import org.jogamp.java3d.GLSLShaderProgram;
+import org.jogamp.java3d.GeometryArray;
+import org.jogamp.java3d.Group;
+import org.jogamp.java3d.J3DBuffer;
+import org.jogamp.java3d.RenderingAttributes;
+import org.jogamp.java3d.Shader;
+import org.jogamp.java3d.ShaderAppearance;
+import org.jogamp.java3d.SourceCodeShader;
+import org.jogamp.java3d.Texture;
+import org.jogamp.java3d.TriangleStripArray;
 
 import com.sun.j3d.utils.geometry.Primitive;
 import com.sun.j3d.utils.geometry.Sphere;

@@ -3,7 +3,7 @@ package nif.shaders;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import javax.media.j3d.SourceCodeShader;
+import org.jogamp.java3d.SourceCodeShader;
 
 public class GLSLSourceCodeShader extends SourceCodeShader
 {

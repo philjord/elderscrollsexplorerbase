@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.zip.DataFormatException;
 
-import javax.media.j3d.Transform3D;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
+
+import org.jogamp.java3d.Transform3D;
 
 import esmj3d.ai.AIActor;
 import esmj3d.data.shared.subrecords.LString;

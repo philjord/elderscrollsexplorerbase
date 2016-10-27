@@ -2,8 +2,8 @@ package nif.shaders;
 
 import java.util.ArrayList;
 
-import javax.media.j3d.GLSLShaderProgram;
-import javax.media.j3d.Shader;
+import org.jogamp.java3d.GLSLShaderProgram;
+import org.jogamp.java3d.Shader;
 
 public class GLSLShaderProgram2 extends GLSLShaderProgram
 {

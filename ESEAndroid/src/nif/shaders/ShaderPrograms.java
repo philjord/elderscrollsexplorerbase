@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import javax.media.j3d.Shader;
+import org.jogamp.java3d.Shader;
 
 import nif.j3d.NiToJ3dData;
 import nif.niobject.NiAlphaProperty;

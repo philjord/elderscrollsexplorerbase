@@ -1,8 +1,9 @@
 package scrollsexplorer.simpleclient;
 
-import javax.media.j3d.BranchGroup;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
+
+import org.jogamp.java3d.BranchGroup;
 
 import com.jogamp.newt.Window;
 import com.sun.j3d.utils.universe.ViewingPlatform;

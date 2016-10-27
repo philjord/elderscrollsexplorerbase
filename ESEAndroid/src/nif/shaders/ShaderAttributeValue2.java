@@ -1,6 +1,6 @@
 package nif.shaders;
 
-import javax.media.j3d.ShaderAttributeValue;
+import org.jogamp.java3d.ShaderAttributeValue;
 
 public class ShaderAttributeValue2 extends ShaderAttributeValue
 {
