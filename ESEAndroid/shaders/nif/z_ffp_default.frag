@@ -110,7 +110,8 @@ void main( void )
 
 	// Specular
 	vec3 spec = specular * pow(NdotH, 0.3*shininess);
-	spec *= D.rgb;
+	// I want to multiply by lighting spec color but it doesn't exist in Java3D yet
+	//spec *= D.rgb; 
 	
 	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.a = C.a * baseMap.a;
