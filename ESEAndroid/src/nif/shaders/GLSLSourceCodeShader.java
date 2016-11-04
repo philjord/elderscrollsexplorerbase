@@ -6,14 +6,9 @@ import java.util.HashSet;
 import org.jogamp.java3d.SourceCodeShader;
 
 public class GLSLSourceCodeShader extends SourceCodeShader
-{
-	
-	
-	
+{	
 	public HashSet<String> shaderUniformNames = new HashSet<String>();
 	public HashSet<String> shaderVertexAttributeNames = new HashSet<String>();
-
-	public String name = "";
 
 	public GLSLSourceCodeShader(int shadingLanguage, int shaderType, String shaderSource)
 	{
@@ -54,13 +49,15 @@ public class GLSLSourceCodeShader extends SourceCodeShader
 		}
 	}
 
+	@Override
 	public String toString()
 	{
-		return "SourceCodeShader2: " + name;
+		return "SourceCodeShader2: " + getName();
 	}
 
 	private String shaderSource = "";
 
+	@Override
 	public String getShaderSource()
 	{
 		return shaderSource;
@@ -98,8 +95,8 @@ public class GLSLSourceCodeShader extends SourceCodeShader
 			{ "gl_TexCoord", "manual varying now (like glTexCoord0)" }, //		
 			{ "gl_FrontColor", "manual varying now" }, //			
 			{ "gl_FogCoord", "glFogCoord not sure about this yet" }, //
-			{ "gl_LightSource", "glLightSource** eg glLightSource0diffuse (only 0 for now!)" }, //
-			{ "gl_FrontMaterial", "glFrontMaterial* eg glFrontMaterialshininess" }, //
+			{ "gl_LightSource", "glLightSource" }, //
+			{ "gl_FrontMaterial", "glFrontMaterial" }, //
 			{ "gl_BackMaterial", "No option research" }, //
 			{ "gl_FrontLightModelProduct", "No option research" }, //
 			{ "gl_BackLightModelProduct", "No option research" }, //
@@ -112,26 +109,6 @@ public class GLSLSourceCodeShader extends SourceCodeShader
 	public static ArrayList<String> testForFFP(String ss)
 	{
 		ArrayList<String> ret = new ArrayList<String>();
-		/*	ss = ss.replace("gl_FragColor", "");
-			ss = ss.replace("gl_Position", "");
-			ss = ss.replace("gl_FrontFacing", "");
-			ss = ss.replace("gl_PointSize", "");
-			ss = ss.replace("gl_FragCoord", "");
-			ss = ss.replace("gl_PointCoord", "");
-			ss = ss.replace("gl_FragData", "");
-			ss = ss.replace("gl_DepthRange", "");
-			ss = ss.replace("gl_MaxVertexAttribs", "");
-			ss = ss.replace("gl_MaxVertexUniformVectors", "");
-			ss = ss.replace("gl_MaxVaryingVector", "");
-			ss = ss.replace("gl_MaxVertexTextureImageUnits", "");
-			ss = ss.replace("gl_MaxCombinedTextureImageUnits", "");
-			ss = ss.replace("gl_MaxTextureImageUnits", "");
-			ss = ss.replace("gl_MaxFragmentUniformVectors", "");
-			ss = ss.replace("gl_MaxDrawBuffers", "");
-		
-			if (ss.contains("gl_"))
-				System.out.println("Looks like FFP code!!! " + ss);*/
-
 		for (int i = 0; i < replacements.length; i++)
 		{
 			String[] rep = replacements[i];

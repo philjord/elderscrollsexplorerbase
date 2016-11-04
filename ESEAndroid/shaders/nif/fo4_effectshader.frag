@@ -44,7 +44,7 @@ uniform float lightingInfluence;
 uniform float envReflection;
 
 varying vec3 LightDir;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 A;
 varying vec4 C;
@@ -99,7 +99,7 @@ void main( void )
 	}
 	
 	vec3 L = normalize(LightDir);
-	vec3 V = normalize(ViewDir);
+	vec3 V = normalize(ViewVec);
 	vec3 R = reflect(-L, normal);
 	vec3 H = normalize( L + V );
 	

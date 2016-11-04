@@ -13,13 +13,35 @@ uniform mediump mat4 glModelViewProjectionMatrix;
 uniform mediump mat3 glNormalMatrix;
 
 
-uniform vec4 glFrontMaterialdiffuse;
 uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
 
-uniform vec4 glLightSource0position;
-uniform vec4 glLightSource0diffuse;
+struct material
+{
+	int lightEnabled;
+ 	vec4 ambient;
+ 	vec4 diffuse;
+ 	vec4 emission; 
+ 	vec3 specular;
+ 	float shininess;
+};
+uniform material glFrontMaterial;
+
+struct lightSource
+{
+	 int enabled;
+	 vec4 position;
+	 vec4 diffuse;
+	 vec4 specular;
+	 float constantAttenuation, linearAttenuation, quadraticAttenuation;
+	 float spotCutoff, spotExponent;
+	 vec3 spotDirection;
+};
+
+uniform int numberOfLights;
+const int maxLights = 2;
+uniform lightSource glLightSource[maxLights];
 
 varying vec2 glTexCoord0;
 
@@ -36,7 +58,7 @@ varying vec3 worldNormal;
 varying vec3 eyeNormal;
 varying vec3 lightDir;
 
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 A;
 varying vec4 C;
@@ -95,10 +117,10 @@ void main() {
     gl_Position = glModelViewProjectionMatrix * pos;
     
     vec3 v = vec3(glModelViewMatrix * glVertex);
-	ViewDir = -v.xyz;
+	ViewVec = -v.xyz;// do not normalize also used for view dist
 
     
-    lightDir = normalize(vec3(glLightSource0position));    
+    lightDir = normalize(vec3(glLightSource[0].position));    
     vec4 P = glModelViewMatrix * glVertex;
 	vec4 E = glProjectionMatrixInverse * vec4(0.0,0.0,1.0,0.0);
 	vec3 I = P.xyz*E.w - E.xyz*P.w;
@@ -107,10 +129,10 @@ void main() {
 
 	A = glLightModelambient;
 	if( ignoreVertexColors != 0) 
-		C = glFrontMaterialdiffuse; 
+		C = glFrontMaterial.diffuse; 
 	else
 		C = glColor;
-	D = glLightSource0diffuse * glFrontMaterialdiffuse;		
+	D = glLightSource[0].diffuse * glFrontMaterial.diffuse;		
 
 /*	for (int i=0; i<gl_MaxLights; i++)
 	{

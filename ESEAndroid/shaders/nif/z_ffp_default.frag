@@ -2,47 +2,20 @@
 
 precision mediump float;
 
-/*layout ( std140, shared ) uniform FFP_Uniform_Block
-{
- mat4 glProjectionMatrix;
- mat4 glProjectionMatrixInverse;
- mat4 glViewMatrix;
- mat4 glModelMatrix;
- mat4 glModelViewMatrix;
- mat4 glModelViewMatrixInverse;
- mat4 glModelViewProjectionMatrix;				
- mat3 glNormalMatrix;
-
- vec4 glFrontMaterialdiffuse;
- vec4 glFrontMaterialemission;
- vec3 glFrontMaterialspecular;
- float glFrontMaterialshininess;
- 
- int ignoreVertexColors;
- 
- vec4 glLightModelambient;
- vec4 objectColor;
-  
- vec4 glLightSource0position;
- vec4 glLightSource0diffuse;
-
- mat4 textureTransform;
- 
- int alphaTestEnabled;
- int alphaTestFunction;
- float alphaTestValue;
-};*/
-
 uniform int alphaTestEnabled;
 uniform int alphaTestFunction;
 uniform float alphaTestValue;
 
-uniform int fogEnabled;
-uniform vec4 expColor;
-uniform float expDensity;
-uniform vec4 linearColor;
-uniform float linearStart;
-uniform float linearEnd;
+struct fogDataStruct
+{
+	int fogEnabled;
+	vec4 expColor;
+	float expDensity;
+	vec4 linearColor;
+	float linearStart;
+	float linearEnd;
+};
+uniform fogDataStruct fogData;
 
 //End of FFP inputs
 in vec2 glTexCoord0;
@@ -50,20 +23,19 @@ in vec2 glTexCoord0;
 uniform sampler2D BaseMap;
 
 in vec3 LightDir;
-in vec3 ViewDir;
+in vec3 ViewVec;
 
 in vec3 N;
 
 in vec4 A;
 in vec4 C;
 in vec4 D;
+in vec3 S;
 
 
 in vec3 emissive;
 in vec3 specular;
 in float shininess;
-
-
 
 out vec4 glFragColor;
 
@@ -94,7 +66,7 @@ void main( void )
 	vec3 normal = N;
 	
 	vec3 L = normalize(LightDir);
-	vec3 E = normalize(ViewDir);
+	vec3 E = normalize(ViewVec);
 	vec3 R = reflect(-L, normal);
 	vec3 H = normalize( L + E );
 	
@@ -107,41 +79,36 @@ void main( void )
 	vec3 albedo = baseMap.rgb * C.rgb;
 	vec3 diffuse = A.rgb + (D.rgb * NdotL);
 
+// see sphere_motion for multiple lights in phong style, below is blinn phong comparision both in frag
+//https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model
 
 	// Specular
 	vec3 spec = specular * pow(NdotH, 0.3*shininess);
-	// I want to multiply by lighting spec color but it doesn't exist in Java3D yet
-	//spec *= D.rgb; 
+	spec *= S; 
 	
 	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.a = C.a * baseMap.a;
 	
-	if(fogEnabled == 1)
+	if(fogData.fogEnabled == 1)
 	{
-		//distance
-		float dist = 0.0;
-		float fogFactor = 0.0;
-		 
 		//compute distance used in fog equations
-		dist = length(ViewDir);		 
+		float dist = length(ViewVec);
+		float fogFactor = 0.0;  		  
 		 
-		if(linearEnd > 0.0)//linear fog
+		if(fogData.linearEnd > 0.0)//linear fog
 		{
-		   fogFactor = (linearEnd - dist)/(linearEnd - linearStart);
+		   fogFactor = 1.0-((fogData.linearEnd - dist)/(fogData.linearEnd - fogData.linearStart));
 		   fogFactor = clamp( fogFactor, 0.0, 1.0 );
-		 
-		   //if you inverse color in glsl mix function you have to put 1.0 - fogFactor
-		   color = mix(linearColor, color, fogFactor);
+		   color = mix(color, fogData.linearColor, fogFactor);			    
 		}
-		else if( expDensity > 0.0)// exponential fog
+		else if( fogData.expDensity > 0.0)// exponential fog
 		{
-		    fogFactor = 1.0 /exp(dist * expDensity);
+		    fogFactor = 1.0-(1.0 /exp(dist * fogData.expDensity));
 		    fogFactor = clamp( fogFactor, 0.0, 1.0 );
-		 
-		    // mix function fogColor-(1-fogFactor) + lightColor-fogFactor
-		    color = mix(expColor, color, fogFactor);
-		}
+		    color = mix(color, fogData.expColor, fogFactor);
+		}	
+		color.a = color.a + fogFactor; 	 
 	}
-
+     
 	glFragColor = color;
 }

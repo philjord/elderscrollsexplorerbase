@@ -58,7 +58,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	public static float FOG_START = 100;
 
-	public static float FOG_END = 300;
+	public static float FOG_END = 1000;
 
 	private int worldFormId;
 

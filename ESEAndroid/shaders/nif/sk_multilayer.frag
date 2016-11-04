@@ -44,7 +44,7 @@ uniform float outerRefraction;
 uniform float outerReflection;
 
 varying vec3 LightDir;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 A;
 varying vec4 C;
@@ -133,7 +133,7 @@ void main( void )
 	
 	
 	vec3 L = normalize(LightDir);
-	vec3 E = normalize(ViewDir);
+	vec3 E = normalize(ViewVec);
 	vec3 R = reflect(-L, normal);
 	vec3 H = normalize( L + E );
 	

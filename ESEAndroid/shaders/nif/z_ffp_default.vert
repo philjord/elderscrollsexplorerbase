@@ -8,36 +8,6 @@ in vec4 glColor;
 in vec3 glNormal;     
 in vec2 glMultiTexCoord0; 
 
-/*layout ( std140, shared ) uniform FFP_Uniform_Block
-{
- mat4 glProjectionMatrix;
- mat4 glProjectionMatrixInverse;
- mat4 glViewMatrix;
- mat4 glModelMatrix;
- mat4 glModelViewMatrix;
- mat4 glModelViewMatrixInverse;
- mat4 glModelViewProjectionMatrix;				
- mat3 glNormalMatrix;
-
- vec4 glFrontMaterialdiffuse;
- vec4 glFrontMaterialemission;
- vec3 glFrontMaterialspecular;
- float glFrontMaterialshininess;
- 
- int ignoreVertexColors;
- 
- vec4 glLightModelambient;
- vec4 objectColor;
-  
- vec4 glLightSource0position;
- vec4 glLightSource0diffuse;
-
- mat4 textureTransform;
- 
- int alphaTestEnabled;
- int alphaTestFunction;
- float alphaTestValue;
-};*/
 
 
 uniform mat4 glProjectionMatrix;
@@ -49,18 +19,36 @@ uniform mat4 glModelMatrix;
 //uniform mat4 glModelViewProjectionMatrix;
 				
 //uniform mat3 glNormalMatrix;
-
-//uniform vec4 glFrontMaterialambient;
-uniform vec4 glFrontMaterialdiffuse;
-uniform vec4 glFrontMaterialemission;
-uniform vec3 glFrontMaterialspecular;
-uniform float glFrontMaterialshininess;
+ 
 uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
 
-uniform vec4 glLightSource0position;
-uniform vec4 glLightSource0diffuse;
+struct material
+{
+	int lightEnabled;
+ 	vec4 ambient;
+ 	vec4 diffuse;
+ 	vec4 emission; 
+ 	vec3 specular;
+ 	float shininess;
+};
+uniform material glFrontMaterial;
+
+struct lightSource
+{
+	 int enabled;
+	 vec4 position;
+	 vec4 diffuse;
+	 vec4 specular;
+	 float constantAttenuation, linearAttenuation, quadraticAttenuation;
+	 float spotCutoff, spotExponent;
+	 vec3 spotDirection;
+};
+
+uniform int numberOfLights;
+const int maxLights = 2;
+uniform lightSource glLightSource[maxLights];
 
 uniform mat4 textureTransform;
  
@@ -69,12 +57,16 @@ uniform mat4 textureTransform;
 //uniform float alphaTestValue;
 
 
-//uniform int fogEnabled;
-//uniform vec4 expColor;
-//uniform float expDensity;
-//uniform vec4 linearColor;
-//uniform float linearStart;
-//uniform float linearEnd;
+// struct fogData
+// {
+// int fogEnabled = -1;
+// vec3 expColor = new Vector3f();
+// float expDensity;
+// vec3 linearColor = new Vector3f();
+// float linearStart;
+// float linearEnd;
+// };
+// uniform fogData fogData;
 
 //End of FFP inputs
 //The line above in not optional for parsing reasons
@@ -84,20 +76,17 @@ uniform mat4 textureTransform;
 //http://stackoverflow.com/questions/3744038/what-is-half-vector-in-modern-glsl
 // vec3 ecPos = vec3(glModelViewMatrix * glVertex);	
 // vec3 ecL;
-// if(	glLightSource0position.w == 0.0)
-// 	ecL = vec3(glLightSource0position.xyz);// no -ecPos in case of dir lights?
+// if(	glLightSource[0].position.w == 0.0)
+// 	ecL = vec3(glLightSource[0].position.xyz);// no -ecPos in case of dir lights?
 //	else
-//	ecL = vec3(glLightSource0position.xyz - ecPos);
+//	ecL = vec3(glLightSource[0].position.xyz - ecPos);
 //  vec3 L = normalize(ecL.xyz); 
 //	vec3 V = -ecPos.xyz; 
 //	vec3 halfVector = normalize(L + V);
 
 // gl_FrontLightModelProduct.sceneColor  // Derived. Ecm + Acm * Acs (Acs is normal glLightModelambient)
-// use vec4 sceneColor = glFrontMaterialemission + glFrontMaterialambient * glLightModelambient;
+// use vec4 sceneColor = glFrontMaterial.emission + glFrontMaterial.ambient * glLightModelambient;
 
-
-//gl_LightSource[i].specular
-//use glFrontMaterialspecular
 
 //gl_LightSource[i].ambient
 //use glLightModelambient
@@ -114,13 +103,14 @@ uniform mat4 textureTransform;
 out vec2 glTexCoord0;
 
 out vec3 LightDir;
-out vec3 ViewDir;
+out vec3 ViewVec;
 
 out vec3 N;
 
 out vec4 A;
 out vec4 C;
 out vec4 D;
+out vec3 S;
 
 out vec3 emissive;
 out vec3 specular;
@@ -128,8 +118,8 @@ out float shininess;
 
 void main( void )
 {
-	mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;
-	gl_Position = glProjectionMatrix*glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
+	mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;// calculated here to reduce transer from CPU
+	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
 	
 	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;		
 
@@ -137,9 +127,8 @@ void main( void )
 	N = normalize(glNormalMatrix * glNormal);
 		
 	vec3 v = vec3(glModelViewMatrix * glVertex);
-
-	ViewDir = -v.xyz;
-	LightDir = glLightSource0position.xyz;
+	ViewVec = -v.xyz;// do not normalize also used for view dist
+	LightDir = glLightSource[0].position.xyz;
 
 	A = glLightModelambient;
 			 
@@ -151,10 +140,11 @@ void main( void )
 	else 
 		C = glColor; 
 		
-	D = glLightSource0diffuse * glFrontMaterialdiffuse;		
+	D = glLightSource[0].diffuse * glFrontMaterial.diffuse;	
+	S = glLightSource[0].specular.rgb * glFrontMaterial.specular;
 	
-	emissive = glFrontMaterialemission.rgb;
-	specular = glFrontMaterialspecular;
-	shininess = glFrontMaterialshininess;
+	emissive = glFrontMaterial.emission.rgb;
+	specular = glFrontMaterial.specular;
+	shininess = glFrontMaterial.shininess;
 		 
 }

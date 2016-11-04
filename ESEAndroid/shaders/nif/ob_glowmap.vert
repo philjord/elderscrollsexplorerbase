@@ -9,13 +9,35 @@ uniform mat4 glModelViewMatrix;
 uniform mat4 glModelViewProjectionMatrix;
 uniform mat3 glNormalMatrix;
 
-uniform vec4 glFrontMaterialdiffuse;
 uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
 
-uniform vec4 glLightSource0position;
-uniform vec4 glLightSource0diffuse;
+struct material
+{
+	int lightEnabled;
+ 	vec4 ambient;
+ 	vec4 diffuse;
+ 	vec4 emission; 
+ 	vec3 specular;
+ 	float shininess;
+};
+uniform material glFrontMaterial;
+
+struct lightSource
+{
+	 int enabled;
+	 vec4 position;
+	 vec4 diffuse;
+	 vec4 specular;
+	 float constantAttenuation, linearAttenuation, quadraticAttenuation;
+	 float spotCutoff, spotExponent;
+	 vec3 spotDirection;
+};
+
+uniform int numberOfLights;
+const int maxLights = 2;
+uniform lightSource glLightSource[maxLights];
 
 uniform mat4 textureTransform;
 //End of FFP inputs
@@ -25,7 +47,7 @@ attribute vec3 tangent;
 attribute vec3 binormal;
 
 varying vec3 LightDir;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 ColorEA;
 varying vec4 ColorD;
@@ -53,9 +75,9 @@ void main( void )
 						  
 	v = vec3(glModelViewMatrix * glVertex);
 	
-	ViewDir = tbnMatrix * -v.xyz;
-	LightDir = tbnMatrix * glLightSource0position.xyz;
+	ViewVec = tbnMatrix * -v.xyz;
+	LightDir = tbnMatrix * glLightSource[0].position.xyz;
 	
-	ColorEA = glFrontMaterialemission + glLightModelambient * A;
-	ColorD = glFrontMaterialdiffuse * D;
+	ColorEA = glFrontMaterial.emission + glLightModelambient * A;
+	ColorD = glFrontMaterial.diffuse * D;
 }

@@ -10,19 +10,46 @@ attribute vec4 alphas912;
 
 
 //uniform mat4 glProjectionMatrix;
-//uniform mat4 glModelViewMatrix;
+uniform mat4 glModelViewMatrix;
 uniform mat4 glModelViewProjectionMatrix;
 //uniform mat3 glNormalMatrix;
 
-uniform vec4 glFrontMaterialdiffuse;
+ 
 uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
 
-uniform vec4 glLightSource0position;
-uniform vec4 glLightSource0diffuse;
+struct material
+{
+	int lightEnabled;
+ 	vec4 ambient;
+ 	vec4 diffuse;
+ 	vec4 emission; 
+ 	vec3 specular;
+ 	float shininess;
+};
+uniform material glFrontMaterial;
+
+struct lightSource
+{
+	 int enabled;
+	 vec4 position;
+	 vec4 diffuse;
+	 vec4 specular;
+	 float constantAttenuation, linearAttenuation, quadraticAttenuation;
+	 float spotCutoff, spotExponent;
+	 vec3 spotDirection;
+};
+
+uniform int numberOfLights;
+const int maxLights = 2;
+uniform lightSource glLightSource[maxLights];
 
 varying vec2 glTexCoord0;
+
+//TODO: my land needs to have lighting!
+//varying vec3 LightDir;
+varying vec3 ViewVec;
 
 varying vec4 A;
 varying vec4 C;
@@ -40,14 +67,16 @@ void main( void )
 	
 	A = glLightModelambient;
 	if( ignoreVertexColors != 0 ) 
-		C = glFrontMaterialdiffuse; 
+		C = glFrontMaterial.diffuse; 
 	else 
 		C = glColor;
-	D = glLightSource0diffuse * glFrontMaterialdiffuse;
+	D = glLightSource[0].diffuse * glFrontMaterial.diffuse;
 	 
 	
 	layerAlpha4 = alphas04;
 	layerAlpha8 = alphas58;
 	layerAlpha12 = alphas912; 	
 	
+	vec3 v = vec3(glModelViewMatrix * glVertex);
+	ViewVec = -v.xyz;// do not normalize also used for view dist
 }

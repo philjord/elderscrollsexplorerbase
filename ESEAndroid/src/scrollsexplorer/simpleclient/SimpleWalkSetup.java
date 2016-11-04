@@ -260,7 +260,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		setupGraphicsSetting();
 		cameraPanel.getCanvas3D2D().getGLWindow().setSize(1280, 720);//16:9 on this screen
 		//cameraPanel.getCanvas3D2D().getGLWindow().setUndecorated(true);//better for demo
-		cameraPanel.getCanvas3D2D().getGLWindow().setPosition(10, 10);
+		cameraPanel.getCanvas3D2D().getGLWindow().setPosition(310, 10);
 		cameraPanel.startRendering();
 		cameraPanel.getCanvas3D2D().addNotify();
 

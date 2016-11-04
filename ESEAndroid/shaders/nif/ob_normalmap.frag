@@ -2,7 +2,20 @@
 
 precision mediump float;
 
-uniform vec4 glLightSource0specular;
+struct lightSource
+{
+	 int enabled;
+	 vec4 position;
+	 vec4 diffuse;
+	 vec4 specular;
+	 float constantAttenuation, linearAttenuation, quadraticAttenuation;
+	 float spotCutoff, spotExponent;
+	 vec3 spotDirection;
+};
+
+uniform int numberOfLights;
+const int maxLights = 2;
+uniform lightSource glLightSource[maxLights];
 
 uniform int alphaTestEnabled;
 uniform int alphaTestFunction;
@@ -31,7 +44,7 @@ uniform float lightingEffect1;
 uniform float lightingEffect2;
 
 varying vec3 LightDir;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 ColorEA;
 varying vec4 ColorD;
@@ -85,7 +98,7 @@ void main( void )
 	
 	
 	vec3 L = normalize(LightDir);
-	vec3 E = normalize(ViewDir);
+	vec3 E = normalize(ViewVec);
 	vec3 R = reflect(-L, normal);
 	
 	float NdotL = max( dot(normal, L), 0.0 );
@@ -110,7 +123,7 @@ void main( void )
 	if ( NdotL > 0.0 && specStrength > 0.0 ) {
 		float RdotE = max( dot(R, E), 0.0 );
 		if ( RdotE > 0.0 ) {
-			spec = normalMap.a * glLightSource0specular.r * specStrength * pow(RdotE, 0.8*specGlossiness);
+			spec = normalMap.a * glLightSource[0].specular.r * specStrength * pow(RdotE, 0.8*specGlossiness);
 			color.rgb += spec * specColor;
 		}
 	}

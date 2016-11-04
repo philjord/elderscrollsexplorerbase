@@ -35,7 +35,7 @@ uniform float lightingEffect1;
 uniform float lightingEffect2;
 
 varying vec3 LightDir;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 A;
 varying vec4 C;
@@ -63,7 +63,7 @@ void main( void )
 {
 	vec2 offset = glTexCoord0.st;
 	
-	vec3 E = normalize(ViewDir);
+	vec3 E = normalize(ViewVec);
 	
 	float height = texture2D( HeightMap, offset ).r;
 	offset += E.xy * (height * 0.08 - 0.04); 

@@ -31,7 +31,7 @@ uniform vec4 falloffParams;
 uniform float falloffDepth;
 
 varying vec3 LightDir;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 C;
 
@@ -72,7 +72,7 @@ void main( void )
 	
 	//if ( doubleSided != 1 && !gl_FrontFacing ) { return; }
 	
-	vec3 E = normalize(ViewDir);
+	vec3 E = normalize(ViewVec);
 
 	float tmp2 = falloffDepth; // Unused right now
 	

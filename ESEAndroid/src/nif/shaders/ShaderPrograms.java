@@ -157,7 +157,7 @@ public class ShaderPrograms
 			}*/
 
 			sourceCodeShader = new GLSLSourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
-			sourceCodeShader.name = source;
+			sourceCodeShader.setName(source);
 			status = true;
 
 			return true;
@@ -182,6 +182,7 @@ public class ShaderPrograms
 
 		}
 
+		@Override
 		public String toString()
 		{
 			return "Program from " + name + " " + status;
@@ -277,7 +278,7 @@ public class ShaderPrograms
 						line = line.substring("texcoords".length()).trim();
 						String[] list = line.split(" ");
 
-						int unit = new Integer(list[0]);
+						Integer unit = new Integer(list[0]);
 						String id = list[1].toLowerCase();
 
 						if (id.length() == 0)
@@ -312,9 +313,9 @@ public class ShaderPrograms
 			}
 
 			//Quick test to ensure texcoords are fixed, recall sk_msn has the last 2 commented out
-			if (!texcoords.get(0).equals("base") || //
-					(texcoords.size() > 1 && !texcoords.get(1).equals("tangents")) || //
-					(texcoords.size() > 2 && !texcoords.get(2).equals("bitangents")))
+			if (!texcoords.get(new Integer(0)).equals("base") || //
+					(texcoords.size() > 1 && !texcoords.get(new Integer(1)).equals("tangents")) || //
+					(texcoords.size() > 2 && !texcoords.get(new Integer(2)).equals("bitangents")))
 			{
 				System.err.println("texcords not loaded as expected in file " + source);
 			}
@@ -358,6 +359,7 @@ public class ShaderPrograms
 
 		}
 
+		@Override
 		public boolean eval(NiGeometry niGeometry, NiToJ3dData niToJ3dData, PropertyList props)
 		{
 			if (conditions.isEmpty())
@@ -450,11 +452,13 @@ public class ShaderPrograms
 
 		}
 
+		@Override
 		public boolean eval(NiGeometry niGeometry, NiToJ3dData niToJ3dData, PropertyList props)
 		{
 			if (left.equalsIgnoreCase("HEADER/Version"))
 			{
-				return compare(niGeometry.nVer.LOAD_VER, Integer.decode(right)) ^ invert;
+				// note decode as teh input is like "0x14020007"
+				return compare(niGeometry.nVer.LOAD_VER, Integer.decode(right).intValue()) ^ invert;
 			}
 			else if (left.equalsIgnoreCase("HEADER/User Version"))
 			{
@@ -491,7 +495,7 @@ public class ShaderPrograms
 			}
 			else if (left.equalsIgnoreCase("NiTriBasedGeomData/Has Vertices"))
 			{
-				NiObject data = (NiObject) niToJ3dData.get(niGeometry.data);
+				NiObject data = niToJ3dData.get(niGeometry.data);
 				if (data instanceof NiTriBasedGeomData)
 				{
 					NiTriBasedGeomData ntbgd = (NiTriBasedGeomData) data;
@@ -509,7 +513,7 @@ public class ShaderPrograms
 			}
 			else if (left.equalsIgnoreCase("NiTriBasedGeomData/Has Normals"))
 			{
-				NiObject data = (NiObject) niToJ3dData.get(niGeometry.data);
+				NiObject data = niToJ3dData.get(niGeometry.data);
 				if (data instanceof NiTriBasedGeomData)
 				{
 					NiTriBasedGeomData ntbgd = (NiTriBasedGeomData) data;
@@ -522,7 +526,7 @@ public class ShaderPrograms
 			}
 			else if (left.equalsIgnoreCase("NiTriBasedGeomData/Has Vertex Colors"))
 			{
-				NiObject data = (NiObject) niToJ3dData.get(niGeometry.data);
+				NiObject data = niToJ3dData.get(niGeometry.data);
 				if (data instanceof NiTriBasedGeomData)
 				{
 					NiTriBasedGeomData ntbgd = (NiTriBasedGeomData) data;

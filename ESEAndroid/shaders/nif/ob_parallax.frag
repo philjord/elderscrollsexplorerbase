@@ -2,9 +2,31 @@
 
 precision mediump float;
 
-uniform vec4 glFrontMaterialspecular;
-uniform float glFrontMaterialshininess;
-uniform vec4 glLightSource0specular;
+struct material
+{
+	int lightEnabled;
+ 	vec4 ambient;
+ 	vec4 diffuse;
+ 	vec4 emission; 
+ 	vec3 specular;
+ 	float shininess;
+};
+uniform material glFrontMaterial;
+
+struct lightSource
+{
+	 int enabled;
+	 vec4 position;
+	 vec4 diffuse;
+	 vec4 specular;
+	 float constantAttenuation, linearAttenuation, quadraticAttenuation;
+	 float spotCutoff, spotExponent;
+	 vec3 spotDirection;
+};
+
+uniform int numberOfLights;
+const int maxLights = 2;
+uniform lightSource glLightSource[maxLights];
 
 varying vec2 glTexCoord0;
 
@@ -13,7 +35,7 @@ uniform sampler2D NormalMap;
 
 varying vec3 LightDir;
 varying vec3 HalfVector;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 ColorEA;
 varying vec4 ColorD;
@@ -23,7 +45,7 @@ varying vec3 N;
 void main( void )
 {
 	float offset = 0.015 - texture2D( BaseMap, glTexCoord0.st ).a * 0.03;
-	vec2 texco = glTexCoord0.st + normalize( ViewDir ).xy * offset;
+	vec2 texco = glTexCoord0.st + normalize( ViewVec ).xy * offset;
 	
 	vec4 color = ColorEA;
 
@@ -36,7 +58,7 @@ void main( void )
 	{
 		color += ColorD * NdotL;
 		float NdotHV = max( dot( normal.rgb, normalize( HalfVector ) ), 0.0 );
-		color += normal.a * glFrontMaterialspecular * glLightSource0specular * pow( NdotHV, glFrontMaterialshininess );
+		color += normal.a * glFrontMaterial.specular * glLightSource[0].specular * pow( NdotHV, glFrontMaterial.shininess );
 	}
 	
 	color = min( color, 1.0 );

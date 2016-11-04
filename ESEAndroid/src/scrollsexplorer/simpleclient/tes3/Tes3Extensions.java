@@ -37,6 +37,9 @@ import utils.source.MediaSources;
 
 public class Tes3Extensions
 {
+
+	public static boolean ENABLE_HANDS = false;
+
 	public static enum hands
 	{
 		NONE, AXE, SPELL
@@ -76,35 +79,36 @@ public class Tes3Extensions
 
 		//npcos.add(new NPCO(1, "dragonscale_towershield"));
 		//npcos.add(new NPCO(1, "imperial broadsword"));
+		if (ENABLE_HANDS)
+		{
+			if (HANDS == hands.AXE)
+			{
+				npcos.add(new NPCO(1, "steel battle axe"));
+			}
 
-		if (HANDS == hands.AXE)
-		{
-			npcos.add(new NPCO(1, "steel battle axe"));
+			if (HANDS == hands.NONE)
+			{
+				npcos.add(new NPCO(1, "common_shirt_04"));
+				npcos.add(new NPCO(1, "common_shoes_04"));
+				npcos.add(new NPCO(1, "common_pants_04"));
+			}
+			else if (HANDS == hands.AXE)
+			{
+				npcos.add(new NPCO(1, "dwemer_bracer_right"));
+				npcos.add(new NPCO(1, "dwemer_bracer_left"));
+				npcos.add(new NPCO(1, "dwemer_boots"));
+				npcos.add(new NPCO(1, "dwemer_greaves"));
+				//npcos.add(new NPCO(1, "dwemer_pauldron_right"));
+				//npcos.add(new NPCO(1, "dwemer_pauldron_left"));
+				npcos.add(new NPCO(1, "dwemer_cuirass"));
+			}
+			else if (HANDS == hands.SPELL)
+			{
+				npcos.add(new NPCO(1, "extravagant_shirt_01"));
+				npcos.add(new NPCO(1, "common_shoes_04"));
+				npcos.add(new NPCO(1, "extravagant_pants_01"));
+			}
 		}
-
-		if (HANDS == hands.NONE)
-		{
-			npcos.add(new NPCO(1, "common_shirt_04"));
-			npcos.add(new NPCO(1, "common_shoes_04"));
-			npcos.add(new NPCO(1, "common_pants_04"));
-		}
-		else if (HANDS == hands.AXE)
-		{
-			npcos.add(new NPCO(1, "dwemer_bracer_right"));
-			npcos.add(new NPCO(1, "dwemer_bracer_left"));
-			npcos.add(new NPCO(1, "dwemer_boots"));
-			npcos.add(new NPCO(1, "dwemer_greaves"));
-			//npcos.add(new NPCO(1, "dwemer_pauldron_right"));
-			//npcos.add(new NPCO(1, "dwemer_pauldron_left"));
-			npcos.add(new NPCO(1, "dwemer_cuirass"));
-		}
-		else if (HANDS == hands.SPELL)
-		{
-			npcos.add(new NPCO(1, "extravagant_shirt_01"));
-			npcos.add(new NPCO(1, "common_shoes_04"));
-			npcos.add(new NPCO(1, "extravagant_pants_01"));
-		}
-
 		characterSheet = new CharacterSheet(false, "Breton", "b_n_breton_f_head_01", "b_n_breton_f_hair_01", npcos);
 
 		if (FIRST_PERSON)
@@ -393,28 +397,31 @@ public class Tes3Extensions
 
 	private void mouseClickedUpperLeft()
 	{
-		if (!FIRST_PERSON)
+		if (ENABLE_HANDS)
 		{
-			if (!isspellhandsshowing)
+			if (!FIRST_PERSON)
 			{
-				showSpellHands();
+				if (!isspellhandsshowing)
+				{
+					showSpellHands();
+				}
+				else
+				{
+					castHealOnSelf();
+				}
 			}
 			else
 			{
-				castHealOnSelf();
-			}
-		}
-		else
-		{
-			// do we need to get rid of axe and show cast hands?
-			if (!isspellhandsshowing)
-			{
-				showSpellHands();
-			}
-			else
-			{
-				//time to casta  spell I say, cast target
-				castSpellOnCREA();
+				// do we need to get rid of axe and show cast hands?
+				if (!isspellhandsshowing)
+				{
+					showSpellHands();
+				}
+				else
+				{
+					//time to casta  spell I say, cast target
+					castSpellOnCREA();
+				}
 			}
 		}
 
@@ -425,14 +432,17 @@ public class Tes3Extensions
 
 	private void mouseClickedUpperRight()
 	{
-		// do we need to get rid of axe and sow cast hands?
-		if (!isaxeshow)
+		if (ENABLE_HANDS)
 		{
-			showAxeHands();
-		}
-		else
-		{
-			hitAxeCREA();
+			// do we need to get rid of axe and sow cast hands?
+			if (!isaxeshow)
+			{
+				showAxeHands();
+			}
+			else
+			{
+				hitAxeCREA();
+			}
 		}
 
 	}

@@ -9,14 +9,35 @@ uniform mat4 glModelViewMatrix;
 uniform mat4 glModelViewProjectionMatrix;
 uniform mat3 glNormalMatrix;
 
-uniform vec4 glFrontMaterialdiffuse;
-uniform vec4 glFrontMaterialambient;
 uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
 
-uniform vec4 glLightSource0position;
-uniform vec4 glLightSource0diffuse;
+struct material
+{
+	int lightEnabled;
+ 	vec4 ambient;
+ 	vec4 diffuse;
+ 	vec4 emission; 
+ 	vec3 specular;
+ 	float shininess;
+};
+uniform material glFrontMaterial;
+
+struct lightSource
+{
+	 int enabled;
+	 vec4 position;
+	 vec4 diffuse;
+	 vec4 specular;
+	 float constantAttenuation, linearAttenuation, quadraticAttenuation;
+	 float spotCutoff, spotExponent;
+	 vec3 spotDirection;
+};
+
+uniform int numberOfLights;
+const int maxLights = 2;
+uniform lightSource glLightSource[maxLights];
 
 uniform mat4 textureTransform;
 //End of FFP inputs
@@ -26,7 +47,7 @@ attribute vec3 tangent;
 attribute vec3 binormal;
 
 varying vec3 LightDir;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 varying vec3 HalfVector;
 
 varying vec4 ColorEA;
@@ -50,14 +71,14 @@ void main( void )
 	tangent = normalize(glNormalMatrix * tangent);
 	binormal = normalize(glNormalMatrix * binormal);
 	
-	ViewDir = tspace( ( glModelViewMatrix * glVertex ).xyz );
-	LightDir = tspace( glLightSource0position.xyz ); // light 0 is directional
-	HalfVector = ( glModelViewMatrix * glVertex ).xyz - glLightSource0position.xyz;
+	ViewVec = tspace( ( glModelViewMatrix * glVertex ).xyz );
+	LightDir = tspace( glLightSource[0].position.xyz ); // light 0 is directional
+	HalfVector = ( glModelViewMatrix * glVertex ).xyz - glLightSource[0].position.xyz;
 	
 	if(ignoreVertexColors != 0)
-		ColorEA = glFrontMaterialdiffuse + glFrontMaterialambient * glLightModelambient;
+		ColorEA = glFrontMaterial.emission + glFrontMaterial.ambient * glLightModelambient;
 	else
-		ColorEA = glColor + glFrontMaterialambient * glLightModelambient;
+		ColorEA = glColor + glFrontMaterial.ambient * glLightModelambient;
 	
-	ColorD = glFrontMaterialdiffuse * glLightSource0.diffuse;
+	ColorD = glFrontMaterial.diffuse * glLightSource[0].diffuse;
 }

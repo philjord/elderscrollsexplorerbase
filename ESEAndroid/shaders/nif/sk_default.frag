@@ -35,7 +35,7 @@ uniform float lightingEffect1;
 uniform float lightingEffect2;
 
 varying vec3 LightDir;
-varying vec3 ViewDir;
+varying vec3 ViewVec;
 
 varying vec4 A;
 varying vec4 C;
@@ -89,7 +89,7 @@ void main( void )
 	
 	
 	vec3 L = normalize(LightDir);
-	vec3 E = normalize(ViewDir);
+	vec3 E = normalize(ViewVec);
 	vec3 R = reflect(-L, normal);
 	vec3 H = normalize( L + E );
 	
