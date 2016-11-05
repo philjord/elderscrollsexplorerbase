@@ -31,10 +31,8 @@ in vec4 A;
 in vec4 C;
 in vec4 D;
 in vec3 S;
-
-
 in vec3 emissive;
-in vec3 specular;
+
 in float shininess;
 
 out vec4 glFragColor;
@@ -83,8 +81,7 @@ void main( void )
 //https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model
 
 	// Specular
-	vec3 spec = specular * pow(NdotH, 0.3*shininess);
-	spec *= S; 
+	vec3 spec = S * pow(NdotH, 0.3*shininess);
 	
 	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.a = C.a * baseMap.a;

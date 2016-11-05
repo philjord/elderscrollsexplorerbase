@@ -8,8 +8,6 @@ in vec4 glColor;
 in vec3 glNormal;     
 in vec2 glMultiTexCoord0; 
 
-
-
 uniform mat4 glProjectionMatrix;
 //uniform mat4 glProjectionMatrixInverse;
 uniform mat4 glViewMatrix;
@@ -19,7 +17,7 @@ uniform mat4 glModelMatrix;
 //uniform mat4 glModelViewProjectionMatrix;
 				
 //uniform mat3 glNormalMatrix;
- 
+
 uniform int ignoreVertexColors;
 
 uniform vec4 glLightModelambient;
@@ -29,7 +27,7 @@ struct material
 	int lightEnabled;
  	vec4 ambient;
  	vec4 diffuse;
- 	vec4 emission; 
+ 	vec4 emission;
  	vec3 specular;
  	float shininess;
 };
@@ -46,12 +44,13 @@ struct lightSource
 	 vec3 spotDirection;
 };
 
-uniform int numberOfLights;
-const int maxLights = 2;
+uniform int numberOfLights;// numberOfLights will be set to how many the pipeline can send
+const int maxLights = 1;// this is for the shader, it will process no more than this, must be a const
 uniform lightSource glLightSource[maxLights];
 
 uniform mat4 textureTransform;
- 
+
+// alpha testing is normally done in frag versus the texture alpha  
 //uniform int alphaTestEnabled;
 //uniform int alphaTestFunction;
 //uniform float alphaTestValue;
@@ -60,45 +59,46 @@ uniform mat4 textureTransform;
 // struct fogData
 // {
 // int fogEnabled = -1;
-// vec3 expColor = new Vector3f();
+// vec4 expColor;
 // float expDensity;
-// vec3 linearColor = new Vector3f();
+// vec4 linearColor;
 // float linearStart;
 // float linearEnd;
 // };
 // uniform fogData fogData;
 
-//End of FFP inputs
-//The line above in not optional for parsing reasons
 
-//Fixed function pipeline pre-calculated values not available
-//vec3 halfVector = normalize(vec3(gl_LightSource[0].halfVector));
-//http://stackoverflow.com/questions/3744038/what-is-half-vector-in-modern-glsl
+// Fixed function pipeline pre-calculated values not available:
+// Note: 
+// A,D,S = Ambient,Diffuse,Specular 
+// cm, cli = glFrontMaterial, glLightSource
+
+
+// gl_LightSource[i].halfVector
+// http://stackoverflow.com/questions/3744038/what-is-half-vector-in-modern-glsl
 // vec3 ecPos = vec3(glModelViewMatrix * glVertex);	
 // vec3 ecL;
-// if(	glLightSource[0].position.w == 0.0)
-// 	ecL = vec3(glLightSource[0].position.xyz);// no -ecPos in case of dir lights?
+// if(	glLightSource[i].position.w == 0.0)
+// 	ecL = vec3(glLightSource0position.xyz);// no -ecPos in case of dir lights?
 //	else
-//	ecL = vec3(glLightSource[0].position.xyz - ecPos);
+//	ecL = vec3(glLightSource0position.xyz - ecPos);
 //  vec3 L = normalize(ecL.xyz); 
 //	vec3 V = -ecPos.xyz; 
 //	vec3 halfVector = normalize(L + V);
 
-// gl_FrontLightModelProduct.sceneColor  // Derived. Ecm + Acm * Acs (Acs is normal glLightModelambient)
-// use vec4 sceneColor = glFrontMaterial.emission + glFrontMaterial.ambient * glLightModelambient;
-
-
 //gl_LightSource[i].ambient
 //use glLightModelambient
 
+// gl_FrontLightModelProduct.sceneColor  
+// Derived. Ecm + Acm * Acs (Acs is normal glLightModelambient)
+// use vec4 sceneColor = glFrontMaterial.emission + glFrontMaterial.ambient * glLightModelambient;
+
+
 //gl_FrontLightProduct[i]
-//vec4 ambient;    // Acm * Acli (Acli does not exist)
+//vec4 ambient;    // Acm * Acli (Acli does not exist use glLightModelambient)
 //vec4 diffuse;    // Dcm * Dcli
-//vec4 specular;   // Scm * Scli (Scli does not exist)
+//vec4 specular;   // Scm * Scli
 // calculate yourself
-
-
-
 
 out vec2 glTexCoord0;
 
@@ -111,9 +111,8 @@ out vec4 A;
 out vec4 C;
 out vec4 D;
 out vec3 S;
-
 out vec3 emissive;
-out vec3 specular;
+
 out float shininess;
 
 void main( void )
@@ -141,10 +140,9 @@ void main( void )
 		C = glColor; 
 		
 	D = glLightSource[0].diffuse * glFrontMaterial.diffuse;	
-	S = glLightSource[0].specular.rgb * glFrontMaterial.specular;
-	
+	S = glLightSource[0].specular.rgb * glFrontMaterial.specular;	
 	emissive = glFrontMaterial.emission.rgb;
-	specular = glFrontMaterial.specular;
+
 	shininess = glFrontMaterial.shininess;
 		 
 }
