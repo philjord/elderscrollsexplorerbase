@@ -30,7 +30,7 @@ in vec4 C;
 in vec3 emissive;
 in float shininess;
 
-const int maxLights = 2;
+const int maxLights = 8;
 in vec4 lightsD[maxLights]; 
 in vec3 lightsS[maxLights]; 
 in vec3 lightsLightDir[maxLights]; 

@@ -44,7 +44,7 @@ struct lightSource
 };
 
 uniform int numberOfLights;// numberOfLights will be set to how many the pipeline can send
-const int maxLights = 2;// this is for the shader, it will process no more than this, must be a const
+const int maxLights = 8;// this is for the shader, it will process no more than this, must be a const
 uniform lightSource glLightSource[maxLights];
 
 uniform mat4 textureTransform;
