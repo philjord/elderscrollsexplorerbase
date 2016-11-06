@@ -21,19 +21,19 @@ uniform fogDataStruct fogData;
 in vec2 glTexCoord0;
 
 uniform sampler2D BaseMap;
+uniform int numberOfLights;
 
-in vec3 LightDir;
 in vec3 ViewVec;
-
 in vec3 N;
-
 in vec4 A;
 in vec4 C;
-in vec4 D;
-in vec3 S;
 in vec3 emissive;
-
 in float shininess;
+
+const int maxLights = 2;
+in vec4 lightsD[maxLights]; 
+in vec3 lightsS[maxLights]; 
+in vec3 lightsLightDir[maxLights]; 
 
 out vec4 glFragColor;
 
@@ -61,27 +61,32 @@ void main( void )
 			discard;			
 	}
 
-	vec3 normal = N;
-	
-	vec3 L = normalize(LightDir);
-	vec3 E = normalize(ViewVec);
-	vec3 R = reflect(-L, normal);
-	vec3 H = normalize( L + E );
-	
-	float NdotL = max( dot(normal, L), 0.0 );
-	float NdotH = max( dot(normal, H), 0.0 );
-	float EdotN = max( dot(normal, E), 0.0 );
-	float NdotNegL = max( dot(normal, -L), 0.0 );
 
 	vec4 color;
 	vec3 albedo = baseMap.rgb * C.rgb;
-	vec3 diffuse = A.rgb + (D.rgb * NdotL);
+	vec3 diffuse = A.rgb;
+	vec3 spec;
+	
+	vec3 normal = N;
+	vec3 E = normalize(ViewVec);
+	float EdotN = max( dot(normal, E), 0.0 );
+	
+	for (int index = 0; index < numberOfLights && index < maxLights; index++) // for all light sources
+	{ 	
+		vec3 L = normalize( lightsLightDir[index] );		
+		//vec3 R = reflect(-L, normal);
+		vec3 H = normalize( L + E );		
+		float NdotL = max( dot(normal, L), 0.0 );
+		float NdotH = max( dot(normal, H), 0.0 );		
+		float NdotNegL = max( dot(normal, -L), 0.0 );	
+	
+		diffuse = diffuse + (lightsD[index].rgb * NdotL);
+		spec = spec + (lightsS[index] * pow(NdotH, 0.3*shininess));
+	}
+	
+	// see sphere_motion for multiple lights in phong style, below is blinn phong comparision both in frag
+	//https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model
 
-// see sphere_motion for multiple lights in phong style, below is blinn phong comparision both in frag
-//https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model
-
-	// Specular
-	vec3 spec = S * pow(NdotH, 0.3*shininess);
 	
 	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.a = C.a * baseMap.a;
@@ -107,5 +112,8 @@ void main( void )
 		color.a = color.a + fogFactor; 	 
 	}
      
-	glFragColor = color;
+	glFragColor = color; 
+
+
+
 }

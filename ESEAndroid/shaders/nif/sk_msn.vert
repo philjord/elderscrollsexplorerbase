@@ -25,7 +25,6 @@ uniform material glFrontMaterial;
 
 struct lightSource
 {
-	 int enabled;
 	 vec4 position;
 	 vec4 diffuse;
 	 vec4 specular;

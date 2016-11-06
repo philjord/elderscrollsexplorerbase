@@ -35,7 +35,6 @@ uniform material glFrontMaterial;
 
 struct lightSource
 {
-	 int enabled;
 	 vec4 position;
 	 vec4 diffuse;
 	 vec4 specular;
@@ -45,7 +44,7 @@ struct lightSource
 };
 
 uniform int numberOfLights;// numberOfLights will be set to how many the pipeline can send
-const int maxLights = 1;// this is for the shader, it will process no more than this, must be a const
+const int maxLights = 2;// this is for the shader, it will process no more than this, must be a const
 uniform lightSource glLightSource[maxLights];
 
 uniform mat4 textureTransform;
@@ -102,18 +101,18 @@ uniform mat4 textureTransform;
 
 out vec2 glTexCoord0;
 
-out vec3 LightDir;
 out vec3 ViewVec;
-
 out vec3 N;
-
 out vec4 A;
 out vec4 C;
-out vec4 D;
-out vec3 S;
 out vec3 emissive;
-
 out float shininess;
+
+
+out vec4 lightsD[maxLights]; 
+out vec3 lightsS[maxLights]; 
+out vec3 lightsLightDir[maxLights]; 
+
 
 void main( void )
 {
@@ -127,9 +126,9 @@ void main( void )
 		
 	vec3 v = vec3(glModelViewMatrix * glVertex);
 	ViewVec = -v.xyz;// do not normalize also used for view dist
-	LightDir = glLightSource[0].position.xyz;
+	
 
-	A = glLightModelambient;
+	A = glLightModelambient *  glFrontMaterial.ambient;
 			 
 	if( ignoreVertexColors != 0) 
 	{
@@ -138,11 +137,14 @@ void main( void )
 	}
 	else 
 		C = glColor; 
-		
-	D = glLightSource[0].diffuse * glFrontMaterial.diffuse;	
-	S = glLightSource[0].specular.rgb * glFrontMaterial.specular;	
-	emissive = glFrontMaterial.emission.rgb;
-
+		emissive = glFrontMaterial.emission.rgb;
 	shininess = glFrontMaterial.shininess;
+	
+	for (int index = 0; index < numberOfLights && index < maxLights; index++) // for all light sources
+	{	
+		lightsD[index] = glLightSource[index].diffuse * glFrontMaterial.diffuse;	
+		lightsS[index] = glLightSource[index].specular.rgb * glFrontMaterial.specular;	
+		lightsLightDir[index] = glLightSource[index].position.xyz;	
+	}
 		 
 }

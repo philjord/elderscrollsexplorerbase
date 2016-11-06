@@ -4,7 +4,6 @@ precision mediump float;
 
 struct lightSource
 {
-	 int enabled;
 	 vec4 position;
 	 vec4 diffuse;
 	 vec4 specular;

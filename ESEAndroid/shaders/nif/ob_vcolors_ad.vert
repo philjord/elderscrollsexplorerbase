@@ -27,7 +27,6 @@ uniform material glFrontMaterial;
 
 struct lightSource
 {
-	 int enabled;
 	 vec4 position;
 	 vec4 diffuse;
 	 vec4 specular;
@@ -67,28 +66,6 @@ void main( void )
 	gl_Position = glModelViewProjectionMatrix * glVertex;
 	
 	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).xy ;	
-	
-/*	if(textureTransform[0][0] < 0.0
-	||textureTransform[0][1] < 0.0
-	||textureTransform[0][2] < 0.0
-	||textureTransform[0][3] < 0.0
-	||textureTransform[1][0] < 0.0
-	||textureTransform[1][1] < 0.0
-	||textureTransform[1][2] < 0.0
-	||textureTransform[1][3] < 0.0
-	||textureTransform[2][0] < 0.0
-	||textureTransform[2][1] < 0.0
-	||textureTransform[2][2] < 0.0
-	||textureTransform[2][3] < 0.0
-	||textureTransform[3][0] < 0.0
-	||textureTransform[3][1] < 0.0
-	||textureTransform[3][2] < 0.0
-	||textureTransform[3][3] < 0.0
-	)*/
-	
-	//if(glTexCoord0 !=   vec4(glMultiTexCoord0,0,1) )	
-	//gl_Position = vec4(0,0,0,0);
-	
 	
 	
 	N = normalize(glNormalMatrix * glNormal);
