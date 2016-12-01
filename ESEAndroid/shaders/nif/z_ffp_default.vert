@@ -44,7 +44,8 @@ struct lightSource
 };
 
 uniform int numberOfLights;// numberOfLights will be set to how many the pipeline can send
-const int maxLights = 8;// this is for the shader, it will process no more than this, must be a const
+//NOTE android might support a very low number of varying attributes as low as 8
+const int maxLights = 3;// this is for the shader, it will process no more than this, must be a const
 uniform lightSource glLightSource[maxLights];
 
 uniform mat4 textureTransform;
@@ -125,8 +126,7 @@ void main( void )
 	N = normalize(glNormalMatrix * glNormal);
 		
 	vec3 v = vec3(glModelViewMatrix * glVertex);
-	ViewVec = -v.xyz;// do not normalize also used for view dist
-	
+	ViewVec = -v.xyz;// do not normalize also used for view dist	
 
 	A = glLightModelambient *  glFrontMaterial.ambient;
 			 
@@ -137,7 +137,8 @@ void main( void )
 	}
 	else 
 		C = glColor; 
-		emissive = glFrontMaterial.emission.rgb;
+		
+	emissive = glFrontMaterial.emission.rgb;
 	shininess = glFrontMaterial.shininess;
 	
 	for (int index = 0; index < numberOfLights && index < maxLights; index++) // for all light sources

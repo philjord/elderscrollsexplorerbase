@@ -30,7 +30,10 @@ in vec4 C;
 in vec3 emissive;
 in float shininess;
 
-const int maxLights = 8;
+//NOTE android might support a very low number of varying attributes as low as 8
+// console shows this for now, maxLights of 3 works for a max vectors of 16
+
+const int maxLights = 3;
 in vec4 lightsD[maxLights]; 
 in vec3 lightsS[maxLights]; 
 in vec3 lightsLightDir[maxLights]; 
