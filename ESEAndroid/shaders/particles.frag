@@ -5,6 +5,8 @@ precision mediump float;
 //End of FFP inputs
 in vec2 glTexCoord0;
 
+uniform float transparencyAlpha;	
+
 uniform sampler2D BaseMap;
  
 in mediump vec2 TextureSize;
@@ -22,5 +24,9 @@ void main( void )
 	mediump vec3 rotTexCoord = v_rotationMatrix * vec3(realTexCoord, 1);
     mediump vec4 fragColor = texture(BaseMap, rotTexCoord.st ); 
 
+
+
     glFragColor = fragColor * C;
+    glFragColor.a *= transparencyAlpha;
+   
 }

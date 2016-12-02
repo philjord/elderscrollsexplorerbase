@@ -2,6 +2,8 @@
 
 precision mediump float;
 
+uniform float transparencyAlpha;	
+
 uniform int alphaTestEnabled;
 uniform int alphaTestFunction;
 uniform float alphaTestValue;
@@ -114,6 +116,8 @@ void main( void )
 		}	
 		color.a = color.a + fogFactor; 	 
 	}
+    
+    color *= transparencyAlpha;
      
 	glFragColor = color; 
 
