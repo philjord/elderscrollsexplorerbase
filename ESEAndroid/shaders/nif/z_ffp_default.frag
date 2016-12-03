@@ -1,6 +1,7 @@
 #version 140
 
 precision mediump float;
+precision highp int;
 
 uniform float transparencyAlpha;	
 
