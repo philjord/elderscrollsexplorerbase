@@ -12,6 +12,12 @@
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
         <javaElement handleIdentifier="=ESEAndroid/src"/>
+        <javaElement handleIdentifier="=esmj3dtes4/src"/>
+        <javaElement handleIdentifier="=esmj3dtes3/src"/>
+        <javaElement handleIdentifier="=esmj3dtes5/src"/>
+        <javaElement handleIdentifier="=esmj3d/src"/>
+        <javaElement handleIdentifier="=esmj3dfo3/src"/>
+        <javaElement handleIdentifier="=esmj3dfo4/src"/>
         <folder path="/ESEAndroid/shaders"/>
     </selectedElements>
 </jardesc>
