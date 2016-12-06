@@ -1,8 +1,9 @@
 package scrollsexplorer.simpleclient.scenegraph;
 
-import java.util.Enumeration;
+import java.util.Iterator;
 
 import org.jogamp.java3d.Behavior;
+import org.jogamp.java3d.WakeupCriterion;
 import org.jogamp.java3d.WakeupOnElapsedTime;
 
 import scrollsexplorer.IDashboard;
@@ -24,13 +25,14 @@ public class LoadingInfoBehavior extends Behavior
 		setSchedulingBounds(Utils3D.defaultBounds);
 	}
 
+	@Override
 	public void initialize()
 	{
 		wakeupOn(wakeUp);
 	}
 
-	@SuppressWarnings({ "rawtypes" })
-	public void processStimulus(Enumeration critera)
+	@Override
+	public void processStimulus(Iterator<WakeupCriterion> critera)
 	{
 		if (startTime == Long.MIN_VALUE)
 			startTime = System.currentTimeMillis();

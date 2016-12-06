@@ -1,13 +1,14 @@
 package scrollsexplorer.simpleclient.tes3;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Iterator;
 
 import org.jogamp.java3d.Behavior;
 import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.Node;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransformGroup;
+import org.jogamp.java3d.WakeupCriterion;
 import org.jogamp.java3d.WakeupOnElapsedFrames;
 import org.jogamp.vecmath.Quat4f;
 import org.jogamp.vecmath.Vector3f;
@@ -377,7 +378,7 @@ public class Tes3Extensions
 		}
 
 		@Override
-		public void processStimulus(Enumeration critera)
+		public void processStimulus(Iterator<WakeupCriterion> critera)
 		{
 			cameraTG.setTransform(t);
 			// Set the trigger for the behavior
