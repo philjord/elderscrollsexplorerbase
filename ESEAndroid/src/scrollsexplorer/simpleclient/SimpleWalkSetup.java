@@ -576,11 +576,11 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	public void toggleHavok()
 	{
 		showHavok = !showHavok;
-		if (showHavok && physicsGroup.getParent() == null)
+		if (showHavok && !physicsGroup.isLive())
 		{
 			modelGroup.addChild(physicsGroup);
 		}
-		else if (!showHavok && physicsGroup.getParent() != null)
+		else if (!showHavok && physicsGroup.isLive())
 		{
 			physicsGroup.detach();
 		}
@@ -593,13 +593,13 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	public void toggleVisual()
 	{
 		showVisual = !showVisual;
-		if (showVisual && visualGroup.getParent() == null)
+		if (showVisual && !visualGroup.isLive())
 		{
 			//Bad no good 
 			//structureUpdateBehavior.add(modelGroup, visualGroup);
 			modelGroup.addChild(visualGroup);
 		}
-		else if (!showVisual && visualGroup.getParent() != null)
+		else if (!showVisual && visualGroup.isLive())
 		{
 			//structureUpdateBehavior.remove(modelGroup, visualGroup);
 			visualGroup.detach();
@@ -612,13 +612,13 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	@Override
 	public void setVisualDisplayed(boolean newShowVisual)
 	{
-		if (newShowVisual && visualGroup.getParent() == null)
+		if (newShowVisual && !visualGroup.isLive())
 		{
 			//structureUpdateBehavior.add(modelGroup, visualGroup);
 			modelGroup.addChild(visualGroup);
 
 		}
-		else if (!newShowVisual && visualGroup.getParent() != null)
+		else if (!newShowVisual && visualGroup.isLive())
 		{
 			//structureUpdateBehavior.remove(modelGroup, visualGroup);
 			visualGroup.detach();
