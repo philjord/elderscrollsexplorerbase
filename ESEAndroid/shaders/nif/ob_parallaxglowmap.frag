@@ -1,6 +1,6 @@
 #version 120
 
-precision mediump float;
+precision highp float; // must be highp if any uniform (like lightSource) is also in the vertex shader
 precision highp int;
 
 struct material
