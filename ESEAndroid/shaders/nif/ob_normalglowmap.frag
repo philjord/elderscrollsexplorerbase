@@ -1,6 +1,7 @@
 #version 120
 
 precision mediump float;
+precision highp int;
 
 uniform vec4 glLightModelambient;
 
