@@ -98,7 +98,7 @@ void main( void )
 	
 	// Skyrim
 	if ( bool(hasGlowMap) ) {
-		color.rgb += tonemap( baseMap.rgb * emissive.rgb * glowColor ) / tonemap( 1.0f / (vec3(glowMult) + 0.001f) );
+		color.rgb += tonemap( baseMap.rgb * emissive.rgb * glowColor ) / tonemap( 1.0 / (vec3(glowMult) + 0.001) );
 	}
 	
 	vec3 L = normalize(LightDir);
