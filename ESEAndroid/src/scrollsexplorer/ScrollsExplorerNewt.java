@@ -80,6 +80,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		ArchiveFile.USE_FILE_MAPS = false;
 		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
 		ArchiveFile.USE_NON_NATIVE_ZIP = false;
+		
+		BsaTextureSource.allowedTextureFormats = BsaTextureSource.AllowedTextureFormats.KTX;
 
 		BethRenderSettings.setFarLoadGridCount(4);
 		BethRenderSettings.setNearLoadGridCount(2);
