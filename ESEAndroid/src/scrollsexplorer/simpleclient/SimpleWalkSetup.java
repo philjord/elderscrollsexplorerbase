@@ -463,12 +463,12 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			canvas3D2D.getGLWindow().addKeyListener(jumpKeyListener);
 			canvas3D2D.getGLWindow().addKeyListener(newtMiscKeyHandler);
 
-			//fpsCounter.addToCanvas(canvas3D2D);
-			//hudPos.addToCanvas(canvas3D2D);
-			//hudcompass.addToCanvas(canvas3D2D);
+			fpsCounter.addToCanvas(canvas3D2D);
+			hudPos.addToCanvas(canvas3D2D);
+			hudcompass.addToCanvas(canvas3D2D);
 			//hudPhysicsState.addToCanvas(canvas3D2D);
 			hudCrossHair.addToCanvas(canvas3D2D);
-			//loadInfo.addToCanvas(canvas3D2D);
+			loadInfo.addToCanvas(canvas3D2D);
 			//allow tab for mouse lock
 			//			canvas3D2D.setFocusTraversalKeysEnabled(false);
 
