@@ -1,4 +1,6 @@
 #For android to pull programs from the jar it must have the names listed here
+# uncomment trivial to override the world with simple shaders un-lit textured fogged alpha tested
+#trivial.prog
 fo4_effectshader.prog
 fo4_env.prog
 ob_normal+glowmap_vcol.prog
