@@ -31,6 +31,10 @@ import tools3d.utils.ShaderSourceIO;
 
 public class ShaderPrograms
 {
+
+	// set to load debug or alternative shaders form teh file system, if present
+	public static File fileSystemFolder = null;
+
 	private static HashMap<String, FileShader> allFileShaders;
 	// programs MUST be checked in order!
 	public static LinkedHashMap<String, Program> programs;
@@ -46,15 +50,26 @@ public class ShaderPrograms
 			BufferedReader fin = null;
 			try
 			{
-				String source = "shaders/nif/ProgramFilesList.txt";
-				InputStream inputStream = ShaderPrograms.class.getResourceAsStream("/" + source);
-				if (inputStream != null)
+				if (fileSystemFolder != null && fileSystemFolder.exists())
 				{
-					fin = new BufferedReader(new InputStreamReader(inputStream));
+					String source = "ProgramFilesList.txt";
+					File f = new File(fileSystemFolder, source);
+					if(f.exists())					
+						fin = new BufferedReader(new FileReader(f));
 				}
-				else
+
+				if (fin == null)
 				{
-					fin = new BufferedReader(new FileReader(new File(source)));
+					String source = "shaders/nif/ProgramFilesList.txt";
+					InputStream inputStream = ShaderPrograms.class.getResourceAsStream("/" + source);
+					if (inputStream != null)
+					{
+						fin = new BufferedReader(new InputStreamReader(inputStream));
+					}
+					else
+					{
+						fin = new BufferedReader(new FileReader(new File(source)));
+					}
 				}
 
 				String name = fin.readLine();
@@ -144,17 +159,27 @@ public class ShaderPrograms
 
 		boolean load(String source)
 		{
-			String shaderCode = ShaderSourceIO.getTextFileAsString("shaders/nif/" + source);			 
-
-/*			ArrayList<String> problems = GLSLSourceCodeShader.testForFFP(shaderCode);
-			if (problems.size() > 0)
+			String shaderCode = null;
+			if (fileSystemFolder != null && fileSystemFolder.exists())
 			{
-				System.out.println("Shader file appears to be FFP style " + source);
-				for (String problem : problems)
-				{
-					System.out.println(problem);
-				}
-			}*/
+				File f = new File(fileSystemFolder, source);
+				if(f.exists())
+					shaderCode = ShaderSourceIO.getTextFileAsString(fileSystemFolder + "/" + source);
+			}
+			
+			if (shaderCode == null)
+			{
+				shaderCode = ShaderSourceIO.getTextFileAsString("shaders/nif/" + source);
+			}
+			/*			ArrayList<String> problems = GLSLSourceCodeShader.testForFFP(shaderCode);
+						if (problems.size() > 0)
+						{
+							System.out.println("Shader file appears to be FFP style " + source);
+							for (String problem : problems)
+							{
+								System.out.println(problem);
+							}
+						}*/
 
 			sourceCodeShader = new GLSLSourceCodeShader(Shader.SHADING_LANGUAGE_GLSL, type, shaderCode);
 			sourceCodeShader.setName(source);
@@ -194,14 +219,25 @@ public class ShaderPrograms
 			BufferedReader bfr = null;
 			try
 			{
-				InputStream inputStream = ShaderPrograms.class.getResourceAsStream("/shaders/nif/" + source);
-				if (inputStream != null)
+
+				if (fileSystemFolder != null && fileSystemFolder.exists())
 				{
-					bfr = new BufferedReader(new InputStreamReader(inputStream));
+					File f = new File(fileSystemFolder, source);
+					if(f.exists())
+					bfr = new BufferedReader(new FileReader(f));
 				}
-				else
+				
+				if (bfr == null)
 				{
-					bfr = new BufferedReader(new FileReader(new File("shaders/nif/" + source)));
+					InputStream inputStream = ShaderPrograms.class.getResourceAsStream("/shaders/nif/" + source);
+					if (inputStream != null)
+					{
+						bfr = new BufferedReader(new InputStreamReader(inputStream));
+					}
+					else
+					{
+						bfr = new BufferedReader(new FileReader(new File("shaders/nif/" + source)));
+					}
 				}
 
 				ArrayList<ConditionGroup> chkgrps = new ArrayList<ConditionGroup>();
