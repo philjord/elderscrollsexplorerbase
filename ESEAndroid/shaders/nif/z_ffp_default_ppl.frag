@@ -24,10 +24,22 @@ uniform fogDataStruct fogData;
 in vec2 glTexCoord0;
 
 uniform sampler2D BaseMap;
+uniform int numberOfLights;
 
 in vec3 ViewVec;
+in vec3 N;
+in vec4 A;
 in vec4 C;
-in vec3 light;
+in vec3 emissive;
+in float shininess;
+
+//NOTE android might support a very low number of varying attributes as low as 8
+// console shows this for now, maxLights of 3 works for a max vectors of 16
+
+const int maxLights = 3;
+in vec4 lightsD[maxLights]; 
+in vec3 lightsS[maxLights]; 
+in vec3 lightsLightDir[maxLights]; 
 
 out vec4 glFragColor;
 
@@ -58,8 +70,31 @@ void main( void )
 
 	vec4 color;
 	vec3 albedo = baseMap.rgb * C.rgb;
+	vec3 diffuse = A.rgb;
+	vec3 spec;
 	
-	color.rgb = albedo * light;
+	vec3 normal = N;
+	vec3 E = normalize(ViewVec);
+	float EdotN = max( dot(normal, E), 0.0 );
+	// TODO: bring the attenuation across from the per vertex version
+	for (int index = 0; index < numberOfLights && index < maxLights; index++) // for all light sources
+	{ 	
+		vec3 L = normalize( lightsLightDir[index] );		
+		//vec3 R = reflect(-L, normal);
+		vec3 H = normalize( L + E );		
+		float NdotL = max( dot(normal, L), 0.0 );
+		float NdotH = max( dot(normal, H), 0.0 );		
+		float NdotNegL = max( dot(normal, -L), 0.0 );	
+	
+		diffuse = diffuse + (lightsD[index].rgb * NdotL);
+		spec = spec + (lightsS[index] * pow(NdotH, 0.3*shininess));
+	}
+	
+	// see sphere_motion for multiple lights in phong style, below is blinn phong comparision both in frag
+	//https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model
+
+	
+	color.rgb = albedo * (diffuse + emissive) + spec;
 	color.a = C.a * baseMap.a;
 	
 	if(fogData.fogEnabled == 1)
@@ -86,6 +121,7 @@ void main( void )
     color *= transparencyAlpha;
      
 	glFragColor = color; 
+
 
 
 }

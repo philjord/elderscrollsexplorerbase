@@ -1,7 +1,4 @@
 #version 150 
-//#version 120 is not optional, trouble otherwise
-
-//Note don't put if else constructs on one line or trouble
 
 in vec4 glVertex;         
 in vec4 glColor;       
@@ -50,69 +47,11 @@ uniform lightSource glLightSource[maxLights];
 
 uniform mat4 textureTransform;
 
-// alpha testing is normally done in frag versus the texture alpha  
-//uniform int alphaTestEnabled;
-//uniform int alphaTestFunction;
-//uniform float alphaTestValue;
-
-
-// struct fogData
-// {
-// int fogEnabled = -1;
-// vec4 expColor;
-// float expDensity;
-// vec4 linearColor;
-// float linearStart;
-// float linearEnd;
-// };
-// uniform fogData fogData;
-
-
-// Fixed function pipeline pre-calculated values not available:
-// Note: 
-// A,D,S = Ambient,Diffuse,Specular 
-// cm, cli = glFrontMaterial, glLightSource
-
-
-// gl_LightSource[i].halfVector
-// http://stackoverflow.com/questions/3744038/what-is-half-vector-in-modern-glsl
-// vec3 ecPos = vec3(glModelViewMatrix * glVertex);	
-// vec3 ecL;
-// if(	glLightSource[i].position.w == 0.0)
-// 	ecL = vec3(glLightSource0position.xyz);// no -ecPos in case of dir lights?
-//	else
-//	ecL = vec3(glLightSource0position.xyz - ecPos);
-//  vec3 L = normalize(ecL.xyz); 
-//	vec3 V = -ecPos.xyz; 
-//	vec3 halfVector = normalize(L + V);
-
-//gl_LightSource[i].ambient
-//use glLightModelambient
-
-// gl_FrontLightModelProduct.sceneColor  
-// Derived. Ecm + Acm * Acs (Acs is normal glLightModelambient)
-// use vec4 sceneColor = glFrontMaterial.emission + glFrontMaterial.ambient * glLightModelambient;
-
-
-//gl_FrontLightProduct[i]
-//vec4 ambient;    // Acm * Acli (Acli does not exist use glLightModelambient)
-//vec4 diffuse;    // Dcm * Dcli
-//vec4 specular;   // Scm * Scli
-// calculate yourself
-
 out vec2 glTexCoord0;
 
 out vec3 ViewVec;
-out vec3 N;
-out vec4 A;
 out vec4 C;
-out vec3 emissive;
-out float shininess;
-
-
-out vec4 lightsD[maxLights]; 
-out vec3 lightsS[maxLights]; 
-out vec3 lightsLightDir[maxLights]; 
+out vec3 light;
 
 
 void main( void )
@@ -123,12 +62,12 @@ void main( void )
 	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;		
 
 	mat3 glNormalMatrix =  mat3(transpose(inverse(glModelViewMatrix)));
-	N = normalize(glNormalMatrix * glNormal);
+	vec3 N = normalize(glNormalMatrix * glNormal);
 		
 	vec3 v = vec3(glModelViewMatrix * glVertex);
 	ViewVec = -v.xyz;// do not normalize also used for view dist	
 
-	A = glLightModelambient *  glFrontMaterial.ambient;
+	vec4 A = glLightModelambient *  glFrontMaterial.ambient;
 			 
 	if( ignoreVertexColors != 0) 
 	{
@@ -138,14 +77,48 @@ void main( void )
 	else 
 		C = glColor; 
 		
-	emissive = glFrontMaterial.emission.rgb;
-	shininess = glFrontMaterial.shininess;
+	vec3 emissive = glFrontMaterial.emission.rgb;
+	float shininess = glFrontMaterial.shininess;
+	
+	vec3 diffuse = A.rgb;
+	vec3 spec = vec3(0,0,0);
+	
+	vec3 normal = N;
+	vec3 E = normalize(ViewVec);
+	float EdotN = max( dot(normal, E), 0.0 );
+	
+	vec4 vertPos = glModelMatrix * glVertex;
 	
 	for (int index = 0; index < numberOfLights && index < maxLights; index++) // for all light sources
-	{	
-		lightsD[index] = glLightSource[index].diffuse * glFrontMaterial.diffuse;	
-		lightsS[index] = glLightSource[index].specular.rgb * glFrontMaterial.specular;	
-		lightsLightDir[index] = glLightSource[index].position.xyz;	
-	}
-		 
+	{ 		
+		vec4 Lp = glLightSource[index].position;
+		vec3 Ld = normalize( glLightSource[index].position.xyz );		
+		//vec3 R = reflect(-L, normal);
+		vec3 H = normalize( Ld + E );
+			
+		float NdotL = max( dot(normal, Ld), 0.0 );
+		float NdotH = max( dot(normal, H), 0.0 );		
+		float NdotNegL = max( dot(normal, -Ld), 0.0 );		
+		
+		vec3 d = ((glLightSource[index].diffuse * glFrontMaterial.diffuse).rgb * NdotL);
+		vec3 s = ((glLightSource[index].specular.rgb * glFrontMaterial.specular) * pow(NdotH, 0.3*shininess));
+    
+		// Attenuate the light based on distance. but not for directional!
+		if(Lp.w == 1.0)
+		{
+   			float dist = length(vertPos - glLightSource[index].position);   
+   			float att = (1.0 / (glLightSource[index].constantAttenuation +
+				(glLightSource[index].linearAttenuation*dist) +
+					(glLightSource[index].quadraticAttenuation*dist*dist)));    
+   			d = d * att;
+   			s = s * att; 
+    	}			 
+		
+		diffuse = diffuse + d;
+        spec = spec + s;		
+ 
+	}	
+	
+	light = (diffuse + emissive) + spec;	
+	 
 }
