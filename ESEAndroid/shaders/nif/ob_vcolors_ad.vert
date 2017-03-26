@@ -65,7 +65,7 @@ void main( void )
 {
 	gl_Position = glModelViewProjectionMatrix * glVertex;
 	
-	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).xy ;	
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0.0,1.0)).xy ;	
 	
 	
 	N = normalize(glNormalMatrix * glNormal);

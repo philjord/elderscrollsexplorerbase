@@ -34,7 +34,7 @@ void main( void )
 	mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;// calculated here to reduce transer from CPU
 	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
 	
-	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;		
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0.0,1.0)).st;		
 		
 	vec3 v = vec3(glModelViewMatrix * glVertex);
 	ViewVec = -v.xyz;// do not normalize also used for view dist	

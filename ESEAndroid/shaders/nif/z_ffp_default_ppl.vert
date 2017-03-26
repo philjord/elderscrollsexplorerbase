@@ -120,7 +120,7 @@ void main( void )
 	mat4 glModelViewMatrix = glViewMatrix*glModelMatrix;// calculated here to reduce transer from CPU
 	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
 	
-	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;		
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0.0,1.0)).st;		
 
 	mat3 glNormalMatrix =  mat3(transpose(inverse(glModelViewMatrix)));
 	N = normalize(glNormalMatrix * glNormal);

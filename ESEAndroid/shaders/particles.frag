@@ -21,7 +21,7 @@ void main( void )
 {	 
 	//mediump vec2 realTexCoord = glTexCoord0 + (gl_PointCoord * TextureSize);
 	mediump vec2 realTexCoord = gl_PointCoord;
-	mediump vec3 rotTexCoord = v_rotationMatrix * vec3(realTexCoord, 1);
+	mediump vec3 rotTexCoord = v_rotationMatrix * vec3(realTexCoord, 1.0);
     mediump vec4 fragColor = texture(BaseMap, rotTexCoord.st ); 
 
 

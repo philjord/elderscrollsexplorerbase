@@ -39,7 +39,7 @@ void main()
 	vec4 color;
 	if( isCubeMap == 1 )
 	{
-     	vec3 eyePos = vec3(glProjectionMatrixInverse * vec4(0,0,1,0));
+     	vec3 eyePos = vec3(glProjectionMatrixInverse * vec4(0.0,0.0,1.0,0.0));
      	vec3 eye = normalize(eyePos - position);
      	vec3 r = reflect(eye, worldNormal);   
      	color = vec4(0.0);//not working on android?? does not run shader textureCube(envMap, r); 

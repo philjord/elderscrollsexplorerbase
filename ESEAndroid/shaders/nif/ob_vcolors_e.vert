@@ -64,7 +64,7 @@ vec3 tspace( vec3 v )
 void main( void )
 {
 	gl_Position = glModelViewProjectionMatrix * glVertex;
-	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0,1)).st;	
+	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0.0,1.0)).st;	
 	
 	normal = normalize(glNormalMatrix * glNormal);
 	tangent = normalize(glNormalMatrix * tangent);
