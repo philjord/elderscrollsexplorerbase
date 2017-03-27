@@ -1,6 +1,5 @@
 #version 120
 
-
 attribute vec4 glVertex;
 attribute vec4 glColor;
 attribute vec3 glNormal;  
@@ -11,7 +10,6 @@ uniform mediump mat4 glProjectionMatrixInverse;
 uniform mediump mat4 glModelViewMatrix;
 uniform mediump mat4 glModelViewProjectionMatrix;
 uniform mediump mat3 glNormalMatrix;
-
 
 uniform int ignoreVertexColors;
 
@@ -39,7 +37,7 @@ struct lightSource
 };
 
 uniform int numberOfLights;
-const int maxLights = 2;
+const int maxLights = 1;
 uniform lightSource glLightSource[maxLights];
 
 varying vec2 glTexCoord0;
@@ -52,8 +50,8 @@ uniform float amplitude[8];
 uniform float wavelength[8];
 uniform float speed[8];
 uniform vec2 direction[8];
-varying vec3 position;
-varying vec3 worldNormal;
+
+
 varying vec3 eyeNormal;
 varying vec3 lightDir;
 
@@ -62,22 +60,6 @@ varying vec3 ViewVec;
 varying vec4 A;
 varying vec4 C;
 varying vec4 D;
-
-float wave(int i, float x, float z) {
-    float frequency = 2.0*pi/wavelength[i];
-    float phase = speed[i] * frequency;
-    float theta = dot(direction[i], vec2(x, z));
-    return amplitude[i] * sin(theta * frequency + time * phase);
-}
-
-float waveHeight(float x, float z) {
-// I need to update this to be deterministic on x,z and time,
-// that way each side of adjacent grids will match
-    float height = 0.0;
-    for (int i = 0; i < numWaves; ++i)
-        height += wave(i, x, z);
-    return height;
-}
 
 float dWavedx(int i, float x, float z) {
     float frequency = 2.0*pi/wavelength[i];
@@ -107,13 +89,10 @@ vec3 waveNormal(float x, float z) {
 }
 
 void main() {
-    vec4 pos = glVertex;
-    pos.y = pos.y;// turned off for demo + waveHeight(pos.x, pos.z);
-    position = pos.xyz / pos.w;
-    worldNormal = waveNormal(pos.x, pos.z);
+    vec3 worldNormal = waveNormal(glVertex.x, glVertex.z);
     eyeNormal = glNormalMatrix * worldNormal;
     glTexCoord0 = glMultiTexCoord0.st;
-    gl_Position = glModelViewProjectionMatrix * pos;
+    gl_Position = glModelViewProjectionMatrix * glVertex;
     
     vec3 v = vec3(glModelViewMatrix * glVertex);
 	ViewVec = -v.xyz;// do not normalize also used for view dist
