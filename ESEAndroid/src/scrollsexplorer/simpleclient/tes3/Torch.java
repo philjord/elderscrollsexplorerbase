@@ -37,10 +37,10 @@ public class Torch extends BranchGroup
 	private LightFlickerBehavior lightFlickerBehavior;
 
 	private J3dNiAVObject j3dNiAVObject;
-	
+
 	private boolean isOn = true;
-	
-	private float fieldOfView = 10;
+
+	private float fieldOfView = -1;
 	private float fade = 0;
 	private float falloffExponent = 0;
 	private float radius = 30f;
@@ -68,40 +68,37 @@ public class Torch extends BranchGroup
 
 		}
 
-		
-		if (BethRenderSettings.isEnablePlacedLights())
+		Color3f color = new Color3f(0.9f, 0.85f, 0.86f);
+		//System.out.println("new light " + color);
+		//System.out.println("falls fade " + ligh.fade + " falloffExponent " + ligh.falloffExponent + " fieldOfView " + ligh.fieldOfView);
+		//System.out.println("ligh.radius " + ligh.radius + " " + (ligh.radius * ESConfig.ES_TO_METERS_SCALE));
+		if (fieldOfView == -1 || fieldOfView >= 90f)
 		{
-			Color3f color = new Color3f(0.9f, 0.85f, 0.86f);
-			//System.out.println("new light " + color);
-			//System.out.println("falls fade " + ligh.fade + " falloffExponent " + ligh.falloffExponent + " fieldOfView " + ligh.fieldOfView);
-			//System.out.println("ligh.radius " + ligh.radius + " " + (ligh.radius * ESConfig.ES_TO_METERS_SCALE));
-			if (fieldOfView == -1 || fieldOfView >= 90f)
-			{
-				light = new PointLight(true, color, lightPosition, new Point3f(1, fade, falloffExponent));
-			}
-			else
-			{
-				light = new SpotLight(true, color, lightPosition, new Point3f(1, fade, falloffExponent), new Vector3f(0, 0, -1),
-						fieldOfView, 0);
-			}
-			light.setCapability(Light.ALLOW_STATE_WRITE);
-			light.setCapability(Light.ALLOW_COLOR_WRITE);
-			bl.setRegion(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), radius));
-			light.setInfluencingBoundingLeaf(bl);
-			addChild(bl);
-			addChild(light);
-
-			// for debug visualizing the radius and color (badly)
-			//Cube c =  new Cube(ligh.radius * ESConfig.ES_TO_METERS_SCALE );
-			//c.setAppearance(new SimpleShaderAppearance(color));			
-			//addChild(c);
-
-			//TODO: add the flickering effect in with a behaviour (just up and down intensity of each color randomly a bit)
-			lightFlickerBehavior = new LightFlickerBehavior(light);
-			lightFlickerBehavior.setEnable(true);
-			lightFlickerBehavior.setSchedulingBounds(Utils3D.defaultBounds);
-			addChild(lightFlickerBehavior);
+			light = new PointLight(true, color, lightPosition, new Point3f(1, fade, falloffExponent));
 		}
+		else
+		{
+			light = new SpotLight(true, color, lightPosition, new Point3f(1, fade, falloffExponent), new Vector3f(0, 0, -1), fieldOfView,
+					0);
+		}
+		light.setCapability(Light.ALLOW_STATE_WRITE);
+		light.setCapability(Light.ALLOW_COLOR_WRITE);
+		bl.setRegion(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), radius));
+		light.setInfluencingBoundingLeaf(bl);
+		addChild(bl);
+		addChild(light);
+
+		// for debug visualizing the radius and color (badly)
+		//Cube c =  new Cube(ligh.radius * ESConfig.ES_TO_METERS_SCALE );
+		//c.setAppearance(new SimpleShaderAppearance(color));			
+		//addChild(c);
+
+		//TODO: add the flickering effect in with a behaviour (just up and down intensity of each color randomly a bit)
+		lightFlickerBehavior = new LightFlickerBehavior(light);
+		lightFlickerBehavior.setEnable(true);
+		lightFlickerBehavior.setSchedulingBounds(Utils3D.defaultBounds);
+		addChild(lightFlickerBehavior);
+
 		// turn it off by default
 		toggle();
 	}
@@ -134,7 +131,7 @@ public class Torch extends BranchGroup
 
 		return null;
 	}
-	
+
 	public void toggle()
 	{
 		isOn = !isOn;
