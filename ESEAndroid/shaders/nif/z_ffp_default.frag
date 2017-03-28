@@ -25,6 +25,8 @@ in vec2 glTexCoord0;
 
 uniform sampler2D BaseMap;
 
+//uniform int numberOfLights;
+
 in vec3 ViewVec;
 in vec4 C;
 in vec3 light;
@@ -88,4 +90,24 @@ void main( void )
 	glFragColor = color; 
 
 
+	//glFragColor = vec4(light,1); 
+		// for fun debugging		
+	/*if(numberOfLights == 0)
+	glFragColor = vec4(0,0,0,1);
+	if(numberOfLights == 1)
+	glFragColor = vec4(1,1,1,1);
+	if(numberOfLights == 2)
+	glFragColor = vec4(1,0,0,1);
+	if(numberOfLights == 3)
+	glFragColor = vec4(0,1,0,1);
+	if(numberOfLights == 4)
+	glFragColor = vec4(0,0,1,1);
+	if(numberOfLights == 5)
+	glFragColor = vec4(1,1,0,1);
+	if(numberOfLights == 6)
+	glFragColor = vec4(1,0,1,1);
+	if(numberOfLights == 7)
+	glFragColor = vec4(0,1,1,1);
+	if(numberOfLights > 7)
+	glFragColor = vec4(0.5,0.5,0.5,1);*/
 }
