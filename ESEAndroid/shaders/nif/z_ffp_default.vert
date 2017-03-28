@@ -95,7 +95,7 @@ void main( void )
 	
 	for (int index = 0; index < numberOfLights && index < maxLights; index++) // for all light sources
 	{ 			
-		vec4 Lp = glViewMatrix * glLightSource[index].position ; // into eye space
+		vec4 Lp = glViewMatrix * glLightSource[index].position; // into eye space
 		vec3 Ld;
 		if(Lp.w == 0.0 )
 			Ld = normalize( Lp.xyz );  //directional store dir in pos
