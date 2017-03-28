@@ -7,9 +7,9 @@ in vec2 glMultiTexCoord0;
 
 uniform mat4 glProjectionMatrix;
 //uniform mat4 glProjectionMatrixInverse;
-uniform mat4 glViewMatrix;
+//uniform mat4 glViewMatrix;
 uniform mat4 glModelMatrix;
-//uniform mat4 glModelViewMatrix;
+uniform mat4 glModelViewMatrix;
 //uniform mat4 glModelViewMatrixInverse;
 //uniform mat4 glModelViewProjectionMatrix;
 				
@@ -32,7 +32,7 @@ uniform material glFrontMaterial;
 
 struct lightSource
 {
-	 vec4 position;// world space
+	 vec4 position;// view space
 	 vec4 diffuse;
 	 vec4 specular;
 	 float constantAttenuation, linearAttenuation, quadraticAttenuation;
@@ -55,7 +55,6 @@ out vec3 light;
 
 void main( void )
 {
-	mat4 glModelViewMatrix = glViewMatrix * glModelMatrix;// calculated here to reduce transer from CPU
 	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
 	
 	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0.0,1.0)).st;		
@@ -95,7 +94,8 @@ void main( void )
 	
 	for (int index = 0; index < numberOfLights && index < maxLights; index++) // for all light sources
 	{ 			
-		vec4 Lp = glViewMatrix * glLightSource[index].position; // into eye space
+		vec4 Lp = glLightSource[index].position; // in eye space
+		
 		vec3 Ld;
 		if(Lp.w == 0.0 )
 			Ld = normalize( Lp.xyz );  //directional store dir in pos
