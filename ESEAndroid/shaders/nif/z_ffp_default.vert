@@ -11,7 +11,7 @@ uniform mat4 glProjectionMatrix;
 uniform mat4 glModelMatrix;
 uniform mat4 glModelViewMatrix;
 //uniform mat4 glModelViewMatrixInverse;
-//uniform mat4 glModelViewProjectionMatrix;
+uniform mat4 glModelViewProjectionMatrix;
 				
 //uniform mat3 glNormalMatrix;
 
@@ -55,7 +55,7 @@ out vec3 light;
 
 void main( void )
 {
-	gl_Position = glProjectionMatrix * glModelViewMatrix * glVertex;//glModelViewProjectionMatrix * glVertex;
+	gl_Position = glModelViewProjectionMatrix * glVertex;
 	
 	glTexCoord0 = (textureTransform * vec4(glMultiTexCoord0,0.0,1.0)).st;		
 
