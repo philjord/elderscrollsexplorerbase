@@ -66,6 +66,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 	private Tes3Extensions tes3Extensions;
 
+	private boolean stayAlive = true;
+
 	public ScrollsExplorerNewt(String gameToLoad)
 	{
 		//Setting to emulate Android requirements
@@ -80,7 +82,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		ArchiveFile.USE_FILE_MAPS = false;
 		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
 		ArchiveFile.USE_NON_NATIVE_ZIP = false;
-		
+
 		BsaTextureSource.allowedTextureFormats = BsaTextureSource.AllowedTextureFormats.KTX;
 
 		BethRenderSettings.setFarLoadGridCount(4);
@@ -145,10 +147,37 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 			e1.printStackTrace();
 		}
 
+		// so there is a lack of non daemon threads see jogamp.newt.driver.awt.AWTEDTUtil for example
+		// so with a pure Newt world I have to keep the app alive with my own non daemon useless keep alive thread!
+		// closing time has to kill it
+		// the real solution is to find out why jogl doesn't provide a non daemon EDT thread for GLWindow seems strange
+		// perhaps RAISEBUG:
+
+		Thread newtKeepAliveThread = new Thread() {
+			@Override
+			public void run()
+			{
+				while (stayAlive)
+				{
+					try
+					{
+						Thread.sleep(500);
+					}
+					catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		newtKeepAliveThread.setDaemon(false);// in case a daemon parent
+		newtKeepAliveThread.setName("Newt Keep Alive Thread");
+		newtKeepAliveThread.start();
 	}
 
 	public void closingTime()
 	{
+
 		if (esmManager != null)
 		{
 			PropertyLoader.properties.setProperty("YawPitch" + esmManager.getName(),
@@ -159,6 +188,9 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		}
 		PropertyLoader.save();
 
+		
+		// now to allow the app to exit 
+		stayAlive = false;
 	}
 
 	private static boolean hasESMAndBSAFiles(GameConfig gameConfig)
@@ -201,6 +233,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		simpleWalkSetup.getAvatarCollisionInfo().setAvatarYHeight(selectedGameConfig.avatarYHeight);
 
 		Thread t = new Thread() {
+			@Override
 			public void run()
 			{
 				synchronized (selectedGameConfig)

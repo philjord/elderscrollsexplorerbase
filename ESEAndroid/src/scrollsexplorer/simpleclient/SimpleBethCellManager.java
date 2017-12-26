@@ -361,10 +361,12 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices
 					bethAIControl.resume();
 					dropLoadScreen();
 
-					canChangeCell = true;
+					canChangeCell = true;					
+					
 				}
 			};
 			thread.setName("Set current Cell form id = " + newCellFormId);
+			thread.setDaemon(true);
 			thread.start();
 		}
 	}
