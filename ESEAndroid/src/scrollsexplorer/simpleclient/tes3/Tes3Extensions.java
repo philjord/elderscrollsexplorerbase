@@ -18,12 +18,12 @@ import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseAdapter;
 import com.jogamp.newt.event.MouseEvent;
 
+import esmio.loader.IESMManager;
 import esmj3d.j3d.J3dEffectNode;
 import esmj3dtes3.ai.Tes3AICREA;
 import esmj3dtes3.character.CharacterSheet;
 import esmj3dtes3.data.records.NPCO;
 import esmj3dtes3.j3d.character.CharacterAvatar;
-import esmmanager.loader.IESMManager;
 import nif.character.AttachedParts.Part;
 import nif.character.NifCharacter;
 import nif.j3d.J3dNiAVObject;

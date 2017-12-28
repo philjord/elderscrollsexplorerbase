@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/3DTools"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/java3d-core-and"/>
 	<classpathentry kind="src" path="/jnifj3d"/>
 	<classpathentry kind="src" path="/jnif"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/java3d-utils-and"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/vecmath"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.8.0_66a"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/3DTools"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BSAManager"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/esmj3d"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/esmj3dfo3"/>
@@ -19,13 +19,9 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/jbullet1.1"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jnifjbullet"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Tools"/>
-	<classpathentry kind="lib" path="/external_jars/external jars/jogamp/jar/gluegen-rt.jar"/>
-	<classpathentry kind="lib" path="/external_jars/external jars/jogamp/jar/jogl-all.jar" sourcepath="C:/Users/phil/git/jogl"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/lwjglnative.jar"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/MpegAudioSPI1.9.5/lib/jl1.0.1.jar"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/MpegAudioSPI1.9.5/lib/tritonus_share.jar"/>
 	<classpathentry kind="lib" path="/external_jars/external jars/MpegAudioSPI1.9.5/mp3spi1.9.5.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/java3d-compressedtexture"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/java3d-awtfacade"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

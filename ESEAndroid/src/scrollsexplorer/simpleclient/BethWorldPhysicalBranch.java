@@ -15,6 +15,8 @@ import org.jogamp.vecmath.Point3f;
 import org.jogamp.vecmath.Quat4f;
 import org.jogamp.vecmath.Vector3f;
 
+import esmio.common.data.record.Record;
+import esmio.common.data.record.Subrecord;
 import esmj3d.ai.AIActor;
 import esmj3d.j3d.BethRenderSettings;
 import esmj3d.j3d.cell.GridSpace;
@@ -24,8 +26,6 @@ import esmj3d.j3d.cell.J3dICellFactory;
 import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
-import esmmanager.common.data.record.Record;
-import esmmanager.common.data.record.Subrecord;
 import javaawt.Point;
 import javaawt.Rectangle;
 import nifbullet.BulletNifModel;
