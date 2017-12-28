@@ -13,11 +13,16 @@
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
         <javaElement handleIdentifier="=ESEAndroid/src"/>
         <javaElement handleIdentifier="=esmj3dtes4/src"/>
+        <javaElement handleIdentifier="=BSAManager/src"/>
+        <javaElement handleIdentifier="=jnif/src"/>
+        <javaElement handleIdentifier="=esmj3dfo3/src"/>
+        <folder path="/ESEAndroid/shaders"/>
         <javaElement handleIdentifier="=esmj3dtes3/src"/>
         <javaElement handleIdentifier="=esmj3dtes5/src"/>
+        <javaElement handleIdentifier="=ESMManager/src"/>
+        <javaElement handleIdentifier="=jnifjbullet/src"/>
+        <javaElement handleIdentifier="=jnifj3d/src"/>
         <javaElement handleIdentifier="=esmj3d/src"/>
-        <javaElement handleIdentifier="=esmj3dfo3/src"/>
         <javaElement handleIdentifier="=esmj3dfo4/src"/>
-        <folder path="/ESEAndroid/shaders"/>
     </selectedElements>
 </jardesc>
