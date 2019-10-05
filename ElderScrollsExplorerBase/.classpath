@@ -20,5 +20,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/jnifjbullet"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Tools"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/java3d-core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/java3d-utils"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
