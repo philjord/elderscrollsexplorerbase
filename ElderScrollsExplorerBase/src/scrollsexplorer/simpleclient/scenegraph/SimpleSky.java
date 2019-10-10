@@ -55,7 +55,7 @@ public class SimpleSky extends BranchGroup
 		BranchGroup bgGeometry = new BranchGroup();
 
 		// create an appearance for the Sphere
-		Appearance app = makeAppearance();
+		ShaderAppearance app = makeAppearance();
 
 		Texture tex = null;
 		// load a texture image 		
@@ -149,7 +149,7 @@ public class SimpleSky extends BranchGroup
 
 	}
 
-	private static Appearance makeAppearance()
+	private static ShaderAppearance makeAppearance()
 	{
 		ShaderAppearance app = new SimpleShaderAppearance();
 		app.setMaterial(null);
