@@ -17,8 +17,9 @@ import bsa.source.BsaMeshSource;
 import bsa.source.BsaSoundSource;
 import bsa.source.BsaTextureSource;
 import bsaio.ArchiveFile;
-import bsaio.BSArchiveSet;
+import bsaio.BSArchiveSetFile;
 import esmio.loader.ESMManager;
+import esmio.loader.ESMManagerFile;
 import esmio.loader.IESMManager;
 import esmio.utils.source.EsmSoundKeyToName;
 import esmj3d.j3d.BethRenderSettings;
@@ -60,7 +61,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 	public IESMManager esmManager;
 
-	public BSArchiveSet bsaFileSet;
+	public BSArchiveSetFile bsaFileSet;
 
 	private GameConfig selectedGameConfig = null;
 
@@ -240,7 +241,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 				{
 					IDashboard.dashboard.setEsmLoading(1);
 
-					esmManager = ESMManager.getESMManager(selectedGameConfig.getESMPath());
+					esmManager = ESMManagerFile.getESMManager(selectedGameConfig.getESMPath());
 					bsaFileSet = null;
 					if (esmManager != null)
 					{
@@ -271,7 +272,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 						if (bsaFileSet == null)
 						{
-							bsaFileSet = new BSArchiveSet(new String[] { selectedGameConfig.scrollsFolder }, true);
+							bsaFileSet = new BSArchiveSetFile(new String[] { selectedGameConfig.scrollsFolder }, true);
 						}
 
 						if (bsaFileSet.size() == 0)
