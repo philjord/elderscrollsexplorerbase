@@ -23,15 +23,18 @@ public class PropertyLoader
 
 	public static void load(String root) throws IOException
 	{
-		if (root == null)
-			root = System.getProperty("user.home") + fileSep + "philjord";
-
-		String filePath = root;
-		File dirFile = new File(filePath);
-		if (!dirFile.exists())
-			dirFile.mkdirs();
-		filePath = filePath + fileSep + "ElderScrollsExplorer.ini";
-		propFile = new File(filePath);
+		//I expect android to have preset the property file location
+		if(propFile == null) {
+			if (root == null)
+				root = System.getProperty("user.home") + fileSep + "philjord";
+	
+			String filePath = root;
+			File dirFile = new File(filePath);
+			if (!dirFile.exists())
+				dirFile.mkdirs();
+			filePath = filePath + fileSep + "ElderScrollsExplorer.ini";
+			propFile = new File(filePath);
+		}
 		properties = new Properties();
 		if (propFile.exists())
 		{
@@ -39,6 +42,7 @@ public class PropertyLoader
 			properties.load(in);
 			in.close();
 		}
+		GameConfig.init();
 	}
 
 	public static void save()
