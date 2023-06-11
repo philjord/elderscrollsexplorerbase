@@ -60,6 +60,7 @@ public class GameConfig {
 	}
 
 	public static void init() {
+		// only init once!
 		if (allGameConfigs.size() == 0) {
 			allGameConfigs.add(new GameConfig("TESIII: Morrowind", //
 					new esmj3dtes3.j3d.cell.J3dCellFactory(), //
