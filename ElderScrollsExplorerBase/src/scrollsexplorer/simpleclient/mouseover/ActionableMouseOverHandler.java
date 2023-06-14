@@ -507,12 +507,12 @@ public class ActionableMouseOverHandler extends MouseOverHandler
 		}
 	}
 
-	private static Vector3f getTrans(float x, float y, float z)
+	public static Vector3f getTrans(float x, float y, float z)
 	{
 		return new Vector3f(x * ESConfig.ES_TO_METERS_SCALE, z * ESConfig.ES_TO_METERS_SCALE, -y * ESConfig.ES_TO_METERS_SCALE);
 	}
 
-	private static Quat4f getRot(float rx, float ry, float rz)
+	public static Quat4f getRot(float rx, float ry, float rz)
 	{
 		Transform3D transform = new Transform3D();
 
