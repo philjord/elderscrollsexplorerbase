@@ -227,10 +227,10 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		hudCrossHair = new HUDCrossHair();
 
 		behaviourBranch.addChild(fpsCounter.getBehaviorBranchGroup());
-		loadInfo = new HUDText(new Point2f(-0.95f, 0.1f), 18, "Loading...");
+		loadInfo = new HUDText(new Point2f(-0.95f, 0.1f), 18, false, "Loading...");
 		loadingInfoBehavior = new LoadingInfoBehavior(loadInfo);
 		behaviourBranch.addChild(loadingInfoBehavior);
-		firstInstruction = new HUDText(new Point2f(-0.95f, 0f), 18, "Press tab to look around, press tab again to release mouse");
+		firstInstruction = new HUDText(new Point2f(-0.95f, 0f), 18, false, "Press tab to look around, press tab again to release mouse");
 
 		//behaviourBranch.addChild(hudPhysicsState.getBehaviorBranchGroup());
 
