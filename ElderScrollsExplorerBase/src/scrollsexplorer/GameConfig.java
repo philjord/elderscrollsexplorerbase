@@ -29,6 +29,8 @@ public class GameConfig {
 	public String						ftpFolderName;
 
 	public int							startCellId;
+	
+	public int							musicToPlayId; 
 
 	public Vector3f						startLocation;
 
