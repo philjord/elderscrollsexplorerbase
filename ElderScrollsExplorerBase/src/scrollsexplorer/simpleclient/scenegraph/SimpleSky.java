@@ -1,6 +1,5 @@
 package scrollsexplorer.simpleclient.scenegraph;
 
-import org.jogamp.java3d.Appearance;
 import org.jogamp.java3d.Background;
 import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.GLSLShaderProgram;
@@ -17,8 +16,8 @@ import org.jogamp.java3d.utils.geometry.Primitive;
 import org.jogamp.java3d.utils.geometry.Sphere;
 import org.jogamp.java3d.utils.shader.SimpleShaderAppearance;
 
+import nif.shader.ShaderSourceIO;
 import scrollsexplorer.GameConfig;
-import tools3d.utils.ShaderSourceIO;
 import tools3d.utils.Utils3D;
 import utils.source.MediaSources;
 
