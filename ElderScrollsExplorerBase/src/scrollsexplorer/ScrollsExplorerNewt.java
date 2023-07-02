@@ -105,7 +105,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		CompressedTextureLoader.setAnisotropicFilterDegree(4);
 
 		//for big games go low spec
-		if (!gameToLoad.equals("Morrowind"))
+		if (!gameToLoad.equals("TESIII: Morrowind"))
 		{
 			BethRenderSettings.setFarLoadGridCount(0);
 			BethRenderSettings.setNearLoadGridCount(2);
