@@ -499,10 +499,21 @@ public class PhysicsDynamics extends DynamicsEngine
 			for (int i = 0; i < instRecoBulletBindings.size(); i++)
 			{
 				NifBulletBinding instRecoNifBulletBinding = instRecoBulletBindings.get(instRecoBulletBindings.keyAt(i));
-				instRecoNifBulletBinding.applyToModel();
+				if(instRecoNifBulletBinding != clientNifBulletCharBinding)
+					instRecoNifBulletBinding.applyToModel();
 			}
 		}
 
+	}
+	
+	public void applyControlledCharacterPhysicsToModel()
+	{
+		synchronized (instRecoBulletBindings)
+		{
+			if(clientNifBulletCharBinding != null) {
+				clientNifBulletCharBinding.applyToModel();
+			}
+		}
 	}
 
 	/**

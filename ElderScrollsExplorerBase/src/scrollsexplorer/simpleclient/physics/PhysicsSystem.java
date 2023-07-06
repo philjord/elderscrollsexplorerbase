@@ -47,7 +47,7 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 
 	private PeriodicThread physicsSimThread;
 
-	private PeriodicThread physicsToModelThread;
+	//private PeriodicThread physicsToModelThread;
 
 	// Note in one list to ensure time ordering
 	private PendingList<PhysicsUpdate> eventsToProcess = new PendingList<PhysicsUpdate>();
@@ -78,6 +78,8 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 				{
 					long startOfTick = System.currentTimeMillis();
 					physicsTick();
+					// note apply in the same thread, no point in having a running physics the player can't see
+					physicsToModelTick();
 					if ((System.currentTimeMillis() - startOfTick) > 300)
 						System.err.println("physicsTick long " + (System.currentTimeMillis() - startOfTick));
 				}
@@ -90,13 +92,13 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 		});
 		physicsSimThread.start();
 
-		physicsToModelThread = new PeriodicThread("Physics To Model Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
+	/*	physicsToModelThread = new PeriodicThread("Physics To Model Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
 			@Override
 			public void runUpdate()
 			{
 				try
 				{
-					physicsToModelTick();
+					
 				}
 				catch (Exception e)
 				{
@@ -105,7 +107,7 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 				}
 			}
 		});
-		physicsToModelThread.start();
+		physicsToModelThread.start();*/
 
 	}
 
@@ -295,13 +297,15 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 		}
 	}
 
-	/**
-	 * Called by the model update thread to update teh model
-	 */
+
 	private void physicsToModelTick()
 	{
+		// note this is called on the physics sim thread
 		if (!isPaused() && physicsLocaleDynamics != null)
 		{
+			// always update the character! we want smooth motion
+			physicsLocaleDynamics.applyControlledCharacterPhysicsToModel();
+			
 			// is it time to update the model from the physics
 			long elapsedTime = (System.nanoTime() - lastPhysicsBoundUpdate) / 1000000;
 			if (elapsedTime > MIN_TIME_BETWEEN_BOUND_UPDATES_MS)
