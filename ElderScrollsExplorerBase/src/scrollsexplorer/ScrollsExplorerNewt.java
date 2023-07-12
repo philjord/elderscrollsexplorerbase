@@ -24,6 +24,9 @@ import esmio.loader.IESMManager;
 import esmio.utils.source.EsmSoundKeyToName;
 import esmj3d.j3d.BethRenderSettings;
 import esmj3d.j3d.j3drecords.inst.J3dLAND;
+import javaawt.VMEventQueue;
+import javaawt.image.VMBufferedImage;
+import javaawt.imageio.VMImageIO;
 import nativeLinker.LWJGLLinker;
 import nif.BgsmSource;
 import nif.appearance.NiGeometryAppearanceFactoryShader;
@@ -84,7 +87,12 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
 		ArchiveFile.USE_NON_NATIVE_ZIP = false;
 
-		BsaTextureSource.allowedTextureFormats = BsaTextureSource.AllowedTextureFormats.KTX;
+		// these 5 test the "no dds support" issue and solution on phones
+		BsaTextureSource.allowedTextureFormats = BsaTextureSource.AllowedTextureFormats.DDS;
+		CompressedTextureLoader.RETURN_DECOMPRESSED_DDS = true;
+		javaawt.image.BufferedImage.installBufferedImageDelegate(VMBufferedImage.class);
+		javaawt.imageio.ImageIO.installBufferedImageImpl(VMImageIO.class);
+		javaawt.EventQueue.installEventQueueImpl(VMEventQueue.class);		
 
 		BethRenderSettings.setFarLoadGridCount(4);
 		BethRenderSettings.setNearLoadGridCount(2);
