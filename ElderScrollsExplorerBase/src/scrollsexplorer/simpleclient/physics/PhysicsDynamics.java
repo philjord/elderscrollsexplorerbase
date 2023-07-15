@@ -422,6 +422,7 @@ public class PhysicsDynamics extends DynamicsEngine
 		BulletNifModel nifBullet = recoIdToNifBullet.get(recordId);
 		if (nifBullet != null)
 		{
+			try {
 			// add to physics simulation
 			synchronized (dynamicsWorld)
 			{
@@ -452,6 +453,11 @@ public class PhysicsDynamics extends DynamicsEngine
 				{
 					instRecoBulletBindings.put(j3dRECOInst.getRecordId(), irnbb);
 				}
+			}
+			}catch(AssertionError e) {
+				//at com.bulletphysics.collision.dispatch.CollisionWorld.addCollisionObject(CollisionWorld.java:114)
+				//assert !this.collisionObjects.contains(collisionObject);
+				e.printStackTrace();
 			}
 		}
 		else
