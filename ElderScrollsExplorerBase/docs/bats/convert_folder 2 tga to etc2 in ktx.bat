@@ -50,17 +50,24 @@ FOR /R . %%i IN (*.tga) DO (
 	if "!subpath!"=="" ( set subpath="." ) else (call set subpath=%%subpath:~,-1%% )
 
 
-	
+	rem I should really run once and parse theoutput, cos I want sRGB color space too
 	set hasAlpha=false
+	set has1BitAlpha=false
 	identify.exe -verbose "%%i" | FIND /I "alpha: 8-bit">Nul && ( set hasAlpha=true ) 
 	identify.exe -verbose "%%i" | FIND /I "alpha: 4-bit">Nul && ( set hasAlpha=true )
+	identify.exe -verbose "%%i" | FIND /I "alpha: 1-bit">Nul && ( set has1BitAlpha=true )
 
 	if !hasAlpha!==false (
-		echo RGB
-		etcpack.exe "%%i" !subpath! -f RGB -mipmaps -ktx  
-	) ELSE (
+		if !has1BitAlpha!==false (
+			echo RGBA1
+			etcpack.exe "%%i" !subpath! -f RGBA1 -mipmaps -ktx  
+		) ELSE (
+			echo RGB
+			etcpack.exe "%%i" !subpath! -f RGB -mipmaps -ktx  
+		)
+	) ELSE (		
 		echo RGBA
-		etcpack.exe "%%i" !subpath! -f RGBA -mipmaps -ktx  
+		etcpack.exe "%%i" !subpath! -f RGBA -mipmaps -ktx  			
 	)
 	
 	rem echo [!TIME!] Converted: %%i >> %~dp0\convert4_log.txt 
