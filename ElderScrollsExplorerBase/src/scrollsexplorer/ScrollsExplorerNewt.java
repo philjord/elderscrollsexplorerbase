@@ -253,6 +253,11 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 					IDashboard.dashboard.setEsmLoading(1);
 
 					esmManager = ESMManagerFile.getESMManager(gameConfigToLoad.getESMPath());
+					
+					
+					
+					
+					
 					bsaFileSet = null;
 					if (esmManager != null)
 					{
