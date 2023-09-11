@@ -163,7 +163,8 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 
 		if (j3dCELLPersistent != null)
 		{
-			Rectangle bounds = BethWorldVisualBranch.bethLodManager.getGridBounds(charX, charY, BethRenderSettings.getNearLoadGridCount());
+			BethWorldVisualBranch.bethLodManager.setNearGridLoadCount(BethRenderSettings.getNearLoadGridCount());
+			Rectangle bounds = BethWorldVisualBranch.bethLodManager.getGridBounds(charX, charY);
 
 			// because j3dcellpersistent is in a lower project I have to do this here, bum			
 			List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds);

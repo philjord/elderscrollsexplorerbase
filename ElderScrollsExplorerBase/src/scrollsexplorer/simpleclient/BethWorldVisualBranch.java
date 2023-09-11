@@ -230,7 +230,8 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 			if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
 			{
-				Rectangle bounds = BethWorldVisualBranch.bethLodManager.getGridBounds(p.z, p.z, BethRenderSettings.getNearLoadGridCount());
+				BethWorldVisualBranch.bethLodManager.setNearGridLoadCount(BethRenderSettings.getNearLoadGridCount());
+				Rectangle bounds = BethWorldVisualBranch.bethLodManager.getGridBounds(p.z, p.z);
 
 				// because j3dcellpersistent is in a lower project I have to do this here, bum			
 				List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds);
@@ -287,8 +288,8 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 				if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
 				{
-					Rectangle bounds = BethWorldVisualBranch.bethLodManager.getGridBounds(p.z, p.z,
-							BethRenderSettings.getNearLoadGridCount());
+					bethLodManager.setNearGridLoadCount(BethRenderSettings.getNearLoadGridCount());
+					Rectangle bounds = BethWorldVisualBranch.bethLodManager.getGridBounds(p.z, p.z);
 
 					// because j3dcellpersistent is in a lower project I have to do this here, bum			
 					List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds);
@@ -313,7 +314,8 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	private void updateNear(float charX, float charY)
 	{
-		Rectangle bounds = bethLodManager.getGridBounds(charX, charY, BethRenderSettings.getNearLoadGridCount());
+		bethLodManager.setNearGridLoadCount(BethRenderSettings.getNearLoadGridCount());
+		Rectangle bounds = bethLodManager.getGridBounds(charX, charY);
 
 		long start = System.currentTimeMillis();
 
@@ -439,7 +441,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		long start = System.currentTimeMillis();
 
 		// Note simple system used, as no lands invloved here
-		Rectangle bounds = Beth32LodManager.getBounds(charX, charY, BethRenderSettings.getFarLoadGridCount());
+		Rectangle bounds = BethLodManager.getBounds(charX, charY, BethRenderSettings.getFarLoadGridCount());
 
 		final int lowX = bounds.x;
 		final int lowY = bounds.y;
