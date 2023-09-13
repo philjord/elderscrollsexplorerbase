@@ -56,10 +56,6 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	public static Color3f FOG_COLOR = new Color3f(0.8f, 0.8f, 0.8f);
 
-	public static float FOG_START = 100;
-
-	public static float FOG_END = 1000;
-
 	private int worldFormId;
 
 	private J3dICELLPersistent j3dCELLPersistent;
@@ -86,7 +82,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	private PhysicsSystem clientPhysicsSystem;
 
-	private LinearFog fog = new LinearFog(FOG_COLOR, FOG_START, FOG_END);
+	private LinearFog fog = new LinearFog(FOG_COLOR, BethRenderSettings.getFogDist(), BethRenderSettings.getFogDist() * 1.2);
 
 	// TODO: on change don't dump gross until we forcable need a different one
 	public static BethLodManager bethLodManager;
@@ -113,6 +109,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		// not no scope is universal so not a system for disabling
 		fog.addScope(this);
 		fog.setCapability(LinearFog.ALLOW_INFLUENCING_BOUNDS_WRITE);
+		fog.setCapability(LinearFog.ALLOW_DISTANCE_WRITE);
 		if (BethRenderSettings.isFogEnabled())
 		{
 			fog.setInfluencingBounds(Utils3D.defaultBounds);
@@ -316,6 +313,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	{
 		bethLodManager.setNearGridLoadCount(BethRenderSettings.getNearLoadGridCount());
 		Rectangle bounds = bethLodManager.getGridBounds(charX, charY);
+		//System.out.println("bounds = " + bounds);
 
 		long start = System.currentTimeMillis();
 
@@ -325,22 +323,23 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		while (keys.hasNext())
 		{
 			Point key = keys.next();
-			if (key.x < bounds.x || key.x > bounds.x + bounds.width || key.y < bounds.y || key.y > bounds.y + bounds.height)
+			if (key.x < bounds.x || key.x >= bounds.x + bounds.width || key.y < bounds.y || key.y >= bounds.y + bounds.height)
 			{
 				keysToRemove.add(key);
 			}
 		}
 
 		ArrayList<Thread> igors = new ArrayList<Thread>();
-		for (int x = bounds.x; x <= bounds.x + bounds.width; x++)
+		for (int x = bounds.x; x < bounds.x + bounds.width; x++)
 		{
-			for (int y = bounds.y; y <= bounds.y + bounds.height; y++)
+			for (int y = bounds.y; y < bounds.y + bounds.height; y++)
 			{
 				final Point key = new Point(x, y);
 
 				if (!loadedNears.containsKey(key) && !loadingNears.contains(key))
 				{
 					loadingNears.add(key);
+
 					//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
 
 					//let's split -up we can do more damage that way
@@ -412,6 +411,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		for (int i = 0; i < keysToRemove.size(); i++)
 		{
 			Point key = keysToRemove.get(i);
+			//System.out.println("key to remove " + key);
 			BranchGroup bg = loadedNears.get(key);
 			if (bg != null)
 			{
@@ -424,8 +424,12 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			}
 
 			loadedNears.remove(key);
-
 		}
+		
+		
+		//for(Point key : loadedNears.keySet()) {
+		//	System.out.println("loaded near " + key);
+		//}
 
 	}
 
@@ -454,7 +458,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		while (keys.hasNext())
 		{
 			Point key = keys.next();
-			if (key.x < lowX || key.x > highX || key.y < lowY || key.y > highY)
+			if (key.x < lowX || key.x >= highX || key.y < lowY || key.y >= highY)
 			{
 				keysToRemove.add(key);
 			}
@@ -471,9 +475,9 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			}
 		}
 		ArrayList<Thread> igors = new ArrayList<Thread>();
-		for (int x = lowX; x <= highX; x++)
+		for (int x = lowX; x < highX; x++)
 		{
-			for (int y = lowY; y <= highY; y++)
+			for (int y = lowY; y < highY; y++)
 			{
 				final Point key = new Point(x, y);
 
@@ -518,6 +522,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				e.printStackTrace();
 			}
 		}
+		
+		//for(Point key : loadedFars.keySet()) {
+		//	System.out.println("loaded far " + key);
+		//}
+		
 		if ((System.currentTimeMillis() - start) > 50)
 			System.out.println("BethWorldVisualBranch.updateFar took " + (System.currentTimeMillis() - start) + "ms");
 	}
@@ -534,13 +543,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			nearUpdateThread.addToQueue(updatePoint);
 			grossUpdateThread.addToQueue(updatePoint);
 
-			if (BethRenderSettings.isFogEnabled())
-			{
-
+			if (BethRenderSettings.isFogEnabled()) {
 				fog.setInfluencingBounds(Utils3D.defaultBounds);
-			}
-			else
-			{
+				fog.setFrontDistance(BethRenderSettings.getFogDist());
+				fog.setBackDistance(BethRenderSettings.getFogDist() * 1.2);
+			} else {
 				fog.setInfluencingBounds(null);
 			}
 		}

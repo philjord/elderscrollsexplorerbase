@@ -341,8 +341,6 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
                                 BethRenderSettings.setObjectFade(100);
                                 BethRenderSettings.setItemFade(80);
                                 BethRenderSettings.setActorFade(35);
-                                BethWorldVisualBranch.FOG_START = 150;
-                                BethWorldVisualBranch.FOG_END = 350;
                             }  else  {
                                 BethRenderSettings.setFarLoadGridCount(3);
                                 BethRenderSettings.setNearLoadGridCount(1);
@@ -350,8 +348,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
                                 BethRenderSettings.setObjectFade(50);
                                 BethRenderSettings.setItemFade(60);
                                 BethRenderSettings.setActorFade(35);
-                                BethWorldVisualBranch.FOG_START = 75;
-                                BethWorldVisualBranch.FOG_END = 150;
+                                BethRenderSettings.setFogEnabled(false);
                             }
                         }
 
