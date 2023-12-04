@@ -1,8 +1,11 @@
 package scrollsexplorer;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.compressedtexture.CompressedTextureLoader;
@@ -18,8 +21,10 @@ import com.jogamp.newt.event.WindowEvent;
 import bsa.source.BsaMeshSource;
 import bsa.source.BsaSoundSource;
 import bsa.source.BsaTextureSource;
+import bsa.source.DDSToKTXBsaConverter;
 import bsaio.ArchiveFile;
 import bsaio.BSArchiveSetFile;
+import bsaio.DBException;
 import esmio.common.data.plugin.PluginGroup;
 import esmio.common.data.record.Record;
 import esmio.loader.ESMManager;
@@ -255,9 +260,6 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 					esmManager = ESMManagerFile.getESMManager(gameConfigToLoad.getESMPath());
 					
 					
-					
-					
-					
 					bsaFileSet = null;
 					if (esmManager != null)
 					{
@@ -289,8 +291,85 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 						if (bsaFileSet == null)
 						{
 							bsaFileSet = new BSArchiveSetFile(new String[] { gameConfigToLoad.scrollsFolder }, true);
+							//OK time to check that each bsa file that holds dds has a ktx equivilent and drop the dds version
+							// or if not to convert the dds to ktx then drop the dds version
+							
+							//a list of new name/old dds archive pair so old can be taken out after new is found or created
+							HashMap<String, ArchiveFile> neededBsas = new HashMap<String, ArchiveFile>();
+							
+							for (ArchiveFile archiveFile : bsaFileSet) {
+								if (archiveFile != null && archiveFile.hasDDS()) {
+									// we want a archive with the same name but _ktx before the extension holding KTX files
+									String ddsArchiveName = archiveFile.getName();
+									String ext = ddsArchiveName.substring(ddsArchiveName.lastIndexOf("."));
+									String ktxArchiveName = ddsArchiveName.substring(0,ddsArchiveName.lastIndexOf("."));
+									ktxArchiveName = ktxArchiveName + "_ktx" + ext;
+									neededBsas.put(ktxArchiveName, archiveFile);
+								}
+							}
+							for(String ktxArchiveName : neededBsas.keySet()) {
+								ArchiveFile ddsArchive = neededBsas.get(ktxArchiveName);
+								//remove the dds version archive either way
+								try {
+									ddsArchive.close();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+								bsaFileSet.remove(ddsArchive);
+								
+								boolean found = false;
+								for (ArchiveFile archiveFile : bsaFileSet) {
+									//TODO: should see  if it's got ktx in it, but for now let's just prey
+									if (archiveFile != null && archiveFile.getName().equals(ktxArchiveName)) {
+										found = true; 
+										break;
+									}
+								}
+								
+								if(!found) {
+									System.out.println("I should create a _ktx file about now " + ktxArchiveName );
+									
+									// I need the displayable version to convert so let's load a new copy
+									File ddsfile = new File(gameConfigToLoad.scrollsFolder, ddsArchive.getName());
+									FileInputStream fis;
+									try {
+										fis = new FileInputStream(ddsfile);
+										
+										long tstart = System.currentTimeMillis();
+										System.out.println("Reloading as a displayable " + ddsfile.getPath());
+										ArchiveFile archiveFile = ArchiveFile.createArchiveFile(fis.getChannel(), ddsfile.getName());
+										archiveFile.load(true);
+										System.out.println("loaded as a displayable " + ddsfile.getPath()  + " in " + (System.currentTimeMillis() - tstart));
+										//convert convert
+										tstart = System.currentTimeMillis();										
+										File ktxfile = new File(gameConfigToLoad.scrollsFolder, ktxArchiveName);
+										DDSToKTXBsaConverter convert = new DDSToKTXBsaConverter(ktxfile, archiveFile);
+										System.out.println("converting to " + ktxfile.getPath());
+										convert.start();
+										try {
+											convert.join();
+										} catch (InterruptedException e) {
+											e.printStackTrace();
+										}									
+										System.out.println(""	+ (System.currentTimeMillis() - tstart) + "ms to compress " + ktxfile.getPath());
+								
+										// now load that newly created file into the system
+										bsaFileSet.loadFileAndWait(new FileInputStream(ktxfile).getChannel(), ktxfile.getName());
+									
+									} catch (FileNotFoundException e) {
+										e.printStackTrace();
+									} catch (DBException e1) {
+										e1.printStackTrace();
+									} catch (IOException e1) {
+										e1.printStackTrace();
+									}								
+								}								
+							}						
 						}
 
+						//TODO: Morrowind appears to have sound and music as a seperate gosh darned file system system! not in a bsa
+						
+						
 						if (bsaFileSet.size() == 0)
 						{
 							System.err.println("bsa files size is 0 :(");
