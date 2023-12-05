@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -56,6 +57,7 @@ import scrollsexplorer.simpleclient.physics.DynamicsEngine;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import scrollsexplorer.simpleclient.tes3.Tes3Extensions;
 import tools.io.ConfigLoader;
+import tools.io.FileChannelRAF;
 import tools3d.camera.Camera;
 import tools3d.utils.YawPitch;
 import tools3d.utils.loader.PropertyCodec;
@@ -343,18 +345,23 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 										//convert convert
 										tstart = System.currentTimeMillis();										
 										File ktxfile = new File(gameConfigToLoad.scrollsFolder, ktxArchiveName);
-										DDSToKTXBsaConverter convert = new DDSToKTXBsaConverter(ktxfile, archiveFile);
-										System.out.println("converting to " + ktxfile.getPath());
-										convert.start();
-										try {
-											convert.join();
-										} catch (InterruptedException e) {
-											e.printStackTrace();
-										}									
-										System.out.println(""	+ (System.currentTimeMillis() - tstart) + "ms to compress " + ktxfile.getPath());
-								
-										// now load that newly created file into the system
-										bsaFileSet.loadFileAndWait(new FileInputStream(ktxfile).getChannel(), ktxfile.getName());
+										if (ktxfile.exists() && !ktxfile.delete())
+											throw new IOException("Unable to delete '" + ktxfile.getPath() + "'");
+										else {
+											FileChannel fco = new java.io.RandomAccessFile(ktxfile, "rw").getChannel();
+											DDSToKTXBsaConverter convert = new DDSToKTXBsaConverter(fco, archiveFile);
+											System.out.println("converting to " + ktxfile.getPath());
+											convert.start();
+											try {
+												convert.join();
+											} catch (InterruptedException e) {
+												e.printStackTrace();
+											}									
+											System.out.println(""	+ (System.currentTimeMillis() - tstart) + "ms to compress " + ktxfile.getPath());
+									
+											// now load that newly created file into the system
+											bsaFileSet.loadFileAndWait(new FileInputStream(ktxfile).getChannel(), ktxfile.getName());
+										}
 									
 									} catch (FileNotFoundException e) {
 										e.printStackTrace();
