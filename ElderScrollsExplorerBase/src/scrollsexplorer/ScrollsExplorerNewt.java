@@ -23,6 +23,7 @@ import bsa.source.BsaMeshSource;
 import bsa.source.BsaSoundSource;
 import bsa.source.BsaTextureSource;
 import bsa.source.DDSToKTXBsaConverter;
+import bsa.source.DDSToKTXBsaConverter.StatusUpdateListener;
 import bsaio.ArchiveFile;
 import bsaio.BSArchiveSetFile;
 import bsaio.DBException;
@@ -349,7 +350,13 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 											throw new IOException("Unable to delete '" + ktxfile.getPath() + "'");
 										else {
 											FileChannel fco = new java.io.RandomAccessFile(ktxfile, "rw").getChannel();
-											DDSToKTXBsaConverter convert = new DDSToKTXBsaConverter(fco, archiveFile);
+											StatusUpdateListener sul = new StatusUpdateListener(){
+	                                            @Override
+												public void updateProgress(int currentProgress) {
+	                                            	System.out.println("Progress " + currentProgress + "%");
+	                                            }
+	                                        };
+											DDSToKTXBsaConverter convert = new DDSToKTXBsaConverter(fco, archiveFile, sul);
 											System.out.println("converting to " + ktxfile.getPath());
 											convert.start();
 											try {
