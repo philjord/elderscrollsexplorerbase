@@ -108,9 +108,9 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		// of ScrollExplorer
 		// also it should use a seperate bsa collection to ensure it does what the phoen does
 		// these 5 test the "no dds support" issue and solution on phones
-		BsaTextureSource.allowedTextureFormats = BsaTextureSource.AllowedTextureFormats.DDS;
-		CompressedTextureLoader.RETURN_DECOMPRESSED_DDS = true;
-		CompressedTextureLoader.DROP_0_MIP = true;
+		BsaTextureSource.allowedTextureFormats = BsaTextureSource.AllowedTextureFormats.KTX;
+		CompressedTextureLoader.RETURN_DECOMPRESSED_DDS = false;
+		CompressedTextureLoader.DROP_0_MIP = false;
 		javaawt.image.BufferedImage.installBufferedImageDelegate(VMBufferedImage.class);
 		javaawt.imageio.ImageIO.installBufferedImageImpl(VMImageIO.class);
 		javaawt.EventQueue.installEventQueueImpl(VMEventQueue.class);		
@@ -401,12 +401,6 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 						mediaSources = new MediaSources(meshSource, textureSource, soundSource);
 						
 						
-						 // do we have some ktx images or are we stuck with slow big dds decompress
-                        boolean ddsDecompressing = !((BsaTextureSource) textureSource).hasKTX() && !((BsaTextureSource) textureSource).hasASTC();
-                        // this is terrible 1/4 images, but helps if no KTX files are available and we are decompressing dds
-                        if (ddsDecompressing)
-                            CompressedTextureLoader.DROP_0_MIP = true;
-
                         if (gameConfigToLoad.folderKey.equals("MorrowindFolder")) {
 
                             BethRenderSettings.setFarLoadGridCount(8);
@@ -447,6 +441,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 						simpleWalkSetup.configure(meshSource, simpleBethCellManager);
 						simpleWalkSetup.setEnabled(false);
+						
 						//TODO: can't do this now with teh hold context set to true
 						//simpleWalkSetup.getWindow().setFullscreen(true);
 
