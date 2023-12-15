@@ -346,9 +346,11 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 										//convert convert
 										tstart = System.currentTimeMillis();										
 										File ktxfile = new File(gameConfigToLoad.scrollsFolder, ktxArchiveName);
-										if (ktxfile.exists() && !ktxfile.delete())
-											throw new IOException("Unable to delete '" + ktxfile.getPath() + "'");
-										else {
+										// don't delete let's hope this is a restartable file, given it failed to load from a bad bsa version num
+										//TODO: catch the bad version num and make a nice statement about it in bsaio.bsa.ArchiveFileBsa
+										//if (ktxfile.exists() && !ktxfile.delete())
+										//	throw new IOException("Unable to delete '" + ktxfile.getPath() + "'");
+										//else {
 											FileChannel fco = new java.io.RandomAccessFile(ktxfile, "rw").getChannel();
 											StatusUpdateListener sul = new StatusUpdateListener(){
 	                                            @Override
@@ -356,7 +358,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	                                            	System.out.println("Progress " + currentProgress + "%");
 	                                            }
 	                                        };
-											DDSToKTXBsaConverter convert = new DDSToKTXBsaConverter(fco, archiveFile, sul);
+	                                        // I can use fco twice because it comes from a RAF
+											DDSToKTXBsaConverter convert = new DDSToKTXBsaConverter(fco, fco, archiveFile, sul);
 											System.out.println("converting to " + ktxfile.getPath());
 											convert.start();
 											try {
@@ -368,7 +371,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 									
 											// now load that newly created file into the system
 											bsaFileSet.loadFileAndWait(new FileInputStream(ktxfile).getChannel(), ktxfile.getName());
-										}
+									//	}
 									
 									} catch (FileNotFoundException e) {
 										e.printStackTrace();
