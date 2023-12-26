@@ -16,7 +16,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/esmj3dtes3"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/esmj3dtes4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/esmj3dtes5"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ESMManager"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ESFileManager"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jbullet1.1"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jnifjbullet"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Tools"/>

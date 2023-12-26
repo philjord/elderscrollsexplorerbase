@@ -15,8 +15,8 @@ import org.jogamp.vecmath.Point3f;
 import org.jogamp.vecmath.Quat4f;
 import org.jogamp.vecmath.Vector3f;
 
-import esmio.common.data.record.Record;
-import esmio.common.data.record.Subrecord;
+import esfilemanager.common.data.record.Record;
+import esfilemanager.common.data.record.Subrecord;
 import esmj3d.ai.AIActor;
 import esmj3d.j3d.BethRenderSettings;
 import esmj3d.j3d.cell.GridSpace;

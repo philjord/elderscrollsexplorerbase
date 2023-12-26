@@ -8,11 +8,11 @@ import org.jogamp.java3d.Transform3D;
 import org.jogamp.vecmath.Quat4f;
 import org.jogamp.vecmath.Vector3f;
 
-import esmio.common.PluginException;
-import esmio.common.data.plugin.PluginRecord;
-import esmio.common.data.record.Subrecord;
-import esmio.loader.IESMManager;
-import esmio.tes3.ESMManagerTes3;
+import esfilemanager.common.PluginException;
+import esfilemanager.common.data.plugin.PluginRecord;
+import esfilemanager.common.data.record.Subrecord;
+import esfilemanager.loader.IESMManager;
+import esfilemanager.tes3.ESMManagerTes3;
 import esmj3d.ai.AIActor;
 import esmj3d.data.shared.subrecords.LString;
 import esmj3d.j3d.BethRenderSettings;
@@ -183,7 +183,7 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices
 	 */
 	private int convertNameRefToId(String str)
 	{
-		if (esmManager instanceof esmio.tes3.ESMManagerTes3)
+		if (esmManager instanceof esfilemanager.tes3.ESMManagerTes3)
 		{
 			ESMManagerTes3 esmManagerTes3 = (ESMManagerTes3) esmManager;
 			return esmManagerTes3.convertNameRefToId(str);
