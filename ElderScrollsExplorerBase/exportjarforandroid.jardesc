@@ -18,6 +18,7 @@
         <javaElement handleIdentifier="=jnif/src"/>
         <file path="/ETCPack/.classpath"/>
         <javaElement handleIdentifier="=esmj3dfo4/src"/>
+        <javaElement handleIdentifier="=ESFileManager/src"/>
         <javaElement handleIdentifier="=BSAManager/src"/>
         <javaElement handleIdentifier="=jnifjbullet/src"/>
         <javaElement handleIdentifier="=esmj3d/src"/>
@@ -26,6 +27,5 @@
         <file path="/ETCPack/.project"/>
         <javaElement handleIdentifier="=esmj3dtes4/src"/>
         <file path="/ETCPack/.gitignore"/>
-        <javaElement handleIdentifier="=ESMManager/src"/>
     </selectedElements>
 </jardesc>
