@@ -67,9 +67,11 @@ public class GameConfig {
 			allGameConfigs.add(new GameConfig("TESIII: Morrowind", //
 					new esmj3dtes3.j3d.cell.J3dCellFactory(), //
 					"textures\\tx_sky_clear.dds", //
-					new String[] {"meshes\\f\\act_banner_ald_velothi.nif"},
-					//"meshes\\f\\act_banner_gnaar_mok.nif", //
-					//"meshes\\f\\flora_tree_gl_07.nif", "meshes\\a\\towershield_glass.nif" }, //
+					new String[] {"meshes\\f\\act_banner_ald_velothi.nif",
+						"meshes\\f\\act_banner_gnaar_mok.nif","meshes\\f\\act_banner_hla_oad.nif","meshes\\f\\act_banner_gnaar_mok.nif",
+						"meshes\\f\\act_banner_khull.nif","meshes\\f\\act_banner_sadrith_mora.nif","meshes\\f\\act_banner_tel_aruhn.nif",
+						"meshes\\f\\act_banner_tel_branora.nif","meshes\\f\\act_banner_tel_fyr.nif","meshes\\f\\act_banner_tel_mora.nif",
+						"meshes\\f\\act_banner_tel_vos.nif","meshes\\f\\act_banner_vos.nif","meshes\\f\\furn_banner_dagoth_01.nif"}, 
 					1.8f, //
 					"MorrowindFolder", //
 					"Morrowind.esm", //
@@ -79,7 +81,9 @@ public class GameConfig {
 					new esmj3dtes4.j3d.cell.J3dCellFactory(), //
 					"textures\\sky\\cloudsclear.dds", //
 					new String[] {"meshes\\furniture\\kvatch\\kvatchthrone01.nif", //
-						"meshes\\armor\\cowlofthegrayfox\\helmet_gnd.nif"}, //
+						"meshes\\armor\\cowlofthegrayfox\\helmet_gnd.nif",
+						"meshes\\menus\\spell effect timer\\timer.nif",
+						"meshes\\dungeons\\chargen\\prisoncell01.nif"}, //
 					1.8f, //
 					"OblivionFolder", //
 					"Oblivion.esm", //
@@ -91,7 +95,8 @@ public class GameConfig {
 					new esmj3dfo3.j3d.cell.J3dCellFactory(), //
 					"textures\\sky\\urbancloudovercastlower01.dds", //
 					new String[] {"meshes\\pipboy3000\\pipboyarmfemale.nif", //
-						"meshes\\armor\\combatarmor\\m\\outfitm.nif"}, //
+						"meshes\\armor\\combatarmor\\m\\outfitm.nif",
+						"meshes\\interface\\loading\\loadinganim01.nif"}, //
 					1.8f, //
 					"FallOut3Folder", //
 					"Fallout3.esm", //
@@ -102,7 +107,8 @@ public class GameConfig {
 			allGameConfigs.add(new GameConfig("FONV: Fallout New Vegas", //
 					new esmj3dfo3.j3d.cell.J3dCellFactory(), //
 					"textures\\sky\\urbancloudovercastlower01.dds", //
-					new String[] {"meshes\\furniture\\tlpod01.nif"}, //
+					new String[] {"meshes\\furniture\\tlpod01.nif",
+						"meshes\\interface\\loading\\loadinganim01.nif"}, //
 					1.8f, //
 					"FalloutNVFolder", //
 					"FalloutNV.esm", //

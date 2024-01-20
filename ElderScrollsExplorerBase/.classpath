@@ -17,10 +17,10 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/esmj3dtes4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/esmj3dtes5"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ESFileManager"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jbullet1.1"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jnifjbullet"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Tools"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/java3d-core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/java3d-utils"/>
+	<classpathentry kind="lib" path="/jbullet1.1/dist/jbullet1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
