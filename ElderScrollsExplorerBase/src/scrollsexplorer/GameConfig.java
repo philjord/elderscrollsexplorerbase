@@ -139,7 +139,7 @@ public class GameConfig {
 					"fallout4", 3988, new Vector3f(40, -18, -10), new YawPitch()));
 
 			allGameConfigs.add(new GameConfig("STAR: Starfield", //
-					new esmj3dfo4.j3d.cell.J3dCellFactory(), //FIXME
+					new esmj3dstar.j3d.cell.J3dCellFactory(), //FIXME
 					"textures\\sky\\skyrimcloudsupper04.dds", //hahhah!
 					new String[] {"meshes\\LoadScreenArt\\Armor01PowerArmor1.nif" }, //					
 					1.8f, //
