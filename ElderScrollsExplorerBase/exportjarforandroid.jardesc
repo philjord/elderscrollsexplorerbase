@@ -11,8 +11,8 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
-        <javaElement handleIdentifier="=esmj3dtes3/src"/>
         <javaElement handleIdentifier="=jnifj3d/src"/>
+        <javaElement handleIdentifier="=esmj3dtes3/src"/>
         <javaElement handleIdentifier="=esmj3dfo3/src"/>
         <javaElement handleIdentifier="=ETCPack/src"/>
         <javaElement handleIdentifier="=jnif/src"/>
@@ -21,6 +21,7 @@
         <javaElement handleIdentifier="=ESFileManager/src"/>
         <javaElement handleIdentifier="=BSAManager/src"/>
         <javaElement handleIdentifier="=jnifjbullet/src"/>
+        <javaElement handleIdentifier="=esmj3dstar/src"/>
         <javaElement handleIdentifier="=esmj3d/src"/>
         <javaElement handleIdentifier="=esmj3dtes5/src"/>
         <javaElement handleIdentifier="=ElderScrollsExplorerBase/src"/>
