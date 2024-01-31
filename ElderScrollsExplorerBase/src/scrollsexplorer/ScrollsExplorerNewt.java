@@ -58,7 +58,6 @@ import scrollsexplorer.simpleclient.physics.DynamicsEngine;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import scrollsexplorer.simpleclient.tes3.Tes3Extensions;
 import tools.io.ConfigLoader;
-import tools.io.FileChannelRAF;
 import tools3d.camera.Camera;
 import tools3d.utils.YawPitch;
 import tools3d.utils.loader.PropertyCodec;
@@ -495,7 +494,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 						
                         // need to set Trans to a door somewhere?
-                        findADoor(prevCellformid, yp, trans);
+						findADoor(prevCellformid, gameConfigToLoad, esmManager, trans, yp);
                         
                         simpleWalkSetup.getAvatarLocation().set(yp.get(new Quat4f()), trans);
                                
@@ -581,7 +580,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 	}
 	
 	
-	private void findADoor(int formToLoad, YawPitch yp, Vector3f trans) {
+	public static void findADoor(int formToLoad, GameConfig gameConfigToLoad, IESMManager esmManager, Vector3f returnTrans, YawPitch returnYP) {
         J3dICellFactory j3dCellFactory = gameConfigToLoad.j3dCellFactory;
         if (j3dCellFactory != null) {
 
@@ -676,8 +675,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 
 
-                    trans.set(t);
-                    yp.set(r);
+                    returnTrans.set(t);
+                    returnYP.set(r);
                 } else {
                     esmj3dtes3.data.records.REFR refr = (esmj3dtes3.data.records.REFR) doors.get(idx);
                     Vector3f loc = refr.getTrans();
@@ -694,8 +693,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
                     t3d.transform(f);
                     t.add(f);
 
-                    trans.set(t);
-                    yp.set(r);
+                    returnTrans.set(t);
+                    returnYP.set(r);
                 }
             }
         }
