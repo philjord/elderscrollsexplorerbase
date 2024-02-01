@@ -16,6 +16,8 @@ import esmj3d.physics.RayIntersectResult;
 import nifbullet.BulletNifModel;
 import nifbullet.NavigationProcessorBullet.NbccProvider;
 import nifbullet.cha.NBControlledChar;
+import nifbullet.cha.NBNonControlledChar;
+import nifbullet.dyn.NBSimpleDynamicModel;
 import scrollsexplorer.simpleclient.physics.PhysicsDynamics.PhysicsStatus;
 import tools.PendingList;
 import tools.clock.PeriodicThread;
@@ -25,7 +27,10 @@ import utils.source.MeshSource;
 
 public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 {
-	public static long MIN_TIME_BETWEEN_STEPS_MS = 20;
+	
+	public static int DEBUG_UPDATE_STEP_SKIP = 1; //10 is 1/10 as fast as usual
+	
+	public static long MIN_TIME_BETWEEN_STEPS_MS = 20; 
 
 	public static Vector3f gravity = new Vector3f(0f, -9.8f, 0f);
 
@@ -66,49 +71,45 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 
 		physicsSimThread = new PeriodicThread("Physics Sim Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
 			private long startOfLastUpdate = System.currentTimeMillis() * 2;
+			
+			private int debugStepSkipCount = 0;
 
 			@Override
 			public void runUpdate()
 			{
-				if (System.currentTimeMillis() - startOfLastUpdate > 300)
-					System.err.println("Physics Sim Thread slow " + (System.currentTimeMillis() - startOfLastUpdate));
-				startOfLastUpdate = System.currentTimeMillis();
-
-				try
-				{
+				if (DEBUG_UPDATE_STEP_SKIP == 1) {
+					
+					if (System.currentTimeMillis() - startOfLastUpdate > 300)
+						System.err
+								.println("Physics Sim Thread slow " + (System.currentTimeMillis() - startOfLastUpdate));
+					startOfLastUpdate = System.currentTimeMillis();
+					
+				} else {
+					debugStepSkipCount++;
+					if (debugStepSkipCount < DEBUG_UPDATE_STEP_SKIP) {
+						//TODO: need to allow the char to keep moving really, but that's in physicsTick
+						// so all of the debug needs to be in DynamicsEngine really
+						return;
+					} else {
+						debugStepSkipCount = 0;
+					}
+				}
+								
+	
+				try {
 					long startOfTick = System.currentTimeMillis();
 					physicsTick();
 					// note apply in the same thread, no point in having a running physics the player can't see
 					physicsToModelTick();
 					if ((System.currentTimeMillis() - startOfTick) > 300)
 						System.err.println("physicsTick long " + (System.currentTimeMillis() - startOfTick));
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 					System.out.println("PhysicsSystem.physicsTick() exception " + e + " " + e.getStackTrace()[0]);
 					e.printStackTrace();
-				}
+				}			
 			}
 		});
 		physicsSimThread.start();
-
-	/*	physicsToModelThread = new PeriodicThread("Physics To Model Thread", MIN_TIME_BETWEEN_STEPS_MS, new PeriodicallyUpdated() {
-			@Override
-			public void runUpdate()
-			{
-				try
-				{
-					
-				}
-				catch (Exception e)
-				{
-					System.out.println("PhysicsSystem.physicsTick() exception " + e + " " + e.getStackTrace()[0]);
-					e.printStackTrace();
-				}
-			}
-		});
-		physicsToModelThread.start();*/
-
 	}
 
 	/**
@@ -144,55 +145,97 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 	public void loadJ3dGridSpace(GridSpace cell)
 	{
 		//System.out.println("load request for GridSpace " + cell.getName() + " recos count = " + cell.getJ3dRECOsById().values().size());
-
-		// add the items
-		SparseArray<J3dRECOInst> j3dRECOsById = cell.getJ3dRECOsById();
-		for (int i = 0; i < j3dRECOsById.size(); i++)
-		{
-			J3dRECOInst instReco = j3dRECOsById.get(j3dRECOsById.keyAt(i));
-			physicsLocaleDynamics.createRECO(instReco);
-		}
-		// use the arraylist of insts are the keys for add
-		eventsToProcess.add(PhysicsUpdate.createLFM(j3dRECOsById));
+		load(cell.getJ3dRECOsById());
 	}
 
 	public void unloadJ3dGridSpace(GridSpace cell)
 	{
-		SparseArray<J3dRECOInst> j3dRECOsById = cell.getJ3dRECOsById();
-		// removes just need the keys to remove
-		eventsToProcess.add(PhysicsUpdate.createULFM(j3dRECOsById));
+		unload(cell.getJ3dRECOsById());
 	}
 
 	public void loadJ3dCELL(J3dCELLGeneral cell)
 	{
 		//System.out.println("load request for cell " + cell.getName());
-		// add the items
-		SparseArray<J3dRECOInst> j3dRECOs = cell.getJ3dRECOs();
-		for (int i = 0; i < j3dRECOs.size(); i++)
-		{
-			J3dRECOInst instReco = j3dRECOs.get(j3dRECOs.keyAt(i));
-			physicsLocaleDynamics.createRECO(instReco);
-		}
-		// use the arraylist of insts are the keys for add
-		eventsToProcess.add(PhysicsUpdate.createLFM(j3dRECOs));
+		load(cell.getJ3dRECOs());
 	}
 
 	public void unloadJ3dCELL(J3dCELLGeneral cell)
 	{
-		SparseArray<J3dRECOInst> j3dRECOs = cell.getJ3dRECOs();
-		// removes just need the keys to remove
-		eventsToProcess.add(PhysicsUpdate.createULFM(j3dRECOs));
+		unload(cell.getJ3dRECOs());
+	}
+	
+	private void load(SparseArray<J3dRECOInst> j3dRECOsById)
+	{
+		//System.out.println("load request for cell " + cell.getName());
+		
+		// we don't need to pause the physicsLocaleDynamics if we ensure all statics are loaded first, so dynamics have to be "on" something
+		// note all dynamics added should start deactivated somehow
+		// in other words we want them to "settle" very quickly
+		
+		// note somewhere around here the 0,0,0 trans needs to be checked for as well
+		
+		// add the items
+		ArrayList<J3dRECOInst> nonDyn = new ArrayList<J3dRECOInst>();
+		ArrayList<J3dRECOInst> dyn = new ArrayList<J3dRECOInst>();
+		
+		for (int i = 0; i < j3dRECOsById.size(); i++)
+		{
+			J3dRECOInst instReco = j3dRECOsById.get(j3dRECOsById.keyAt(i));
+			BulletNifModel bnm = physicsLocaleDynamics.createRECO(instReco);
+			if(bnm instanceof NBSimpleDynamicModel || bnm instanceof NBNonControlledChar) {
+				dyn.add(instReco);
+				
+				// FIXME: is this dyn being added with a trans of 0,0,0, if so that's not cool
+				bnm.toString();
+				
+				
+			} else {
+				nonDyn.add(instReco);		
+			}
+		}
+				
+		// use the arraylist of insts are the keys for add, statics first then dyn
+		eventsToProcess.add(PhysicsUpdate.createLFM(nonDyn));
+		eventsToProcess.add(PhysicsUpdate.createLFMDyn(dyn));
+	}
+
+	public void unload(SparseArray<J3dRECOInst> j3dRECOsById)
+	{
+		ArrayList<J3dRECOInst> nonDyn = new ArrayList<J3dRECOInst>();
+		ArrayList<J3dRECOInst> dyn = new ArrayList<J3dRECOInst>();
+		
+		for (int i = 0; i < j3dRECOsById.size(); i++)
+		{
+			J3dRECOInst instReco = j3dRECOsById.get(j3dRECOsById.keyAt(i));
+			BulletNifModel bnm = physicsLocaleDynamics.getNifBullet(instReco.getRecordId());
+			if(bnm instanceof NBSimpleDynamicModel || bnm instanceof NBNonControlledChar)
+				dyn.add(instReco);
+			else
+				nonDyn.add(instReco);
+		}
+				
+		// use the arraylist of insts are the keys for add
+		// note dyn first then static
+		eventsToProcess.add(PhysicsUpdate.createULFMDyn(dyn));
+		eventsToProcess.add(PhysicsUpdate.createULFM(nonDyn));
 	}
 
 	public void addRECO(J3dRECOInst j3dRECOInst)
 	{
-		physicsLocaleDynamics.createRECO(j3dRECOInst);
-		eventsToProcess.add(PhysicsUpdate.createAdd(j3dRECOInst));
+		BulletNifModel bnm = physicsLocaleDynamics.createRECO(j3dRECOInst);
+		if(bnm instanceof NBSimpleDynamicModel || bnm instanceof NBNonControlledChar)
+			eventsToProcess.add(PhysicsUpdate.createAddDyn(j3dRECOInst));
+		else
+			System.out.println("Adding single of non dynamics!!");
 	}
 
 	public void removeRECO(J3dRECOInst j3dRECOInst)
 	{
-		eventsToProcess.add(PhysicsUpdate.createRemove(j3dRECOInst));
+		BulletNifModel bnm = physicsLocaleDynamics.createRECO(j3dRECOInst);
+		if(bnm instanceof NBSimpleDynamicModel || bnm instanceof NBNonControlledChar)
+			eventsToProcess.add(PhysicsUpdate.createRemoveDyn(j3dRECOInst));
+		else
+			System.out.println("Removing single of non dynamics!!");
 	}
 
 	protected void unload()
@@ -246,39 +289,40 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 			ArrayList<PhysicsUpdate> cpl = eventsToProcess.getCurrentPendingList();
 			for (PhysicsUpdate pu : cpl)
 			{
-				if (pu.type == PhysicsUpdate.UPDATE_TYPE.LOAD_FROM_MODEL)
+				if (pu.type == PhysicsUpdate.UPDATE_TYPE.LOAD_FROM_MODEL || pu.type == PhysicsUpdate.UPDATE_TYPE.LOAD_FROM_MODEL_DYN)
 				{
 					//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
 					//	physicsLocaleDynamics.pause();
 
 					// assumes cell id and stmodel set properly by now
+					
 					for (int i = 0; i < pu.collection.size(); i++)
 					{
-						J3dRECOInst instReco = pu.collection.get(pu.collection.keyAt(i));
+						J3dRECOInst instReco = pu.collection.get(i);
 						physicsLocaleDynamics.addRECO(instReco);
 					}
 
 					//	if (!prevIsPaused)
 					//		physicsLocaleDynamics.unpause();
 				}
-				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.UNLOAD_FROM_MODEL)
+				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.UNLOAD_FROM_MODEL || pu.type == PhysicsUpdate.UPDATE_TYPE.UNLOAD_FROM_MODEL_DYN)
 				{
 					//	boolean prevIsPaused = physicsLocaleDynamics.isPaused();
 					//	physicsLocaleDynamics.pause();
 					// assumes cell id and stmodel set properly by now
 					for (int i = 0; i < pu.collection.size(); i++)
 					{
-						J3dRECOInst instReco = pu.collection.get(pu.collection.keyAt(i));
+						J3dRECOInst instReco = pu.collection.get(i);
 						physicsLocaleDynamics.removeRECO(instReco);
 					}
 					//	if (!prevIsPaused)
 					//		physicsLocaleDynamics.unpause();
 				}
-				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.ADD)
+				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.ADD_DYN)
 				{
 					physicsLocaleDynamics.addRECO(pu.reco);
 				}
-				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.REMOVE)
+				else if (pu.type == PhysicsUpdate.UPDATE_TYPE.REMOVE_DYN)
 				{
 					physicsLocaleDynamics.removeRECO(pu.reco);
 				}
@@ -416,20 +460,27 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 		}
 	}
 
+	/**
+	 * Dynamic object seperated from stsics as they are added and removed constantly, but must always be added after the static grids in order not to simply
+	 * fall away
+	 */
 	public static class PhysicsUpdate
 	{
 		public enum UPDATE_TYPE
 		{
-			ADD, REMOVE, LOAD_FROM_MODEL, UNLOAD_FROM_MODEL
+			//ADD, REMOVE,
+			LOAD_FROM_MODEL, UNLOAD_FROM_MODEL, ADD_DYN, REMOVE_DYN, LOAD_FROM_MODEL_DYN, UNLOAD_FROM_MODEL_DYN
 		};
 
 		public UPDATE_TYPE type;
 
 		public J3dRECOInst reco = null;
 
-		public SparseArray<J3dRECOInst> collection;
+		public ArrayList<J3dRECOInst> collection;
 
-		public static PhysicsUpdate createAdd(J3dRECOInst reco)
+		//possibly these are NEVER appropriate? only single dynamics should be played with?
+		// notice kinematics are not dynamics (they alter shape but are rooted down eg doors)
+	/*	public static PhysicsUpdate createAdd(J3dRECOInst reco)
 		{
 			PhysicsUpdate pu = new PhysicsUpdate();
 			pu.type = UPDATE_TYPE.ADD;
@@ -443,9 +494,9 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 			pu.type = UPDATE_TYPE.REMOVE;
 			pu.reco = reco;
 			return pu;
-		}
+		}*/
 
-		public static PhysicsUpdate createLFM(SparseArray<J3dRECOInst> collection)
+		public static PhysicsUpdate createLFM(ArrayList<J3dRECOInst> collection)
 		{
 			PhysicsUpdate pu = new PhysicsUpdate();
 			pu.type = UPDATE_TYPE.LOAD_FROM_MODEL;
@@ -453,10 +504,42 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 			return pu;
 		}
 
-		public static PhysicsUpdate createULFM(SparseArray<J3dRECOInst> collection)
+		public static PhysicsUpdate createULFM(ArrayList<J3dRECOInst> collection)
 		{
 			PhysicsUpdate pu = new PhysicsUpdate();
 			pu.type = UPDATE_TYPE.UNLOAD_FROM_MODEL;
+			pu.collection = collection;
+			return pu;
+		}
+		
+		public static PhysicsUpdate createAddDyn(J3dRECOInst reco)
+		{
+			PhysicsUpdate pu = new PhysicsUpdate();
+			pu.type = UPDATE_TYPE.ADD_DYN;
+			pu.reco = reco;
+			return pu;
+		}
+
+		public static PhysicsUpdate createRemoveDyn(J3dRECOInst reco)
+		{
+			PhysicsUpdate pu = new PhysicsUpdate();
+			pu.type = UPDATE_TYPE.REMOVE_DYN;
+			pu.reco = reco;
+			return pu;
+		}
+
+		public static PhysicsUpdate createLFMDyn(ArrayList<J3dRECOInst> collection)
+		{
+			PhysicsUpdate pu = new PhysicsUpdate();
+			pu.type = UPDATE_TYPE.LOAD_FROM_MODEL_DYN;
+			pu.collection = collection;
+			return pu;
+		}
+
+		public static PhysicsUpdate createULFMDyn(ArrayList<J3dRECOInst> collection)
+		{
+			PhysicsUpdate pu = new PhysicsUpdate();
+			pu.type = UPDATE_TYPE.UNLOAD_FROM_MODEL_DYN;
 			pu.collection = collection;
 			return pu;
 		}
