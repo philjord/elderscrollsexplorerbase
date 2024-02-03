@@ -19,6 +19,7 @@ import com.frostwire.util.SparseArray;
 import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
+import esmj3d.j3d.j3drecords.type.J3dGeneralSOUN;
 import esmj3d.j3d.j3drecords.type.J3dRECOType;
 import esmj3dtes3.j3d.j3drecords.type.J3dPivotDOOR;
 import nif.NifFile;
@@ -210,7 +211,11 @@ public class PhysicsDynamics extends DynamicsEngine
 			{
 				createCharacter(j3dRECOInst);
 			}
-			else
+			else if (j3dRECOInst instanceof J3dGeneralSOUN)
+			{
+				// sound is not part of phys
+			}			
+			else 
 			{
 
 				System.out.println(
