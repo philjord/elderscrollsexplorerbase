@@ -95,14 +95,6 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		Camera.BACK_CLIP = 1000f;
 		Camera.MIN_FRAME_CYCLE_TIME = 15;
 
-		ESMManager.USE_FILE_MAPS = false;
-		ESMManager.USE_MINI_CHANNEL_MAPS = true;
-		ESMManager.USE_NON_NATIVE_ZIP = false;
-
-		ArchiveFile.USE_FILE_MAPS = false;
-		ArchiveFile.USE_MINI_CHANNEL_MAPS = true;
-		ArchiveFile.USE_NON_NATIVE_ZIP = false;
-
 		//TODO this client should act EXACTLY like the phone one including find doors and the graphics config set up
 		// of ScrollExplorer
 		// also it should use a seperate bsa collection to ensure it does what the phoen does
@@ -588,25 +580,27 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
             if (gameConfigToLoad.gameName != "TESIII: Morrowind") {
                 // if SimpleBethCellManager.setSources has been called the persistent children will have been loaded
                 PluginGroup cellChildGroups = j3dCellFactory.getPersistentChildrenOfCell(formToLoad);
-                for (Record record : cellChildGroups.getRecordList()) {
-                    // is this a door way?
-                    if (record.getRecordType().equals("REFR")) {
-                        // don't go game specific just the common data needed (which include XTEL!)
-                        CommonREFR commonREFR = new CommonREFR(record, true);
-                        XTEL xtel = commonREFR.XTEL;
-                        //if we are a door outward we have a door inward
-                        if (xtel != null) {
-                            Record otherDoor;
-                            if (xtel.doorFormId != 0) {
-                                otherDoor = j3dCellFactory.getRecord(xtel.doorFormId);
-                                if (otherDoor != null) {
-                                    CommonREFR otherDoorCommonREFR = new CommonREFR(otherDoor, true);
-                                    doors.add(otherDoorCommonREFR);
-                                }
-                            }
-                        }
-
-                    }
+                if(cellChildGroups != null) {
+	                for (Record record : cellChildGroups.getRecordList()) {
+	                    // is this a door way?
+	                    if (record.getRecordType().equals("REFR")) {
+	                        // don't go game specific just the common data needed (which include XTEL!)
+	                        CommonREFR commonREFR = new CommonREFR(record, true);
+	                        XTEL xtel = commonREFR.XTEL;
+	                        //if we are a door outward we have a door inward
+	                        if (xtel != null) {
+	                            Record otherDoor;
+	                            if (xtel.doorFormId != 0) {
+	                                otherDoor = j3dCellFactory.getRecord(xtel.doorFormId);
+	                                if (otherDoor != null) {
+	                                    CommonREFR otherDoorCommonREFR = new CommonREFR(otherDoor, true);
+	                                    doors.add(otherDoorCommonREFR);
+	                                }
+	                            }
+	                        }
+	
+	                    }
+	                }
                 }
             } else {
                 if (formToLoad == 0) {
