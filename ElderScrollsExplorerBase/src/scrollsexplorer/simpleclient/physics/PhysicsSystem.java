@@ -3,9 +3,11 @@ package scrollsexplorer.simpleclient.physics;
 import java.util.ArrayList;
 
 import org.jogamp.java3d.BranchGroup;
+import org.jogamp.java3d.Transform3D;
 import org.jogamp.vecmath.Vector3f;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
+import com.bulletphysics.linearmath.Transform;
 import com.frostwire.util.SparseArray;
 
 import esmj3d.j3d.cell.GridSpace;
@@ -178,6 +180,8 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 		ArrayList<J3dRECOInst> nonDyn = new ArrayList<J3dRECOInst>();
 		ArrayList<J3dRECOInst> dyn = new ArrayList<J3dRECOInst>();
 		
+		Transform test = new Transform();
+		
 		for (int i = 0; i < j3dRECOsById.size(); i++)
 		{
 			J3dRECOInst instReco = j3dRECOsById.get(j3dRECOsById.keyAt(i));
@@ -185,9 +189,12 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 			if(bnm instanceof NBSimpleDynamicModel || bnm instanceof NBNonControlledChar) {
 				dyn.add(instReco);
 				
-				// FIXME: is this dyn being added with a trans of 0,0,0, if so that's not cool
-				bnm.toString();
-				
+				if(bnm instanceof NBSimpleDynamicModel) {
+					// FIXME: is this dyn being added with a trans of 0,0,0, if so that's not cool
+					((NBSimpleDynamicModel)bnm).getRootNifBulletbhkCollisionObject().getRigidBody().getWorldTransform(test);
+					if(test.origin.x == 0 && test.origin.y == 0 && test.origin.z == 0)
+						System.out.println("Identity orgin for NBSimpleDynamicModel " + bnm.toString() + " probably a bug");
+				}
 				
 			} else {
 				nonDyn.add(instReco);		

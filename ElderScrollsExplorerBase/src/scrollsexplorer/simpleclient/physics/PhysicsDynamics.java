@@ -210,7 +210,7 @@ public class PhysicsDynamics extends DynamicsEngine
 			{
 				createCharacter(j3dRECOInst);
 			}
-			else if (j3dRECOType.getName() != null && j3dRECOType.getName().equals("J3dGeneralSOUN"))
+			else if (j3dRECOType != null && j3dRECOType.getName() != null && j3dRECOType.getName().equals("J3dGeneralSOUN"))
 			{
 				// sound is not part of phys
 			}			
