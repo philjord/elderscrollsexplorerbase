@@ -662,15 +662,14 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
                 int idx = (int) (Math.random() * (doors.size() - 1));
                 if (gameConfigToLoad.gameName != "TESIII: Morrowind") {
                     XTEL xtel = doors.get(idx).XTEL; // note this is the other door so the exit is right but it's cell is not our cell
-                    Vector3f t = ActionableMouseOverHandler.getTrans(xtel.x, xtel.y, xtel.z);
-                    t.y += 1; // TODO: cos it's the floor I reckon, nay something off in all direction a bit here
-                    Quat4f r = ActionableMouseOverHandler.getRot(xtel.rx, xtel.ry, xtel.rz);
-
-
-
-
-                    returnTrans.set(t);
-                    returnYP.set(r);
+                    if(xtel!=null) {
+	                    Vector3f t = ActionableMouseOverHandler.getTrans(xtel.x, xtel.y, xtel.z);
+	                    t.y += 1; // TODO: cos it's the floor I reckon, nay something off in all direction a bit here
+	                    Quat4f r = ActionableMouseOverHandler.getRot(xtel.rx, xtel.ry, xtel.rz);
+	
+	                    returnTrans.set(t);
+	                    returnYP.set(r);
+                    }
                 } else {
                     esmj3dtes3.data.records.REFR refr = (esmj3dtes3.data.records.REFR) doors.get(idx);
                     Vector3f loc = refr.getTrans();
