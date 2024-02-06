@@ -10,7 +10,6 @@ import org.jogamp.vecmath.Quat4f;
 import org.jogamp.vecmath.Vector3f;
 
 import com.bulletphysics.collision.broadphase.BroadphaseProxy;
-import com.bulletphysics.collision.broadphase.DbvtProxy;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 import com.bulletphysics.dynamics.RigidBody;
@@ -191,6 +190,11 @@ public class PhysicsDynamics extends DynamicsEngine
 		}
 		else
 		{
+			
+			//FIXME:    BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true; makes the record below not load!
+			//if(j3dRECOInst.getRecordId() == 2348)
+			//	System.out.println("boom 2348! " + j3dRECOInst.getJ3dRECOType());
+			
 			J3dRECOType j3dRECOType = j3dRECOInst.getJ3dRECOType();
 
 			if (j3dRECOType != null && j3dRECOType.physNifFile != null)
@@ -216,7 +220,6 @@ public class PhysicsDynamics extends DynamicsEngine
 			}			
 			else 
 			{
-
 				System.out.println(
 						"j3dRECOType null or null phys " + j3dRECOType + " for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
 
