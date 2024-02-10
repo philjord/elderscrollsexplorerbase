@@ -13,6 +13,9 @@ import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.Group;
 import org.jogamp.java3d.LinearFog;
 import org.jogamp.java3d.Transform3D;
+import org.jogamp.java3d.TransformGroup;
+import org.jogamp.java3d.TransparencyAttributes;
+import org.jogamp.java3d.utils.shader.Cube;
 import org.jogamp.vecmath.Color3f;
 import org.jogamp.vecmath.Point3f;
 import org.jogamp.vecmath.Quat4f;
@@ -30,6 +33,7 @@ import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICELLPersistent;
 import esmj3d.j3d.cell.J3dICellFactory;
+import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import javaawt.Point;
@@ -49,6 +53,8 @@ import tools3d.utils.scenegraph.StructureUpdateBehavior;
  */
 public class BethWorldVisualBranch extends BranchGroup implements LocationUpdateListener
 {
+	
+	public static boolean SHOW_DEBUG_MAKERS = true;
 
 	//when set true the havok data will only be loaded once for physics
 	// and the red lines will not be able to be seen 
@@ -308,13 +314,70 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 		}
 	}
+	
+	
+	private static BranchGroup charCubeBG;
+	private static TransformGroup charCubeTG;
 
+	private static void debugMarkerChar(float charX, float charY, Group parent) {
+		if (charCubeTG == null) {
+			charCubeBG = new BranchGroup();
+			charCubeTG = new TransformGroup();
+			charCubeTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+
+			Cube charCube = new Cube(5.0d, 15.0d, 5.0d, 1.0f, 1.0f, 1.0f);// just a pointy stick
+			TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.3f);
+			charCube.getAppearance().setTransparencyAttributes(ta);
+			charCubeBG.addChild(charCubeTG);
+			charCubeTG.addChild(charCube);
+			parent.addChild(charCubeBG);
+		}
+
+		int charLodX = (int)Math.floor(charX / J3dLAND.LAND_SIZE);
+		int charLodY = (int)Math.floor(charY / J3dLAND.LAND_SIZE);
+
+		Transform3D t3d = new Transform3D();
+		t3d.setTranslation(new Vector3f((charLodX * J3dLAND.LAND_SIZE) + (J3dLAND.LAND_SIZE * 0.5f), 0,
+				(-charLodY * J3dLAND.LAND_SIZE) - (J3dLAND.LAND_SIZE * 0.5f)));
+		charCubeTG.setTransform(t3d);
+
+		System.out.println("charX " + charX + " charY " + charY + " charLodX " + charLodX + " charLodY " + charLodY
+							+ " LAND_SIZE " + J3dLAND.LAND_SIZE);
+
+	}
+	private static void debugMarkerNear(float charX, float charY, Point key, BranchGroup near)
+	{
+		BranchGroup debugCubeBG = new BranchGroup();
+		float r = (float)Math.random();
+		float g = (float)Math.random();
+		float b = (float)Math.random();
+
+		Cube debugCube = new Cube(J3dLAND.LAND_SIZE*0.5d,10.0d,J3dLAND.LAND_SIZE*0.5d, r, g, b );
+		TransparencyAttributes ta2 = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.1f);
+		debugCube.getAppearance().setTransparencyAttributes(ta2);
+		TransformGroup tg2 = new TransformGroup();
+		Transform3D t2 = new Transform3D();
+		t2.setTranslation(new Vector3f((key.x*J3dLAND.LAND_SIZE)+(J3dLAND.LAND_SIZE*0.5f), 0, (-key.y*J3dLAND.LAND_SIZE)-(J3dLAND.LAND_SIZE*0.5f)));
+		tg2.setTransform(t2);
+		debugCubeBG.addChild(tg2);
+		tg2.addChild(debugCube);
+		near.addChild(debugCubeBG);
+	}
+	
+	
+	
+	
 	private void updateNear(float charX, float charY)
 	{
 		bethLodManager.setNearGridLoadCount(BethRenderSettings.getNearLoadGridCount());
 		Rectangle bounds = bethLodManager.getGridBounds(charX, charY);
 		//System.out.println("bounds = " + bounds);
 
+
+		if(SHOW_DEBUG_MAKERS) 
+			debugMarkerChar(charX, charY, this);
+		
+		
 		long start = System.currentTimeMillis();
 
 		// figure out nears not in the range
@@ -354,6 +417,10 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 							//NOTE nears own the detailed land					
 							if (bg != null)
 							{
+								
+								if(SHOW_DEBUG_MAKERS) 
+									debugMarkerNear(charX, charY, key, bg);								
+								
 								bg.compile();
 								structureUpdateBehavior.add(BethWorldVisualBranch.this, bg);
 
