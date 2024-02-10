@@ -1,5 +1,7 @@
 package scrollsexplorer.simpleclient;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,7 +13,10 @@ import java.util.Set;
 
 import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.Group;
+import org.jogamp.java3d.LineAttributes;
 import org.jogamp.java3d.LinearFog;
+import org.jogamp.java3d.PolygonAttributes;
+import org.jogamp.java3d.RenderingAttributes;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransformGroup;
 import org.jogamp.java3d.TransparencyAttributes;
@@ -54,7 +59,7 @@ import tools3d.utils.scenegraph.StructureUpdateBehavior;
 public class BethWorldVisualBranch extends BranchGroup implements LocationUpdateListener
 {
 	
-	public static boolean SHOW_DEBUG_MAKERS = true;
+	public static boolean SHOW_DEBUG_MAKERS = false;
 
 	//when set true the havok data will only be loaded once for physics
 	// and the red lines will not be able to be seen 
@@ -211,6 +216,10 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	public void unload()
 	{
 		bethLodManager.detach();
+		if(SHOW_DEBUG_MAKERS && charCubeBG != null) {
+			charCubeBG.detach();
+			charCubeBG = null;
+		}
 	}
 
 	/**
@@ -272,7 +281,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	private static void updateGross(float charX, float charY)
 	{
-		bethLodManager.updateGross(charX, charY);
+		bethLodManager.updateGross(charX, charY);			 
 	}
 
 	private void updateNear(Point3f p)
@@ -320,12 +329,14 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	private static TransformGroup charCubeTG;
 
 	private static void debugMarkerChar(float charX, float charY, Group parent) {
-		if (charCubeTG == null) {
+		if (charCubeBG == null) {
+			//FIXME: after removal seems to not be readded
 			charCubeBG = new BranchGroup();
+			charCubeBG.setCapability(BranchGroup.ALLOW_DETACH);
 			charCubeTG = new TransformGroup();
 			charCubeTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 
-			Cube charCube = new Cube(5.0d, 15.0d, 5.0d, 1.0f, 1.0f, 1.0f);// just a pointy stick
+			Cube charCube = new Cube(5.0d, 150.0d, 5.0d, 1.0f, 1.0f, 1.0f);// just a pointy stick
 			TransparencyAttributes ta = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.3f);
 			charCube.getAppearance().setTransparencyAttributes(ta);
 			charCubeBG.addChild(charCubeTG);
@@ -345,32 +356,52 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 							+ " LAND_SIZE " + J3dLAND.LAND_SIZE);
 
 	}
-	private static void debugMarkerNear(float charX, float charY, Point key, BranchGroup near)
+	private static void debugMarkerNear(float charX, float charY, Point key, J3dCELLGeneral near)
 	{
 		BranchGroup debugCubeBG = new BranchGroup();
 		float r = (float)Math.random();
 		float g = (float)Math.random();
 		float b = (float)Math.random();
 
-		Cube debugCube = new Cube(J3dLAND.LAND_SIZE*0.5d,10.0d,J3dLAND.LAND_SIZE*0.5d, r, g, b );
-		TransparencyAttributes ta2 = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.1f);
-		debugCube.getAppearance().setTransparencyAttributes(ta2);
-		TransformGroup tg2 = new TransformGroup();
-		Transform3D t2 = new Transform3D();
-		t2.setTranslation(new Vector3f((key.x*J3dLAND.LAND_SIZE)+(J3dLAND.LAND_SIZE*0.5f), 0, (-key.y*J3dLAND.LAND_SIZE)-(J3dLAND.LAND_SIZE*0.5f)));
-		tg2.setTransform(t2);
-		debugCubeBG.addChild(tg2);
-		tg2.addChild(debugCube);
+		Cube debugCube1 = new Cube(J3dLAND.LAND_SIZE*0.5d,10.0d,J3dLAND.LAND_SIZE*0.5d, r, g, b );
+		TransparencyAttributes ta1 = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.05f);
+		debugCube1.getAppearance().setTransparencyAttributes(ta1);
+		Cube debugCube2 = new Cube(J3dLAND.LAND_SIZE*0.5d*0.66d,10.0d,J3dLAND.LAND_SIZE*0.5d*0.66d, 1, 0, 1 );// smaller inner early load
+		//TransparencyAttributes ta2 = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.15f);
+		//debugCube2.getAppearance().setTransparencyAttributes(ta2);
+		PolygonAttributes pa = new PolygonAttributes();
+		pa.setPolygonMode(PolygonAttributes.POLYGON_LINE);
+		debugCube2.getAppearance().setPolygonAttributes(pa);
+		LineAttributes la = new LineAttributes(5, LineAttributes.PATTERN_SOLID, false);
+		debugCube2.getAppearance().setLineAttributes(la);
+		TransformGroup tg = new TransformGroup();
+		Transform3D t = new Transform3D();
+		float height = 0;
+
+		if (near.getJ3dLAND() != null)
+			height = near.getJ3dLAND().getHighestHeight();
+		
+		t.setTranslation(new Vector3f((key.x*J3dLAND.LAND_SIZE)+(J3dLAND.LAND_SIZE*0.5f), height, (-key.y*J3dLAND.LAND_SIZE)-(J3dLAND.LAND_SIZE*0.5f)));
+		tg.setTransform(t);
+		debugCubeBG.addChild(tg);
+		tg.addChild(debugCube1);
+		tg.addChild(debugCube2);
 		near.addChild(debugCubeBG);
 	}
 	
 	
 	
-	
+	public Point2D.Float convertCharToLodXY(float charX, float charY)
+	{
+		float charLodX = charX / J3dLAND.LAND_SIZE;
+		float charLodY = charY / J3dLAND.LAND_SIZE;
+		return new Point2D.Float(charLodX, charLodY);
+	}
 	private void updateNear(float charX, float charY)
 	{
 		bethLodManager.setNearGridLoadCount(BethRenderSettings.getNearLoadGridCount());
 		Rectangle bounds = bethLodManager.getGridBounds(charX, charY);
+		 
 		//System.out.println("bounds = " + bounds);
 
 
@@ -386,6 +417,12 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		while (keys.hasNext())
 		{
 			Point key = keys.next();
+			//FIXME: unload before we get to the edge here, if we are 2/3 across unload the line behind as well
+			
+			Point2D.Float keyFloat = convertCharToLodXY(charX, charY);
+			//System.out.println("keyFloat = " + keyFloat+"key = " + key+"bounds = " + bounds);
+			 
+			
 			if (key.x < bounds.x || key.x >= bounds.x + bounds.width || key.y < bounds.y || key.y >= bounds.y + bounds.height)
 			{
 				keysToRemove.add(key);
@@ -393,6 +430,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		}
 
 		ArrayList<Thread> igors = new ArrayList<Thread>();
+		
 		for (int x = bounds.x; x < bounds.x + bounds.width; x++)
 		{
 			for (int y = bounds.y; y < bounds.y + bounds.height; y++)
@@ -716,5 +754,9 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	{
 		return (J3dRECOChaInst) getJ3dInstRECO(aiActor.getActorFormId());
 	}
+	
+	
+	
+	
 
 }
