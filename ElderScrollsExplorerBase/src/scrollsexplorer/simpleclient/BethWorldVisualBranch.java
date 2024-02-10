@@ -1,7 +1,5 @@
 package scrollsexplorer.simpleclient;
 
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +14,6 @@ import org.jogamp.java3d.Group;
 import org.jogamp.java3d.LineAttributes;
 import org.jogamp.java3d.LinearFog;
 import org.jogamp.java3d.PolygonAttributes;
-import org.jogamp.java3d.RenderingAttributes;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransformGroup;
 import org.jogamp.java3d.TransparencyAttributes;
@@ -43,6 +40,7 @@ import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import javaawt.Point;
 import javaawt.Rectangle;
+import javaawt.geom.Point2D;
 import scrollsexplorer.IDashboard;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools.QueuingThread;
