@@ -168,6 +168,10 @@ public class PhysicsSystem implements NbccProvider, PhysicsSystemInterface
 	
 	private void load(SparseArray<J3dRECOInst> j3dRECOsById)
 	{
+		if(physicsLocaleDynamics == null) {
+			new Throwable("physicsLocaleDynamics == null has cellChanged(int cid, J3dCELLGeneral cell) been called?").printStackTrace();
+			return;
+		}
 		//System.out.println("load request for cell " + cell.getName());
 		
 		// we don't need to pause the physicsLocaleDynamics if we ensure all statics are loaded first, so dynamics have to be "on" something

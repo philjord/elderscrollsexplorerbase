@@ -364,7 +364,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		Cube debugCube1 = new Cube(J3dLAND.LAND_SIZE*0.5d,10.0d,J3dLAND.LAND_SIZE*0.5d, r, g, b );
 		TransparencyAttributes ta1 = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.05f);
 		debugCube1.getAppearance().setTransparencyAttributes(ta1);
-		Cube debugCube2 = new Cube(J3dLAND.LAND_SIZE*0.5d*0.66d,10.0d,J3dLAND.LAND_SIZE*0.5d*0.66d, 1, 0, 1 );// smaller inner early load
+		Cube debugCube2 = new Cube(J3dLAND.LAND_SIZE*0.5d*0.66d,10.0d,J3dLAND.LAND_SIZE*0.5d*0.66d, 1, 0, 1 );// smaller inner early load 2/3 of each half so 1/6 in from edge
 		//TransparencyAttributes ta2 = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.15f);
 		//debugCube2.getAppearance().setTransparencyAttributes(ta2);
 		PolygonAttributes pa = new PolygonAttributes();
@@ -399,13 +399,53 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	{
 		bethLodManager.setNearGridLoadCount(BethRenderSettings.getNearLoadGridCount());
 		Rectangle bounds = bethLodManager.getGridBounds(charX, charY);
-		 
+		int charLodX = (int)Math.floor(charX / J3dLAND.LAND_SIZE);
+		int charLodY = (int)Math.floor(charY / J3dLAND.LAND_SIZE);
 		//System.out.println("bounds = " + bounds);
 
 
 		if(SHOW_DEBUG_MAKERS) 
 			debugMarkerChar(charX, charY, this);
 		
+		/*
+		 * So bear with me here. 
+		 * There are 4 "lines" that the char crosses when moving along an axis in a direction, which are currently all one single line
+		 * The lines do the following:
+		 * 1 Load up the farthest near cell in the direction the char is traveling (or so to say the side of the square I've just crossed)
+		 * 2 Unload the farthest cell in the direction I'm traveling when I've cross back across it
+		 * 3 Unload the cell from the "back" direction that's farthest
+		 * 4 Load up the cell from the back direction when I cross back
+		 * 
+		 * 1/2 and 3/4 read like they are the same, and conceptually they are in that the cell the char is "in" suddenly flips to the next one across, so we are suddenly
+		 * dealing with the back line of the cells when regarding the direction of travel for the char
+		 * 
+		 * Two concepts exist here 
+		 * 1 that we need to ensure a single line isn't loading and unloading a big stack of cells, unloading is cheap but loading is expensive
+		 * 2 if the player jitters on a line we'll constantly load and unload the same cells for no value
+		 * 
+		 * 
+		 * concept 2 is dealt with by moving the unload line away from the load line to leave things loaded for just a bit longer
+		 * concept 1 is interesting and might be covered by the same thing?
+		 * 
+		 * so I can have just 3 lines, the cell edge is a load line for either direction, and just before that at 2/3 from center (so 1/6 of cell wisth)
+		 * is an unload line for the cell in the "far" direction
+		 * the same 2/3 line in the cell next represents the 3rd line conceptually, however in code it's simply the same 2/3 line
+		 */
+		
+		//this is how  3 x's along
+		//bounds.y -= 1;
+		//bounds.height = 3;
+		
+		Point2D.Float charLodFloat = convertCharToLodXY(charX, charY);
+		
+		float xdistAcrossCell = charLodFloat.x-charLodX;
+		float ydistAcrossCell = charLodFloat.y-charLodY;
+		
+		float highPortion = (1.0f-(1.0f/6.0f));
+		float lowPortion = (1.0f/6.0f);
+		
+		//System.out.println("nearness " + highPortion + " " + lowPortion);
+		//System.out.println("xdistAcrossCell " + xdistAcrossCell + " ydistAcrossCell " + ydistAcrossCell + "keyFloat = " + charLodFloat + "bounds = " + bounds);
 		
 		long start = System.currentTimeMillis();
 
@@ -415,14 +455,12 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		while (keys.hasNext())
 		{
 			Point key = keys.next();
-			//FIXME: unload before we get to the edge here, if we are 2/3 across unload the line behind as well
-			
-			Point2D.Float keyFloat = convertCharToLodXY(charX, charY);
-			//System.out.println("keyFloat = " + keyFloat+"key = " + key+"bounds = " + bounds);
-			 
-			
-			if (key.x < bounds.x || key.x >= bounds.x + bounds.width || key.y < bounds.y || key.y >= bounds.y + bounds.height)
-			{
+			//System.out.println("key " + key + " dist from charLodX " +(key.x - charLodFloat.x));
+			if ((key.x < bounds.x && xdistAcrossCell > lowPortion)	
+					|| (key.x >= bounds.x + bounds.width && xdistAcrossCell < highPortion) 
+					|| (key.y < bounds.y && ydistAcrossCell > lowPortion) 
+					|| (key.y >= bounds.y + bounds.height && ydistAcrossCell < highPortion)
+					) {
 				keysToRemove.add(key);
 			}
 		}
@@ -671,7 +709,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			newTranslation.set(trans);
 			p1.set(newTranslation);
 			p2.set(lastUpdatedTranslation);
-			if (p1.distance(p2) > 2)
+			if (p1.distance(p2) > 1.0)// only update on a good move amount
 			{
 				lastUpdatedTranslation.set(newTranslation);
 
