@@ -169,7 +169,7 @@ public class BethAIControl implements LocationUpdateListener
 	{
 		if (isWRLD)
 		{
-			Rectangle bounds = Beth32LodManager.getBounds(charX, charY, BethRenderSettings.getNearLoadGridCount());
+			Rectangle bounds = Beth32LodManager.getGridBounds(charX, charY, BethRenderSettings.getNearLoadGridCount());
 			long start = System.currentTimeMillis();
 
 			// figure out nears not in the range
