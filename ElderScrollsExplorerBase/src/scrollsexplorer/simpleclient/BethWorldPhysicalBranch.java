@@ -24,11 +24,11 @@ import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICELLPersistent;
 import esmj3d.j3d.cell.J3dICellFactory;
-import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
 import javaawt.Point;
 import javaawt.Rectangle;
+import javaawt.geom.Point2D;
 import nifbullet.BulletNifModel;
 import nifbullet.cha.NBNonControlledChar;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
@@ -42,6 +42,8 @@ import tools3d.utils.scenegraph.StructureUpdateBehavior;
  */
 public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpdateListener
 {
+	private static final int PHYSIC_GRIDS = 1;// number to load in each drection
+
 	private int worldFormId;
 
 	private boolean isWRLD = true; // false implies interior cell
@@ -62,6 +64,7 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 	private PhysicsSystem clientPhysicsSystem;
 
 	private BethRenderSettings.UpdateListener listener = new BethRenderSettings.UpdateListener() {
+		@Override
 		public void renderSettingsUpdated()
 		{
 			updateFromCurrent();
@@ -94,6 +97,7 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 			//this persistent is just a super cluster of vague things, not related to position at all
 
 			QueuingThread.CallBack callBack = new QueuingThread.CallBack() {
+				@Override
 				public void run(Object parameter)
 				{
 					//ensure we are nearby (character hasn't warped)
@@ -165,9 +169,10 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 		if (j3dCELLPersistent != null)
 		{
 			Rectangle bounds = BethLodManager.getGridBounds(charX, charY, BethRenderSettings.getNearLoadGridCount());
-
+			Point2D.Float distAcrossCell = BethLodManager.charDistAcrossCell(charX, charY);	
+			
 			// because j3dcellpersistent is in a lower project I have to do this here, bum			
-			List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds);
+			List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds, distAcrossCell.x, distAcrossCell.y);
 			List<GridSpace> gridsToAdd = j3dCELLPersistent.getGridSpaces().getGridSpacesToAdd(bounds);
 
 			//done after gathering the lists above so we now do the grid changes
@@ -184,16 +189,13 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 			}
 
 		}
-
-		/*int lowX = (int) Math.floor((charX - (J3dLAND.LAND_SIZE * 0.5)) / J3dLAND.LAND_SIZE);
-		int lowY = (int) Math.floor((charY - (J3dLAND.LAND_SIZE * 0.5)) / J3dLAND.LAND_SIZE);
-		int highX = (int) Math.ceil((charX + (J3dLAND.LAND_SIZE * 0.5)) / J3dLAND.LAND_SIZE);
-		int highY = (int) Math.ceil((charY + (J3dLAND.LAND_SIZE * 0.5)) / J3dLAND.LAND_SIZE);*/
-
-		int lowX = (int) Math.floor(charX / J3dLAND.LAND_SIZE) - 1;
-		int lowY = (int) Math.floor(charY / J3dLAND.LAND_SIZE) - 1;
-		int highX = (int) Math.floor(charX / J3dLAND.LAND_SIZE) + 1;//grids load out toward positive
-		int highY = (int) Math.floor(charY / J3dLAND.LAND_SIZE) + 1;
+		
+		Rectangle bounds = BethLodManager.getGridBounds(charX, charY, PHYSIC_GRIDS);
+		Point2D.Float distAcrossCell = BethLodManager.charDistAcrossCell(charX, charY);	
+		final int lowX = bounds.x;
+		final int lowY = bounds.y;
+		final int highX = bounds.x + bounds.width;
+		final int highY = bounds.y + bounds.height;
 
 		// lets remove those loaded nears not in the range
 		Iterator<Point> keys = loadedNears.keySet().iterator();
@@ -201,8 +203,11 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 		while (keys.hasNext())
 		{
 			Point key = keys.next();
-			if (key.x < lowX || key.x > highX || key.y < lowY || key.y > highY)
-			{
+			if ((key.x < lowX && distAcrossCell.x > BethLodManager.lowPortion)	
+				|| (key.x >= highX && distAcrossCell.x < BethLodManager.highPortion) 
+				|| (key.y < lowY && distAcrossCell.y > BethLodManager.lowPortion) 
+				|| (key.y >= highY && distAcrossCell.y < BethLodManager.highPortion)
+				) {
 				keysToRemove.add(key);
 			}
 		}
@@ -223,9 +228,9 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 		}
 
 		ArrayList<Thread> igors = new ArrayList<Thread>();
-		for (int x = lowX; x <= highX; x++)
+		for (int x = lowX; x < highX; x++)
 		{
-			for (int y = lowY; y <= highY; y++)
+			for (int y = lowY; y < highY; y++)
 			{
 				final Point key = new Point(x, y);
 				if (!loadedNears.containsKey(key) && !loadingNears.contains(key))
@@ -233,6 +238,7 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 					loadingNears.add(key);
 					//let's split -up we can do more damage that way
 					Thread t = new Thread() {
+						@Override
 						public void run()
 						{
 							//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty

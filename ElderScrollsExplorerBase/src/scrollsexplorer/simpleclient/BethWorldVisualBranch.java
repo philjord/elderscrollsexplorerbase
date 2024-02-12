@@ -229,21 +229,22 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		IDashboard.dashboard.setNearLoading(1);
 		Vector3f v = new Vector3f();
 		charLocation.get(v);
-		Point3f p = new Point3f(v);
+		Point2D.Float charLod  = new Point2D.Float(v.x, -v.z);
 		charLocation.get(newTranslation);
 		lastUpdatedTranslation.set(newTranslation);
 
 		//Note not on a separate thread		
 		if (j3dCELLPersistent != null)
 		{
-			j3dCELLPersistent.getGridSpaces().update(p.x, -p.z, bethLodManager);
+			j3dCELLPersistent.getGridSpaces().update(charLod.x, charLod.y, bethLodManager);
 
 			if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
 			{
-				Rectangle bounds = BethLodManager.getGridBounds(p.z, p.z, BethRenderSettings.getNearLoadGridCount());
-
+				Rectangle bounds = BethLodManager.getGridBounds(charLod.x, charLod.y, BethRenderSettings.getNearLoadGridCount());
+				Point2D.Float distAcrossCell = BethLodManager.charDistAcrossCell(charLod.x, charLod.y);				 
+				
 				// because j3dcellpersistent is in a lower project I have to do this here, bum			
-				List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds);
+				List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds, distAcrossCell.x, distAcrossCell.y);
 				List<GridSpace> gridsToAdd = j3dCELLPersistent.getGridSpaces().getGridSpacesToAdd(bounds);
 
 				for (GridSpace gridSpace : gridsToRemove)
@@ -290,6 +291,9 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		// what was this trying to do here anyway?
 		//	if (currentCharPoint.distance(p) < BethRenderSettings.getFarLoadGridCount())
 		{
+			
+			Point2D.Float charLod  = new Point2D.Float(p.x, -p.z);
+			
 			IDashboard.dashboard.setNearLoading(1);
 			if (j3dCELLPersistent != null)
 			{
@@ -297,10 +301,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 				if (BethWorldVisualBranch.LOAD_PHYS_FROM_VIS)
 				{
-					Rectangle bounds = BethLodManager.getGridBounds(p.z, p.z, BethRenderSettings.getNearLoadGridCount());
-
+					Rectangle bounds = BethLodManager.getGridBounds(charLod.x, charLod.y, BethRenderSettings.getNearLoadGridCount());
+					Point2D.Float distAcrossCell = BethLodManager.charDistAcrossCell(charLod.x, charLod.y);	
+					
 					// because j3dcellpersistent is in a lower project I have to do this here, bum			
-					List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds);
+					List<GridSpace> gridsToRemove = j3dCELLPersistent.getGridSpaces().getGridSpacesToRemove(bounds, distAcrossCell.x, distAcrossCell.y);
 					List<GridSpace> gridsToAdd = j3dCELLPersistent.getGridSpaces().getGridSpacesToAdd(bounds);
 
 					for (GridSpace gridSpace : gridsToRemove)
@@ -315,7 +320,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				}
 			}
 
-			updateNear(p.x, -p.z);
+			updateNear(charLod.x, charLod.y);
 
 		}
 	}
@@ -348,21 +353,21 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				(-charLodY * J3dLAND.LAND_SIZE) - (J3dLAND.LAND_SIZE * 0.5f)));
 		charCubeTG.setTransform(t3d);
 
-		System.out.println("charX " + charX + " charY " + charY + " charLodX " + charLodX + " charLodY " + charLodY
-							+ " LAND_SIZE " + J3dLAND.LAND_SIZE);
+		//System.out.println("charX " + charX + " charY " + charY + " charLodX " + charLodX + " charLodY " + charLodY
+		//					+ " LAND_SIZE " + J3dLAND.LAND_SIZE);
 
 	}
-	private static void debugMarkerNear(float charX, float charY, Point key, J3dCELLGeneral near)
-	{
+
+	private static void debugMarkerNear(float charX, float charY, Point key, J3dCELLGeneral near) {
 		BranchGroup debugCubeBG = new BranchGroup();
 		float r = (float)Math.random();
 		float g = (float)Math.random();
 		float b = (float)Math.random();
 
-		Cube debugCube1 = new Cube(J3dLAND.LAND_SIZE*0.5d,10.0d,J3dLAND.LAND_SIZE*0.5d, r, g, b );
+		Cube debugCube1 = new Cube(J3dLAND.LAND_SIZE * 0.5d, 10.0d, J3dLAND.LAND_SIZE * 0.5d, r, g, b);
 		TransparencyAttributes ta1 = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.05f);
 		debugCube1.getAppearance().setTransparencyAttributes(ta1);
-		Cube debugCube2 = new Cube(J3dLAND.LAND_SIZE*0.5d*0.66d,10.0d,J3dLAND.LAND_SIZE*0.5d*0.66d, 1, 0, 1 );// smaller inner early load 2/3 of each half so 1/6 in from edge
+		Cube debugCube2 = new Cube(J3dLAND.LAND_SIZE * 0.5d * 0.66d, 10.0d, J3dLAND.LAND_SIZE * 0.5d * 0.66d, 1, 0, 1);// smaller inner early load 2/3 of each half so 1/6 in from edge
 		//TransparencyAttributes ta2 = new TransparencyAttributes(TransparencyAttributes.NICEST, 0.15f);
 		//debugCube2.getAppearance().setTransparencyAttributes(ta2);
 		PolygonAttributes pa = new PolygonAttributes();
@@ -376,8 +381,9 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 		if (near.getJ3dLAND() != null)
 			height = near.getJ3dLAND().getHighestHeight();
-		
-		t.setTranslation(new Vector3f((key.x*J3dLAND.LAND_SIZE)+(J3dLAND.LAND_SIZE*0.5f), height, (-key.y*J3dLAND.LAND_SIZE)-(J3dLAND.LAND_SIZE*0.5f)));
+
+		t.setTranslation(new Vector3f((key.x * J3dLAND.LAND_SIZE) + (J3dLAND.LAND_SIZE * 0.5f), height,
+				(-key.y * J3dLAND.LAND_SIZE) - (J3dLAND.LAND_SIZE * 0.5f)));
 		tg.setTransform(t);
 		debugCubeBG.addChild(tg);
 		tg.addChild(debugCube1);
@@ -387,19 +393,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 	
 	
 	
-	public Point2D.Float convertCharToLodXY(float charX, float charY)
-	{
-		float charLodX = charX / J3dLAND.LAND_SIZE;
-		float charLodY = charY / J3dLAND.LAND_SIZE;
-		return new Point2D.Float(charLodX, charLodY);
-	}
+ 
 	private void updateNear(float charX, float charY)
 	{
 		Rectangle bounds = BethLodManager.getGridBounds(charX, charY, BethRenderSettings.getNearLoadGridCount());
-		int charLodX = (int)Math.floor(charX / J3dLAND.LAND_SIZE);
-		int charLodY = (int)Math.floor(charY / J3dLAND.LAND_SIZE);
 		//System.out.println("bounds = " + bounds);
-
 
 		if(SHOW_DEBUG_MAKERS) 
 			debugMarkerChar(charX, charY, this);
@@ -432,14 +430,7 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		//this is how  3 x's along
 		//bounds.y -= 1;
 		//bounds.height = 3;
-		
-		Point2D.Float charLodFloat = convertCharToLodXY(charX, charY);
-		
-		float xdistAcrossCell = charLodFloat.x-charLodX;
-		float ydistAcrossCell = charLodFloat.y-charLodY;
-		
-		float highPortion = (1.0f-(1.0f/6.0f));
-		float lowPortion = (1.0f/6.0f);
+		Point2D.Float distAcrossCell = BethLodManager.charDistAcrossCell(charX, charY);	
 		
 		//System.out.println("nearness " + highPortion + " " + lowPortion);
 		//System.out.println("xdistAcrossCell " + xdistAcrossCell + " ydistAcrossCell " + ydistAcrossCell + "keyFloat = " + charLodFloat + "bounds = " + bounds);
@@ -453,10 +444,10 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		{
 			Point key = keys.next();
 			//System.out.println("key " + key + " dist from charLodX " +(key.x - charLodFloat.x));
-			if ((key.x < bounds.x && xdistAcrossCell > lowPortion)	
-					|| (key.x >= bounds.x + bounds.width && xdistAcrossCell < highPortion) 
-					|| (key.y < bounds.y && ydistAcrossCell > lowPortion) 
-					|| (key.y >= bounds.y + bounds.height && ydistAcrossCell < highPortion)
+			if ((key.x < bounds.x && distAcrossCell.x > BethLodManager.lowPortion)	
+					|| (key.x >= bounds.x + bounds.width && distAcrossCell.x < BethLodManager.highPortion) 
+					|| (key.y < bounds.y && distAcrossCell.y > BethLodManager.lowPortion) 
+					|| (key.y >= bounds.y + bounds.height && distAcrossCell.y < BethLodManager.highPortion)
 					) {
 				keysToRemove.add(key);
 			}
