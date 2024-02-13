@@ -147,12 +147,8 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 			Point3f p = new Point3f(v);
 			lastUpdatedTranslation.set(newTranslation);
 
-			//Note not on a seperate thread
+			//Note not on a separate thread
 			update(p.x, -p.z);
-			if (j3dCELLPersistent != null)
-			{
-				j3dCELLPersistent.getGridSpaces().update(p.x, -p.z, BethWorldVisualBranch.bethLodManager);
-			}
 		}
 	}
 
@@ -243,11 +239,10 @@ public class BethWorldPhysicalBranch extends BranchGroup implements LocationUpda
 						{
 							//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
 							J3dCELLGeneral j3dCELLTemporary = j3dCellFactory.makeBGWRLDTemporary(worldFormId, key.x, key.y, true);
-							synchronized (loadedNears)
-							{
-								loadedNears.put(key, j3dCELLTemporary);
-								if (j3dCELLTemporary != null)
+							if(j3dCELLTemporary != null) {
+								synchronized (loadedNears)
 								{
+									loadedNears.put(key, j3dCELLTemporary);
 									j3dCELLTemporary.compile();// better to be done not on the j3d thread?
 									structureUpdateBehavior.add(BethWorldPhysicalBranch.this, j3dCELLTemporary);
 									clientPhysicsSystem.loadJ3dCELL(j3dCELLTemporary);
