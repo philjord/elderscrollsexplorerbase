@@ -776,7 +776,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 	public J3dRECOChaInst getVisualActor(AIActor aiActor)
 	{
-		return (J3dRECOChaInst) getJ3dInstRECO(aiActor.getActorFormId());
+		J3dRECOInst j3dRECOInst = getJ3dInstRECO(aiActor.getActorFormId());
+		if(j3dRECOInst instanceof J3dRECOChaInst)
+			return (J3dRECOChaInst) j3dRECOInst;
+		else 
+			return null;
 	}
 	
 	
