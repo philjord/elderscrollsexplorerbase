@@ -19,6 +19,7 @@ import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 
+import bsa.source.BsaMaterialsSource;
 import bsa.source.BsaMeshSource;
 import bsa.source.BsaSoundSource;
 import bsa.source.BsaTextureSource;
@@ -277,10 +278,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							prevCellformid = gameConfigToLoad.startCellId;
 						}
 
-						new EsmSoundKeyToName(esmManager);
-						MeshSource meshSource;
-						TextureSource textureSource;
-						SoundSource soundSource;
+						
 
 						if (bsaFileSet == null)
 						{
@@ -375,7 +373,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							}						
 						}
 
-						//TODO: Morrowind appears to have sound and music as a seperate gosh darned file system system! not in a bsa
+						
+					
 						
 						
 						if (bsaFileSet.size() == 0)
@@ -385,13 +384,18 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							return;
 						}
 
-						meshSource = new BsaMeshSource(bsaFileSet);
-						textureSource = new BsaTextureSource(bsaFileSet);
-						soundSource = new BsaSoundSource(bsaFileSet, new EsmSoundKeyToName(esmManager));
-
-						//Just for the crazy new fallout 4 system
-						BgsmSource.setBgsmSource(meshSource);
-
+						MeshSource meshSource = new BsaMeshSource(bsaFileSet);
+						TextureSource textureSource = new BsaTextureSource(bsaFileSet);
+						BgsmSource materialsSource = new BsaMaterialsSource(bsaFileSet);						
+						//TODO: Just for the crazy new fallout 4 system, needs to be part of the MediaSources 
+						//and be passed in deep the J3dNiGeometryXXX gear with TextureSource
+						BgsmSource.setBgsmSource(materialsSource);
+						
+						new EsmSoundKeyToName(esmManager);
+						//TODO: Morrowind appears to have sound and music as a seperate gosh darned file system system! not in a bsa
+						
+						SoundSource soundSource = new BsaSoundSource(bsaFileSet, new EsmSoundKeyToName(esmManager));
+						
 						mediaSources = new MediaSources(meshSource, textureSource, soundSource);
 						
 						
