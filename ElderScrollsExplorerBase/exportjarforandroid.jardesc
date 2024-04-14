@@ -16,6 +16,7 @@
         <javaElement handleIdentifier="=esmj3dfo3/src"/>
         <javaElement handleIdentifier="=ETCPack/src"/>
         <javaElement handleIdentifier="=jnif/src"/>
+        <javaElement handleIdentifier="=esmj3dfo76/src"/>
         <file path="/ETCPack/.classpath"/>
         <javaElement handleIdentifier="=esmj3dfo4/src"/>
         <javaElement handleIdentifier="=ESFileManager/src"/>

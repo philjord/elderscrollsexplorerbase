@@ -137,10 +137,19 @@ public class GameConfig {
 					"FallOut4Folder", //
 					"Fallout4.esm", //
 					"fallout4", 3988, new Vector3f(40, -18, -10), new YawPitch()));
+			
+			allGameConfigs.add(new GameConfig("FO76: Fallout 76", //
+					new esmj3dfo76.j3d.cell.J3dCellFactory(), //
+					"textures\\sky\\skyrimcloudsupper04.dds", 
+					new String[] {"meshes\\LoadScreenArt\\Armor01PowerArmor1.nif", }, //					
+					1.8f, //
+					"FallOut76Folder", //
+					"SeventySix.esm", //
+					"fallout76", 60, new Vector3f(40, -18, -10), new YawPitch()));
 
 			allGameConfigs.add(new GameConfig("STAR: Starfield", //
 					new esmj3dstar.j3d.cell.J3dCellFactory(), //FIXME
-					"textures\\sky\\skyrimcloudsupper04.dds", //hahhah!
+					"textures\\sky\\skyrimcloudsupper04.dds", 
 					new String[] {"meshes\\LoadScreenArt\\Armor01PowerArmor1.nif" }, //					
 					1.8f, //
 					"StarfieldFolder", //
