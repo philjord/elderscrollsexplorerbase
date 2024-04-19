@@ -145,7 +145,7 @@ public class GameConfig {
 					1.8f, //
 					"FallOut76Folder", //
 					"SeventySix.esm", //
-					"fallout76", 60, new Vector3f(40, -18, -10), new YawPitch()));
+					"fallout76", 2480661, new Vector3f(40, -18, -10), new YawPitch()));
 
 			allGameConfigs.add(new GameConfig("STAR: Starfield", //
 					new esmj3dstar.j3d.cell.J3dCellFactory(), //FIXME
