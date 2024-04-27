@@ -290,7 +290,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	public void closingTime()
 	{
 		if (cameraPanel != null)
-			cameraPanel.stopRendering();
+			cameraPanel.stopRendering();		
 	}
 
 	/* (non-Javadoc)

@@ -8,6 +8,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.Group;
@@ -56,6 +61,17 @@ import tools3d.utils.scenegraph.StructureUpdateBehavior;
  */
 public class BethWorldVisualBranch extends BranchGroup implements LocationUpdateListener
 {
+	private static ThreadFactory nearDaemonThreads = new ThreadFactory(){
+		@Override 
+		public Thread newThread(Runnable r){Thread t=new Thread(r,"nearDaemonThread");t.setDaemon(true);return t;}};
+	public static int NUM_NEAR_IGORS = 6;
+	public static ExecutorService near_igors = Executors.newFixedThreadPool(NUM_NEAR_IGORS, nearDaemonThreads);
+	
+	private static ThreadFactory farDaemonThreads = new ThreadFactory(){
+		@Override 
+		public Thread newThread(Runnable r){Thread t=new Thread(r,"farDaemonThread");t.setDaemon(true);return t;}};
+	public static int NUM_FAR_IGORS = 10;
+	public static ExecutorService far_igors = Executors.newFixedThreadPool(NUM_FAR_IGORS, farDaemonThreads);
 	
 	public static boolean SHOW_DEBUG_MAKERS = false;
 
@@ -210,7 +226,15 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 		}
 
 	}
-
+	
+	public void closingTime()
+	{
+		if (far_igors != null)
+			far_igors.shutdown();
+		if (near_igors != null)
+			near_igors.shutdown();
+	}
+	
 	public void unload()
 	{
 		bethLodManager.detach();
@@ -453,8 +477,8 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			}
 		}
 
-		ArrayList<Thread> igors = new ArrayList<Thread>();
-		
+		//ArrayList<Thread> igors = new ArrayList<Thread>();
+		List<Callable<Object>> igorMissions = new ArrayList<Callable<Object>>();
 		for (int x = bounds.x; x < bounds.x + bounds.width; x++)
 		{
 			for (int y = bounds.y; y < bounds.y + bounds.height; y++)
@@ -468,10 +492,9 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 					//Persistent are loaded in  the CELL that is makeBGWRLD all xy based persistents are empty
 
 					//let's split -up we can do more damage that way
-					Thread t = new Thread() {
+					igorMissions.add(Executors.callable(new Runnable() {
 						@Override
-						public void run()
-						{
+						public void run() {
 							J3dCELLGeneral bg = j3dCellFactory.makeBGWRLDTemporary(worldFormId, key.x, key.y, false);
 
 							loadedNears.put(key, bg);
@@ -507,16 +530,16 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 
 							loadingNears.remove(key);
 						}
-					};
-					t.setName("makeBGWRLDTemporaryNear " + key);
-					t.start();
-					igors.add(t);
+					}));
+					//t.setName("makeBGWRLDTemporaryNear " + key);
+					//t.start();
+					//igors.add(t);
 				}
 
 			}
 		}
 		//now we wait for igors to come back from their missions
-		for (Thread t : igors)
+		/*for (Thread t : igors)
 		{
 			try
 			{
@@ -526,7 +549,13 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			{
 				e.printStackTrace();
 			}
+		}*/
+		try {
+			List<Future<Object>> answers = near_igors.invokeAll(igorMissions);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+		igorMissions.clear();
 
 		if ((System.currentTimeMillis() - start) > 50)
 			System.out.println("BethWorldVisualBranch.updateNear took " + (System.currentTimeMillis() - start) + "ms");
@@ -603,7 +632,10 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				loadedFars.remove(key);
 			}
 		}
-		ArrayList<Thread> igors = new ArrayList<Thread>();
+		
+		//ArrayList<Thread> igors = new ArrayList<Thread>();
+		
+		List<Callable<Object>> igorMissions = new ArrayList<Callable<Object>>();
 		for (int x = lowX; x < highX; x++)
 		{
 			for (int y = lowY; y < highY; y++)
@@ -617,10 +649,9 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 				{
 					loadingFars.add(key);
 					//long start = System.currentTimeMillis();
-					Thread t = new Thread() {
+					igorMissions.add(Executors.callable(new Runnable() {
 						@Override
-						public void run()
-						{
+						public void run() {
 							//System.out.println("updateFar3 " + key);
 							J3dCELLGeneral bg = j3dCellFactory.makeBGWRLDDistant(worldFormId, key.x, key.y, false);
 							loadedFars.put(key, bg);
@@ -632,15 +663,16 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 							}
 							loadingFars.remove(key);
 						}
-					};
-					t.setName("makeBGWRLDTemporaryFar " + key);
-					t.start();
-					igors.add(t);
+					}));
+				
+					//t.setName("makeBGWRLDTemporaryFar " + key);
+					//t.start();
+					//igors.add(t);
 				}
 			}
 		}
 
-		for (Thread t : igors)
+		/*for (Thread t : igors)
 		{
 			try
 			{
@@ -650,7 +682,13 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			{
 				e.printStackTrace();
 			}
+		}*/
+		try {
+			List<Future<Object>> answers = far_igors.invokeAll(igorMissions);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+		igorMissions.clear();
 		
 		//for(Point key : loadedFars.keySet()) {
 		//	System.out.println("loaded far " + key);

@@ -244,7 +244,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		gameConfigToLoad = newGameConfig;
 		simpleWalkSetup.getAvatarCollisionInfo().setAvatarYHeight(gameConfigToLoad.avatarYHeight);
 
-		Thread t = new Thread() {
+		Thread t = new Thread("ESM Master File load") {
 			@Override
 			public void run()
 			{

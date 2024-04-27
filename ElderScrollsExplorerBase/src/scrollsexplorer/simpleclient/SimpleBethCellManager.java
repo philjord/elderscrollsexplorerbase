@@ -73,6 +73,12 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices
 		if (currentBethWorldPhysicalBranch != null)
 			currentBethWorldPhysicalBranch.updateFromCurrent();
 	}
+	
+	public void closingTime()
+	{
+		if (currentBethWorldVisualBranch != null)
+			currentBethWorldVisualBranch.closingTime();		
+	}
 
 	/**	
 	 * @param meshSource
