@@ -293,7 +293,8 @@ public class Tes3Extensions
 
 		// now add the root to the scene so the controller sequence is live
 
-		NifCharacter nifCharacter = new NifCharacter(skeletonNifFile, skinNifFiles2, mediaSources, idleAnimations);
+		NifCharacter nifCharacter = new NifCharacter(skeletonNifFile, skinNifFiles2, mediaSources);
+		nifCharacter.setIdleAnimations(idleAnimations);
 		nifCharacter.setCapability(Node.ALLOW_BOUNDS_READ);
 
 		final TransformGroup tg = new TransformGroup();
