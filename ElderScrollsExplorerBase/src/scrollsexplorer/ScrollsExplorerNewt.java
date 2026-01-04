@@ -693,6 +693,9 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
                     returnTrans.set(t);
                     returnYP.set(r);
                 }
+            } else            {
+            	System.err.println("*************************************************");
+            	System.err.println("NO DOOR! Nothing to hold! check findADoor, persistents gone missing again");
             }
         }
 
