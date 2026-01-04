@@ -221,7 +221,8 @@ public class PhysicsDynamics extends DynamicsEngine
 			else 
 			{
 				if (j3dRECOType == null) {
-					System.out.println("PhysicsDynamics j3dRECOType is null for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
+					// FIXME only suppress while debugggin FO76
+					//System.out.println("PhysicsDynamics j3dRECOType is null for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
 				} else if(j3dRECOType.physNifFile == null) {
 					System.out.println("PhysicsDynamics j3dRECOType.physNifFile is null for type " + j3dRECOType + " of inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
 				}

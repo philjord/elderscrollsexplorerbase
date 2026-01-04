@@ -123,7 +123,7 @@ public class ActionableMouseOverHandler extends MouseOverHandler {
 								esmj3dtes3.data.records.REFR refr = (esmj3dtes3.data.records.REFR)commonREFR;
 								// DNAM is the target cell name
 								if (refr.DNAM != null) {
-									simpleBethCellManager.changeToCell(refr.DNAM.str, t, r);
+									simpleBethCellManager.changeToCell(refr.DNAM, t, r);
 								} else {
 									simpleBethCellManager.changeToCell(null, t, r);
 								}
@@ -277,7 +277,7 @@ public class ActionableMouseOverHandler extends MouseOverHandler {
 												esmj3dtes3.data.records.REFR refr = (esmj3dtes3.data.records.REFR)commonREFR;
 
 												if (refr.DNAM != null) { // DNAM is the target cell name
-													currentActionTargetData.hudText = "Travel to " + refr.DNAM.str;
+													currentActionTargetData.hudText = "Travel to " + refr.DNAM;
 												} else {
 													//DOOR with null DNAM mean take me to morrowind
 													currentActionTargetData.hudText = "Travel to Morrowind";
