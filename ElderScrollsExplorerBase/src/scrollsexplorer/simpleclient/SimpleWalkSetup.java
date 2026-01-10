@@ -578,7 +578,12 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		showHavok = !showHavok;
 		if (showHavok && !physicsGroup.isLive())
 		{
-			modelGroup.addChild(physicsGroup);
+			try {
+				modelGroup.addChild(physicsGroup);
+			} catch(Exception e) {
+				//TODO: I'm getting index out of bounds, but possibly cause physic is loaded poorly for fo4
+				e.printStackTrace();
+			}
 		}
 		else if (!showHavok && physicsGroup.isLive())
 		{
