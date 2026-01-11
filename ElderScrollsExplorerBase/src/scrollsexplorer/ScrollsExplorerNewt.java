@@ -44,7 +44,6 @@ import javaawt.VMEventQueue;
 import javaawt.image.VMBufferedImage;
 import javaawt.imageio.VMImageIO;
 import nativeLinker.LWJGLLinker;
-import nif.BgsmSource;
 import nif.appearance.NiGeometryAppearanceFactoryShader;
 import nif.character.NifCharacter;
 import nif.j3d.J3dNiTriBasedGeom;
@@ -63,6 +62,7 @@ import tools3d.camera.Camera;
 import tools3d.utils.YawPitch;
 import tools3d.utils.loader.PropertyCodec;
 import tools3d.utils.scenegraph.LocationUpdateListener;
+import utils.source.BgsmSource;
 import utils.source.MediaSources;
 import utils.source.MeshSource;
 import utils.source.SoundSource;
@@ -130,7 +130,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 			simpleWalkSetup.getAvatarLocation().addAvatarLocationListener(this);
 
 			for (GameConfig gameConfig : GameConfig.allGameConfigs) {
-				System.out.println("checking " + gameToLoad + " against " + gameConfig.gameName);
+				System.out.println("checking [" + gameToLoad + "] against [" + gameConfig.gameName+"]");
 				if (gameConfig.gameName.equals(gameToLoad)) {
 					System.out.println("Found game to load! " + gameConfig.gameName);
 					if (hasESMAndBSAFiles(gameConfig)) {
@@ -188,6 +188,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		// check to ensure the esm file and at least one bsa file are in the folder
 		File checkEsm = new File(gameConfig.scrollsFolder, gameConfig.mainESMFile);
 		if (!checkEsm.exists()) {
+			System.out.println("No esm :( " + checkEsm);
 			return false;
 		}
 
@@ -199,6 +200,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		}
 
 		if (countOfBsa == 0) {
+			System.out.println("countOfBsa == 0 " + checkBsa);
 			return false;
 		}
 
@@ -248,23 +250,29 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 						if (bsaFileSet == null) {
 							bsaFileSet = new BSArchiveSetFile(new String[] {gameConfigToLoad.scrollsFolder}, true);
-							//OK time to check that each bsa file that holds dds has a ktx equivilent and drop the dds version
+							//OK time to check that each bsa file that holds dds has a ktx equivalent and drop the dds version
 							// or if not to convert the dds to ktx then drop the dds version
 
-							//a list of new name/old dds archive pair so old can be taken out after new is found or created
+							//a list of new name/old dds archive pairs so old can be taken out after new is found or created
 							HashMap<String, ArchiveFile> neededBsas = new HashMap<String, ArchiveFile>();
 
 							for (ArchiveFile archiveFile : bsaFileSet) {
 								if (archiveFile != null && archiveFile.hasDDS()) {
-									// we want a archive with the same name but _ktx before the extension holding KTX files
-									String ddsArchiveName = archiveFile.getName();
-									String ext = ddsArchiveName.substring(ddsArchiveName.lastIndexOf("."));
+									// we want a archive with the same name but ending in _ktx.bsa holding KTX files
+									String ddsArchiveName = archiveFile.getName();									
 									String ktxArchiveName = ddsArchiveName.substring(0,
 											ddsArchiveName.lastIndexOf("."));
-									ktxArchiveName = ktxArchiveName + "_ktx" + ext;
+									ktxArchiveName = ktxArchiveName + "_ktx.bsa";
 									neededBsas.put(ktxArchiveName, archiveFile);
 								}
 							}
+							
+							
+							//multithread now as we want o get conversion done fastest
+							ArrayList<DDSToKTXBsaConverter> converters = new ArrayList<DDSToKTXBsaConverter>();
+							//TODO: in fact she's a bit complex so do it one day when it's important!
+							
+							
 							for (String ktxArchiveName : neededBsas.keySet()) {
 								ArchiveFile ddsArchive = neededBsas.get(ktxArchiveName);
 								//remove the dds version archive either way
@@ -285,8 +293,6 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 								}
 
 								if (!found) {
-									System.out.println("I should create a _ktx file about now " + ktxArchiveName);
-
 									// I need the displayable version to convert so let's load a new copy
 									File ddsfile = new File(gameConfigToLoad.scrollsFolder, ddsArchive.getName());
 									FileInputStream fis;
@@ -319,6 +325,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 										DDSToKTXBsaConverter convert = new DDSToKTXBsaConverter(fco, fco, archiveFile,
 												sul);
 										System.out.println("converting to " + ktxfile.getPath());
+										//Notice this is single threaded becasue the actual file conversion is heavily multithreaded
 										convert.start();
 										try {
 											convert.join();
@@ -342,6 +349,10 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 									}
 								}
 							}
+							
+							
+							
+							
 						}
 
 						if (bsaFileSet.size() == 0) {
@@ -507,7 +518,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		ConfigLoader.loadConfig(args);
 
 		// always load lwjgl for jbullet debug
-		//Note this mian won't be called on Android so hopefully the linker never causes trouble
+		//Note this main won't be called on Android so hopefully the linker never causes trouble
 		new LWJGLLinker();
 
 		if (args.length > 0 && args[0].equals("debug")) {
@@ -516,7 +527,14 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 			ScrollsExplorerNewt.setDebug(false);
 		}
 
-		new ScrollsExplorerNewt(args[0]);
+		//NOTICE this requires ese to have set folder paths properly already!
+		//TODO: make a picker of some sort
+		//"FO4: Fallout 4"
+		//"TESV: Skyrim" 
+		//"FO3: Fallout 3"
+		//"TESIII: Morrowind" 
+		//"TESIV: Oblivion"
+		new ScrollsExplorerNewt("FO4: Fallout 4");
 	}
 
 	public static void findADoor(	int formToLoad, GameConfig gameConfigToLoad, IESMManager esmManager,
