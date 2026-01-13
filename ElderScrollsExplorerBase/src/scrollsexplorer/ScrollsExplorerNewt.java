@@ -62,7 +62,7 @@ import tools3d.camera.Camera;
 import tools3d.utils.YawPitch;
 import tools3d.utils.loader.PropertyCodec;
 import tools3d.utils.scenegraph.LocationUpdateListener;
-import utils.source.BgsmSource;
+import utils.source.MaterialsSource;
 import utils.source.MediaSources;
 import utils.source.MeshSource;
 import utils.source.SoundSource;
@@ -363,10 +363,10 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 						MeshSource meshSource = new BsaMeshSource(bsaFileSet);
 						TextureSource textureSource = new BsaTextureSource(bsaFileSet);
-						BgsmSource materialsSource = new BsaMaterialsSource(bsaFileSet);
+						MaterialsSource materialsSource = new BsaMaterialsSource(bsaFileSet);
 						//TODO: Just for the crazy new fallout 4 system, needs to be part of the MediaSources 
 						//and be passed in deep the J3dNiGeometryXXX gear with TextureSource
-						BgsmSource.setBgsmSource(materialsSource);
+						MaterialsSource.setBgsmSource(materialsSource);
 
 						new EsmSoundKeyToName(esmManager);
 						//TODO: Morrowind appears to have sound and music as a seperate gosh darned file system system! not in a bsa
