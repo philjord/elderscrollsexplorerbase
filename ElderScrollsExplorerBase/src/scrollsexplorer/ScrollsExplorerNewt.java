@@ -367,7 +367,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 						//TODO: Just for the crazy new fallout 4 system, needs to be part of the MediaSources 
 						//and be passed in deep the J3dNiGeometryXXX gear with TextureSource
 						MaterialsSource.setBgsmSource(materialsSource);
-
+						MeshSource.setMeshSource(meshSource);
+						
 						new EsmSoundKeyToName(esmManager);
 						//TODO: Morrowind appears to have sound and music as a seperate gosh darned file system system! not in a bsa
 
