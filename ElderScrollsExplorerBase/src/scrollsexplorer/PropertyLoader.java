@@ -6,28 +6,25 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class PropertyLoader
-{
-	public static String fileSep = System.getProperty("file.separator");
+public class PropertyLoader {
+	public static String		fileSep	= System.getProperty("file.separator");
 
-	public static String pathSep = System.getProperty("path.separator");
+	public static String		pathSep	= System.getProperty("path.separator");
 
-	public static File propFile;
+	public static File			propFile;
 
-	public static Properties properties;
+	public static Properties	properties;
 
-	public static void load() throws IOException
-	{
+	public static void load() throws IOException {
 		load(null);
 	}
 
-	public static void load(String root) throws IOException
-	{
+	public static void load(String root) throws IOException {
 		//I expect android to have preset the property file location
-		if(propFile == null) {
+		if (propFile == null) {
 			if (root == null)
 				root = System.getProperty("user.home") + fileSep + "philjord";
-	
+
 			String filePath = root;
 			File dirFile = new File(filePath);
 			if (!dirFile.exists())
@@ -36,8 +33,7 @@ public class PropertyLoader
 			propFile = new File(filePath);
 		}
 		properties = new Properties();
-		if (propFile.exists())
-		{
+		if (propFile.exists()) {
 			FileInputStream in = new FileInputStream(propFile);
 			properties.load(in);
 			in.close();
@@ -45,25 +41,36 @@ public class PropertyLoader
 		GameConfig.init();
 	}
 
-	public static void save()
-	{
+	public static void save() {
 		//android needs different gear, I smell an interface
 		//http://developer.android.com/guide/topics/data/data-storage.html#pref
-		try
-		{
+		try {
 			if (!propFile.exists())
 				propFile.createNewFile();
 
-			if (propFile.exists())
-			{
+			if (propFile.exists()) {
 				FileOutputStream out = new FileOutputStream(propFile);
 				properties.store(out, "ElderScrollsExplorer Properties");
 				out.close();
 			}
-		}
-		catch (Throwable exc)
-		{
+		} catch (Throwable exc) {
 			new Exception("Exception while saving application properties", exc).printStackTrace();
 		}
 	}
+
+	/////// Convenience methods
+	public static Object put(String key, String value) {
+		return properties.put(key, value);
+	}
+	public static Object put(String key, boolean value) {
+		return properties.put(key, Boolean.toString(value));
+	}
+
+	public static String get(String key, String defaultValue) {
+		return properties.getProperty(key, defaultValue);
+	}
+	public static boolean getBoolean(String key, boolean defaultValue) {
+		return Boolean.parseBoolean(properties.getProperty(key, "" + defaultValue));
+	}
+
 }
