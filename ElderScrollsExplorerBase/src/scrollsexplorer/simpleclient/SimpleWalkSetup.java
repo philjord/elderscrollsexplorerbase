@@ -206,7 +206,6 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 
 		//add mouse and keyboard inputs ************************
 		keyNavigationInputNewt = new NavigationInputNewtKey(navigationProcessor);
-		NavigationInputNewtKey.VERTICAL_RATE = 50f;
 
 		//mouseInputListener = new NavigationInputAWTMouseLocked();
 		//mouseInputListener.setNavigationProcessor(navigationProcessor);
