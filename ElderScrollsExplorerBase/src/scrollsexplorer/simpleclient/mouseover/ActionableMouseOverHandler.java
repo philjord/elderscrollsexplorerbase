@@ -29,7 +29,7 @@ import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import tools3d.mixed3d2d.Canvas3D2D;
 import tools3d.mixed3d2d.curvehud.elements.HUDText;
 import tools3d.utils.Utils3D;
-import utils.ESConfig;
+import utils.convert.ConvertFromNif;
 
 public class ActionableMouseOverHandler extends MouseOverHandler {
 	public static final float		INTERACT_MAX_DIST			= 2.6f;
@@ -417,8 +417,7 @@ public class ActionableMouseOverHandler extends MouseOverHandler {
 	}
 
 	public static Vector3f getTrans(float x, float y, float z) {
-		return new Vector3f(x * ESConfig.ES_TO_METERS_SCALE, z * ESConfig.ES_TO_METERS_SCALE,
-				-y * ESConfig.ES_TO_METERS_SCALE);
+		return ConvertFromNif.toJ3d(x, y, z);
 	}
 
 	public static Quat4f getRot(float rx, float ry, float rz) {

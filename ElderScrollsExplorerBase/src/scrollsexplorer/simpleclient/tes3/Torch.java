@@ -16,7 +16,6 @@ import org.jogamp.vecmath.Point3d;
 import org.jogamp.vecmath.Point3f;
 import org.jogamp.vecmath.Vector3f;
 
-import esmj3d.j3d.BethRenderSettings;
 import nif.NifJ3dVisRoot;
 import nif.NifToJ3d;
 import nif.j3d.J3dNiAVObject;
@@ -25,7 +24,7 @@ import nif.niobject.NiAVObject;
 import nif.niobject.NiNode;
 import nif.niobject.NiObject;
 import tools3d.utils.Utils3D;
-import utils.ESConfig;
+import utils.convert.ConvertFromNif;
 import utils.source.MediaSources;
 
 public class Torch extends BranchGroup
@@ -108,8 +107,7 @@ public class Torch extends BranchGroup
 		//TODO: this should be the classic multiply up the chain gear
 		if (niAVObject.name.equals("AttachLight"))
 		{
-			return new Vector3f(niAVObject.translation.x * ESConfig.ES_TO_METERS_SCALE,
-					niAVObject.translation.z * ESConfig.ES_TO_METERS_SCALE, -niAVObject.translation.y * ESConfig.ES_TO_METERS_SCALE);
+			return ConvertFromNif.toJ3d(niAVObject.translation);
 		}
 
 		if (niAVObject instanceof NiNode)
