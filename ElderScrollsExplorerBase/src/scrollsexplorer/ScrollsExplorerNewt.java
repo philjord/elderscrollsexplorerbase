@@ -30,7 +30,6 @@ import bsaio.BSArchiveSetFile;
 import bsaio.DBException;
 import esfilemanager.common.data.plugin.PluginGroup;
 import esfilemanager.common.data.record.Record;
-import esfilemanager.loader.ESMManager;
 import esfilemanager.loader.ESMManagerFile;
 import esfilemanager.loader.IESMManager;
 import esfilemanager.utils.ESMUtils;
@@ -47,7 +46,7 @@ import nativeLinker.LWJGLLinker;
 import nif.appearance.NiGeometryAppearanceFactoryShader;
 import nif.character.NifCharacter;
 import nif.j3d.J3dNiTriBasedGeom;
-import nif.j3d.particles.tes3.J3dNiParticles;
+import nif.j3d.particles.J3dNiParticleSystem;
 import nif.shader.ShaderSourceIO;
 import scrollsexplorer.simpleclient.BethWorldVisualBranch;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
@@ -435,11 +434,11 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 
 							@Override
 							public void windowResized(final WindowEvent e) {
-								J3dNiParticles.setScreenWidth(simpleWalkSetup.getWindow().getWidth());
+								J3dNiParticleSystem.setScreenWidth(simpleWalkSetup.getWindow().getWidth());
 							}
 
 						});
-						J3dNiParticles.setScreenWidth(simpleWalkSetup.getWindow().getWidth());
+						J3dNiParticleSystem.setScreenWidth(simpleWalkSetup.getWindow().getWidth());
 						simpleWalkSetup.getWindow().addKeyListener(new KeyAdapter() {
 							@Override
 							public void keyPressed(KeyEvent e) {
