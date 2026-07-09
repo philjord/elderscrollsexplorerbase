@@ -40,7 +40,7 @@ public class Torch extends BranchGroup
 	private boolean isOn = true;
 
 	private float fieldOfView = -1;
-	private float fade = 0;
+	private float fade = 1.1f;
 	private float falloffExponent = 0;
 	private float radius = 30f;
 

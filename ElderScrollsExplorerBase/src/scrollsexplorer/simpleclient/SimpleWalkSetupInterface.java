@@ -30,6 +30,8 @@ public interface SimpleWalkSetupInterface
 	void setGlobalAmbLightLevel(float f);
 
 	void setGlobalDirLightLevel(float f);
+	
+	void setGlobalDirLightEnabled(boolean enabled);
 
 	void configure(MeshSource meshSource, SimpleBethCellManager simpleBethCellManager);
 

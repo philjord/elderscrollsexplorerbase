@@ -189,6 +189,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		//dirLight.setCapability(Light.ALLOW_INFLUENCING_BOUNDS_WRITE);
 		dirLight.setInfluencingBounds(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), Double.POSITIVE_INFINITY));
 		dirLight.setCapability(Light.ALLOW_COLOR_WRITE);
+		dirLight.setCapability(Light.ALLOW_STATE_WRITE);
 		BranchGroup lightsBG = new BranchGroup();
 		lightsBG.addChild(ambLight);
 		lightsBG.addChild(dirLight);
@@ -343,8 +344,16 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	@Override
 	public void setGlobalDirLightLevel(float f)
 	{
+		
 		Color3f dirColor = new Color3f(f, f, f);
 		dirLight.setColor(dirColor);
+	}
+	
+	@Override
+	public void setGlobalDirLightEnabled(boolean enabled)
+	{
+		// disable so torch can shine through
+		dirLight.setEnable(enabled);		
 	}
 
 	/* (non-Javadoc)

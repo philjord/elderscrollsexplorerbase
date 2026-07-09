@@ -13,8 +13,6 @@ import org.jogamp.java3d.WakeupOnElapsedFrames;
 import org.jogamp.vecmath.Quat4f;
 import org.jogamp.vecmath.Vector3f;
 
-import com.jogamp.newt.event.KeyEvent;
-import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseAdapter;
 import com.jogamp.newt.event.MouseEvent;
 
@@ -38,7 +36,7 @@ import tools3d.utils.YawPitch;
 import tools3d.utils.scenegraph.LocationUpdateListener;
 import utils.source.MediaSources;
 
-public class Tes3Extensions
+public class Tes3Extensions extends JustATorch
 {
 
 	public static boolean ENABLE_HANDS = false;
@@ -52,33 +50,20 @@ public class Tes3Extensions
 
 	public static boolean dragon = false;
 
-	private static boolean FIRST_PERSON = false;;
-	private GameConfig selectedGameConfig;
-	private IESMManager esmManager;
-	private MediaSources mediaSources;
-	private SimpleWalkSetupInterface simpleWalkSetup;
-	private SimpleBethCellManager simpleBethCellManager;
+	 
 
 	private CharacterSheet characterSheet;
 	private CharacterAvatar avatarFirstPerson;
 	private CharacterAvatar avatarThirdPerson;
-	private BranchGroup botBg = new BranchGroup();	
-	
-	private Torch characterTorch = null;
+	 
 
 	public Tes3Extensions(GameConfig selectedGameConfig, IESMManager esmManager, final MediaSources mediaSources,
 			SimpleWalkSetupInterface simpleWalkSetup2, SimpleBethCellManager simpleBethCellManager)
 	{
-		this.selectedGameConfig = selectedGameConfig;
-		this.esmManager = esmManager;
-		this.mediaSources = mediaSources;
-		this.simpleWalkSetup = simpleWalkSetup2;
-		this.simpleBethCellManager = simpleBethCellManager;
 
-		FIRST_PERSON = !simpleWalkSetup.isTrailorCam();
+		super(selectedGameConfig, esmManager, mediaSources, simpleWalkSetup2, simpleBethCellManager);
 
-		botBg.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-		botBg.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+ 
 
 		ArrayList<NPCO> npcos = new ArrayList<NPCO>();
 
@@ -115,7 +100,7 @@ public class Tes3Extensions
 			}
 		}
 		characterSheet = new CharacterSheet(false, "Breton", "b_n_breton_f_head_01", "b_n_breton_f_hair_01", npcos);
-		characterTorch = new Torch(mediaSources);
+		 
 		if (FIRST_PERSON)
 		{
 			avatarFirstPerson = new CharacterAvatar(characterSheet, esmManager, mediaSources, true);
@@ -128,12 +113,10 @@ public class Tes3Extensions
 			//t.setTranslation(new Vector3f(0, 0, -3f));
 			tg.setTransform(t);
 			tg.addChild(avatarFirstPerson);			
-			
-			tg.addChild(characterTorch);
 
-			botBg.addChild(tg);
-
-			simpleWalkSetup.getViewingPlatform().getPlatformGeometry().addChild(botBg);
+			BranchGroup bg2 = new BranchGroup();
+			bg2.addChild(tg);
+			botBg.addChild(bg2);		 
 
 		}
 		else
@@ -161,9 +144,7 @@ public class Tes3Extensions
 			t.setTranslation(new Vector3f(0, -0.9f, 0.0f));
 			tg.setTransform(t);
 			tg.addChild(avatarThirdPerson);
-			
-			tg.addChild(characterTorch);
-			
+						
 			botBg.addChild(tg);
 
 			simpleWalkSetup.getVisualBranch().addChild(topBg);
@@ -245,26 +226,7 @@ public class Tes3Extensions
 
 		});
 		
-		simpleWalkSetup.getWindow().addKeyListener(new KeyListener(){
-
-			@Override
-			public void keyPressed(KeyEvent e)
-			{
-				if (e.getKeyCode() == KeyEvent.VK_T)
-				{
-					characterTorch.toggle();
-				}
-				
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e)
-			{				
-				
-			}
-			
-		});
-
+		
 		if (dragon)
 		{
 			///umm??? Dragon?
