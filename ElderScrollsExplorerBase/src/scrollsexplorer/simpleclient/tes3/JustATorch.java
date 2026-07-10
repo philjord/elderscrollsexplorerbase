@@ -3,6 +3,8 @@ package scrollsexplorer.simpleclient.tes3;
 import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransformGroup;
+import org.jogamp.vecmath.Color3f;
+import org.jogamp.vecmath.Point3f;
 import org.jogamp.vecmath.Vector3f;
 
 import com.jogamp.newt.event.KeyEvent;
@@ -41,6 +43,9 @@ public class JustATorch {
 		botBg.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 
 		characterTorch = new Torch(mediaSources);
+		// spot light for a flash light
+		//characterTorch = new Torch(mediaSources, true, new Color3f(0.9f, 0.86f, 0.85f), new Point3f(0, -0.2f, 0), new Point3f(0, 1.1f, 0),
+		//		new Vector3f(0,0,1), 20f, 0f, -1f);
 
 		if (FIRST_PERSON) {
 

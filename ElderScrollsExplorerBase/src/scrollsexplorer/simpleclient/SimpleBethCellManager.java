@@ -284,10 +284,12 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices
 								avatarLocation.addAvatarLocationListener(bethAIControl);
 
 								// outside is light
-								BethRenderSettings.setGlobalAmbLightLevel(50f / 100f);
-								simpleWalkSetup.setGlobalAmbLightLevel(50f / 100f);
-								BethRenderSettings.setGlobalDirLightLevel(75 / 100f);
-								simpleWalkSetup.setGlobalDirLightLevel(75 / 100f);
+								BethRenderSettings.setGlobalAmbLightLevel(60f / 100f);
+								simpleWalkSetup.setGlobalAmbLightLevel(60f / 100f);
+								BethRenderSettings.setGlobalDirLightLevel(60 / 100f);
+								simpleWalkSetup.setGlobalDirLightLevel(60 / 100f);
+								BethRenderSettings.setGlobalDirLightEnabled(true);
+								simpleWalkSetup.setGlobalDirLightEnabled(true);
 
 								currentBethWorldVisualBranch = new BethWorldVisualBranch(currentCellFormId, j3dCellFactory,
 										simpleWalkSetup.getPhysicsSystem());
@@ -320,8 +322,10 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices
 								//must be interior?
 								// inside is dim
 								BethRenderSettings.setGlobalAmbLightLevel(50f / 100f);
-								simpleWalkSetup.setGlobalAmbLightLevel(35f / 100f);
-
+								simpleWalkSetup.setGlobalAmbLightLevel(50f / 100f);
+								BethRenderSettings.setGlobalDirLightEnabled(false);
+								simpleWalkSetup.setGlobalDirLightEnabled(false);
+								
 								cell = esmManager.getInteriorCELL(currentCellFormId);
 								if (cell != null)
 								{
