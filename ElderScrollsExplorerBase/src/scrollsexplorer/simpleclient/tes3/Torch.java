@@ -65,7 +65,7 @@ public class Torch extends BranchGroup {
 
 	public Torch(MediaSources mediaSources) {
 		// use some reasonable defaults
-		this(mediaSources, true, new Color3f(0.9f, 0.86f, 0.85f), new Point3f(0, 0.2f, 0), new Point3f(0, 1.1f, 0),
+		this(mediaSources, false, new Color3f(0.9f, 0.86f, 0.85f), new Point3f(0, 0.2f, 0), new Point3f(0, 1.1f, 0),
 				null, 0f, 0f, -1f);
 	}
 
@@ -167,6 +167,11 @@ public class Torch extends BranchGroup {
 	public void toggle() {
 		lightOn = !lightOn;
 		light.setEnable(lightOn);
+	}
+	
+	public void setEnable(boolean enabled) {
+		lightOn = enabled;
+		light.setEnable(enabled);
 	}
 
 	//TODO flicker should also move the flame a bit so it's make normals shimmer

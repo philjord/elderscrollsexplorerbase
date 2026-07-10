@@ -62,94 +62,91 @@ import utils.source.MeshSource;
  * @author philip
  *
  */
-public class SimpleWalkSetup implements SimpleWalkSetupInterface
-{
-	public static boolean HMD_MODE = false;
-	public static boolean TRAILER_CAM = false;
+public class SimpleWalkSetup implements SimpleWalkSetupInterface, BethRenderSettings.UpdateListener, GlobalGameSettings.UpdateListener {
+	public static boolean					HMD_MODE			= false;
+	public static boolean					TRAILER_CAM			= false;
 
 	//	private JFrame frame = new JFrame();
 
-	private boolean enabled = false;
+	private boolean							enabled				= false;
 
-	public VisualPhysicalUniverse universe;
+	public VisualPhysicalUniverse			universe;
 
-	private BranchGroup modelGroup = new BranchGroup();
+	private BranchGroup						modelGroup			= new BranchGroup();
 
-	private BranchGroup physicsGroup;
+	private BranchGroup						physicsGroup;
 
-	private BranchGroup visualGroup;
+	private BranchGroup						visualGroup;
 
-	private BranchGroup behaviourBranch;
+	private BranchGroup						behaviourBranch;
 
-	private NavigationTemporalBehaviour navigationTemporalBehaviour;
+	private NavigationTemporalBehaviour		navigationTemporalBehaviour;
 
-	private NavigationProcessorBullet navigationProcessor;
+	private NavigationProcessorBullet		navigationProcessor;
 
-	private ICameraPanel cameraPanel;
+	private ICameraPanel					cameraPanel;
 
-	private AvatarLocation avatarLocation = new AvatarLocation();
+	private AvatarLocation					avatarLocation		= new AvatarLocation();
 
-	private AvatarCollisionInfo avatarCollisionInfo = new AvatarCollisionInfo(avatarLocation, 0.5f, 1.8f, 0.35f, 0.8f);
+	private AvatarCollisionInfo				avatarCollisionInfo	= new AvatarCollisionInfo(avatarLocation, 0.5f, 1.8f,
+			0.35f, 0.8f);
 
-	private NavigationInputNewtKey keyNavigationInputNewt;
+	private NavigationInputNewtKey			keyNavigationInputNewt;
 
-	private NavigationInputNewtMouseLocked newtMouseInputListener;
+	private NavigationInputNewtMouseLocked	newtMouseInputListener;
 
-	private NewtJumpKeyListener jumpKeyListener;
+	private NewtJumpKeyListener				jumpKeyListener;
 
-	private NewtMiscKeyHandler newtMiscKeyHandler = new NewtMiscKeyHandler();
+	private NewtMiscKeyHandler				newtMiscKeyHandler	= new NewtMiscKeyHandler();
 
-	private boolean showHavok = false;
+	private boolean							showHavok			= false;
 
-	private boolean showVisual = true;
+	private boolean							showVisual			= true;
 
-	private HUDFPSCounter fpsCounter;
+	private HUDFPSCounter					fpsCounter;
 
-	private HUDCompass hudcompass;
+	private HUDCompass						hudcompass;
 
-	private HUDCrossHair hudCrossHair;
+	private HUDCrossHair					hudCrossHair;
 
-	private HUDPosition hudPos;
+	private HUDPosition						hudPos;
 
 	//private HUDPhysicsState hudPhysicsState;
 
-	private HUDText firstInstruction;
+	private HUDText							firstInstruction;
 
-	private HUDText loadInfo;
-	private LoadingInfoBehavior loadingInfoBehavior;
+	private HUDText							loadInfo;
+	private LoadingInfoBehavior				loadingInfoBehavior;
 
-	private PhysicsSystem physicsSystem;
+	private PhysicsSystem					physicsSystem;
 
-	private ActionableMouseOverHandler cameraMouseOver;
+	private ActionableMouseOverHandler		cameraMouseOver;
 
-	private AdminMouseOverHandler cameraAdminMouseOverHandler;
+	private AdminMouseOverHandler			cameraAdminMouseOverHandler;
 
-	private boolean freefly = false;
+	private boolean							freefly				= false;
 
-	private AmbientLight ambLight = null;
+	private AmbientLight					ambLight			= null;
 
-	private DirectionalLight dirLight = null;
+	private DirectionalLight				dirLight			= null;
 
-	private GLWindow gl_window;
+	private GLWindow						gl_window;
 
 	//Can't use as threading causes massive trouble for scene loading
 	//	private StructureUpdateBehavior structureUpdateBehavior;
 
-	private NbccProvider nbccProvider = new NbccProvider() {
-		@Override
-		public NBControlledChar getNBControlledChar()
-		{
-			return physicsSystem.getNBControlledChar();
-		}
-	};
+	private NbccProvider					nbccProvider		= new NbccProvider() {
+																	@Override
+																	public NBControlledChar getNBControlledChar() {
+																		return physicsSystem.getNBControlledChar();
+																	}
+																};
 
-	public SimpleWalkSetup(String frameName)
-	{
+	public SimpleWalkSetup(String frameName) {
 		this(frameName, null);
 	}
 
-	public SimpleWalkSetup(String frameName, GLWindow gl_window)
-	{
+	public SimpleWalkSetup(String frameName, GLWindow gl_window) {
 		this.gl_window = gl_window;
 		//kick off with a universe ***************************
 		universe = new VisualPhysicalUniverse();
@@ -230,7 +227,8 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		loadInfo = new HUDText(new Point2f(-0.95f, 0.1f), 18, false, "Loading...");
 		loadingInfoBehavior = new LoadingInfoBehavior(loadInfo);
 		behaviourBranch.addChild(loadingInfoBehavior);
-		firstInstruction = new HUDText(new Point2f(-0.95f, 0f), 18, false, "Press tab to look around, press tab again to release mouse");
+		firstInstruction = new HUDText(new Point2f(-0.95f, 0f), 18, false,
+				"Press tab to look around, press tab again to release mouse");
 
 		//behaviourBranch.addChild(hudPhysicsState.getBehaviorBranchGroup());
 
@@ -250,8 +248,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		// Add a ShaderErrorListener
 		universe.addShaderErrorListener(new ShaderErrorListener() {
 			@Override
-			public void errorOccurred(ShaderError error)
-			{
+			public void errorOccurred(ShaderError error) {
 				error.printVerbose();
 				//JOptionPane.showMessageDialog(null, error.toString(), "ShaderError", JOptionPane.ERROR_MESSAGE);
 			}
@@ -281,24 +278,25 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 					}
 				});*/
 
+		// listen out for render setting changes
+		BethRenderSettings.addUpdateListener(this);
+		GlobalGameSettings.addUpdateListener(this);
 	}
 
 	/* (non-Javadoc)
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#closingTime()
 	 */
 	@Override
-	public void closingTime()
-	{
+	public void closingTime() {
 		if (cameraPanel != null)
-			cameraPanel.stopRendering();		
+			cameraPanel.stopRendering();
 	}
 
 	/* (non-Javadoc)
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getWindow()
 	 */
 	@Override
-	public Window getWindow()
-	{
+	public Window getWindow() {
 		return cameraPanel.getCanvas3D2D().getGLWindow();
 	}
 
@@ -306,8 +304,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#changeLocation(javax.vecmath.Quat4f, javax.vecmath.Vector3f)
 	 */
 	@Override
-	public void changeLocation(Quat4f rot, Vector3f trans)
-	{
+	public void changeLocation(Quat4f rot, Vector3f trans) {
 		System.out.println("Moving to " + trans);
 		//TODO: should I call warp now? not needed if only change cell uses the above
 		warp(trans);
@@ -319,49 +316,18 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#warp(javax.vecmath.Vector3f)
 	 */
 	@Override
-	public void warp(Vector3f origin)
-	{
-		if (physicsSystem != null && physicsSystem.getNBControlledChar() != null)
-		{
+	public void warp(Vector3f origin) {
+		if (physicsSystem != null && physicsSystem.getNBControlledChar() != null) {
 			physicsSystem.getNBControlledChar().getCharacterController().warp(origin);
 		}
 
 	}
 
 	/* (non-Javadoc)
-	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setGlobalAmbLightLevel(float)
-	 */
-	@Override
-	public void setGlobalAmbLightLevel(float f)
-	{
-		Color3f alColor = new Color3f(f, f, f);
-		ambLight.setColor(alColor);
-	}
-
-	/* (non-Javadoc)
-	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setGlobalDirLightLevel(float)
-	 */
-	@Override
-	public void setGlobalDirLightLevel(float f)
-	{
-		
-		Color3f dirColor = new Color3f(f, f, f);
-		dirLight.setColor(dirColor);
-	}
-	
-	@Override
-	public void setGlobalDirLightEnabled(boolean enabled)
-	{
-		// disable so torch can shine through
-		dirLight.setEnable(enabled);		
-	}
-
-	/* (non-Javadoc)
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#configure(utils.source.MeshSource, scrollsexplorer.simpleclient.SimpleBethCellManager)
 	 */
 	@Override
-	public void configure(MeshSource meshSource, SimpleBethCellManager simpleBethCellManager)
-	{
+	public void configure(MeshSource meshSource, SimpleBethCellManager simpleBethCellManager) {
 		// set up and run the physics system************************************************
 
 		physicsSystem = new PhysicsSystem(simpleBethCellManager, avatarCollisionInfo, behaviourBranch, meshSource);
@@ -374,16 +340,41 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 
 	}
 
-	private void setupGraphicsSetting()
-	{
+	@Override
+	public void gameSettingsUpdated() {
+		setFreeFly(GlobalGameSettings.isFreeFly());
+	}
 
-		if (cameraPanel == null)
-		{
+	@Override
+	public void renderSettingsUpdated() {
+		setGlobalDirLightEnabled(BethRenderSettings.isEnableDirLight());
+		setGlobalDirLightLevel(BethRenderSettings.getGlobalDirLightLevel());
+		setGlobalAmbLightLevel(BethRenderSettings.getGlobalAmbLightLevel());
+
+		setShowHavok(BethRenderSettings.isShowPhysic());
+	}
+
+	private void setGlobalAmbLightLevel(float f) {
+		Color3f alColor = new Color3f(f, f, f);
+		ambLight.setColor(alColor);
+	}
+
+	private void setGlobalDirLightLevel(float f) {
+		Color3f dirColor = new Color3f(f, f, f);
+		dirLight.setColor(dirColor);
+	}
+
+	private void setGlobalDirLightEnabled(boolean enabled) {
+		dirLight.setEnable(enabled);
+	}
+
+	private void setupGraphicsSetting() {
+
+		if (cameraPanel == null) {
 			// must record start state to restore later
 			boolean isLive = enabled;
 
-			if (isLive)
-			{
+			if (isLive) {
 				setEnabled(false);
 			}
 
@@ -408,11 +399,9 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			HMD_MODE = false;//gs.isOculusView();
 
 			//create the camera panel ************************
-			if (HMD_MODE)
-			{
+			if (HMD_MODE) {
 				System.out.println("HMD mode");
-				try
-				{
+				try {
 					cameraPanel = new HMDCameraPanel(universe);
 					// and the dolly it rides on
 					HMDCamDolly hcd = new HMDCamDolly(avatarCollisionInfo);
@@ -422,9 +411,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 					navigationProcessor.setNoPitch(true);
 					navigationTemporalBehaviour.addNavigationProcessor(hcd);
 					cameraPanel.getCanvas3D2D().getGLWindow().addKeyListener(new HMDKeyHandler(hcd));
-				}
-				catch (OculusException e)
-				{
+				} catch (OculusException e) {
 					e.printStackTrace();
 					//JOptionPane.showMessageDialog(null, "No Oculus or failure", "Oculus", JOptionPane.ERROR_MESSAGE);
 				}
@@ -432,26 +419,20 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			}
 
 			//if HMD fails or not HMD
-			if (cameraPanel == null)
-			{
-				if (gl_window == null)
-				{
+			if (cameraPanel == null) {
+				if (gl_window == null) {
 					cameraPanel = new CameraPanel(universe);
 					cameraPanel.getCanvas3D2D().getGLWindow().setPosition(600, 10);
-				}
-				else
-				{
+				} else {
 					cameraPanel = new CameraPanel(universe, gl_window);
 				}
 
 				// and the dolly it rides on
-				if (TRAILER_CAM)
-				{
-					TrailerCamDolly trailerCamDolly = new TrailerCamDolly(avatarCollisionInfo, new WalkTrailorCamCollider());
+				if (TRAILER_CAM) {
+					TrailerCamDolly trailerCamDolly = new TrailerCamDolly(avatarCollisionInfo,
+							new WalkTrailorCamCollider());
 					cameraPanel.setDolly(trailerCamDolly);
-				}
-				else
-				{
+				} else {
 					HeadCamDolly headCamDolly = new HeadCamDolly(avatarCollisionInfo);
 					cameraPanel.setDolly(headCamDolly);
 				}
@@ -460,7 +441,8 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			//frame.getContentPane().add((JPanel) cameraPanel);
 
 			avatarLocation.addAvatarLocationListener(cameraPanel.getDolly());
-			cameraPanel.getDolly().locationUpdated(avatarLocation.get(new Quat4f()), avatarLocation.get(new Vector3f()));
+			cameraPanel.getDolly().locationUpdated(avatarLocation.get(new Quat4f()),
+					avatarLocation.get(new Vector3f()));
 			//cameraPanel.getDolly().setHudShape(cameraPanel.getCanvas3D2D().getHudShapeRoot());
 
 			//			DDSTextureLoader.setAnisotropicFilterDegree(gs.getAnisotropicFilterDegree());
@@ -482,8 +464,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 
 			//			canvas3D2D.addComponentListener(canvasResizeListener);
 
-			if (isLive)
-			{
+			if (isLive) {
 				setEnabled(true);
 			}
 		}
@@ -493,8 +474,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#resetGraphicsSetting()
 	 */
 	@Override
-	public void resetGraphicsSetting()
-	{
+	public void resetGraphicsSetting() {
 		/*		GraphicsSettings gs = ScreenResolution.organiseResolution(Preferences.userNodeForPackage(SimpleWalkSetup.class), frame, false,
 						false, true, false);
 				if (gs != null)
@@ -507,23 +487,18 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setEnabled(boolean)
 	 */
 	@Override
-	public void setEnabled(boolean enable)
-	{
-		if (enable != enabled)
-		{
+	public void setEnabled(boolean enable) {
+		if (enable != enabled) {
 			System.out.println("Setting Enabled " + enable);
 			// start the processor up ************************
 			navigationProcessor.setActive(enable);
-			if (enable)
-			{
+			if (enable) {
 				cameraMouseOver.setConfig(cameraPanel.getCanvas3D2D());
 				cameraAdminMouseOverHandler.setConfig(cameraPanel.getCanvas3D2D());
 				physicsSystem.unpause();
 				loadInfo.removeFromCanvas();
 				loadingInfoBehavior.setEnable(false);
-			}
-			else
-			{
+			} else {
 				cameraMouseOver.setConfig(null);
 				cameraAdminMouseOverHandler.setConfig(null);
 				physicsSystem.pause();
@@ -541,10 +516,8 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setFreeFly(boolean)
 	 */
 	@Override
-	public void setFreeFly(boolean ff)
-	{
-		if (physicsSystem.getNBControlledChar() != null)
-		{
+	public void setFreeFly(boolean ff) {
+		if (physicsSystem.getNBControlledChar() != null) {
 			physicsSystem.getNBControlledChar().getCharacterController().setFreeFly(ff);
 		}
 		keyNavigationInputNewt.setAllowVerticalMovement(ff);
@@ -554,8 +527,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getPhysicsSystem()
 	 */
 	@Override
-	public PhysicsSystem getPhysicsSystem()
-	{
+	public PhysicsSystem getPhysicsSystem() {
 		return physicsSystem;
 	}
 
@@ -563,8 +535,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getVisualBranch()
 	 */
 	@Override
-	public BranchGroup getVisualBranch()
-	{
+	public BranchGroup getVisualBranch() {
 		return visualGroup;
 	}
 
@@ -572,8 +543,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getPhysicalBranch()
 	 */
 	@Override
-	public BranchGroup getPhysicalBranch()
-	{
+	public BranchGroup getPhysicalBranch() {
 		return physicsGroup;
 	}
 
@@ -581,21 +551,34 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#toggleHavok()
 	 */
 	@Override
-	public void toggleHavok()
-	{
+	public void toggleHavok() {
 		showHavok = !showHavok;
-		if (showHavok && !physicsGroup.isLive())
-		{
+		if (showHavok && !physicsGroup.isLive()) {
 			try {
 				modelGroup.addChild(physicsGroup);
-			} catch(Exception e) {
+			} catch (Exception e) {
 				//TODO: I'm getting index out of bounds, but possibly cause physic is loaded poorly for fo4
 				e.printStackTrace();
 			}
-		}
-		else if (!showHavok && physicsGroup.isLive())
-		{
+		} else if (!showHavok && physicsGroup.isLive()) {
 			physicsGroup.detach();
+		}
+	}
+
+	@Override
+	public void setShowHavok(boolean setShowHavok) {
+		if (setShowHavok != showHavok) {
+			showHavok = setShowHavok;
+			if (showHavok && !physicsGroup.isLive()) {
+				try {
+					modelGroup.addChild(physicsGroup);
+				} catch (Exception e) {
+					//TODO: I'm getting index out of bounds, but possibly cause physic is loaded poorly for fo4
+					e.printStackTrace();
+				}
+			} else if (!showHavok && physicsGroup.isLive()) {
+				physicsGroup.detach();
+			}
 		}
 	}
 
@@ -603,17 +586,13 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#toggleVisual()
 	 */
 	@Override
-	public void toggleVisual()
-	{
+	public void toggleVisual() {
 		showVisual = !showVisual;
-		if (showVisual && !visualGroup.isLive())
-		{
+		if (showVisual && !visualGroup.isLive()) {
 			//Bad no good 
 			//structureUpdateBehavior.add(modelGroup, visualGroup);
 			modelGroup.addChild(visualGroup);
-		}
-		else if (!showVisual && visualGroup.isLive())
-		{
+		} else if (!showVisual && visualGroup.isLive()) {
 			//structureUpdateBehavior.remove(modelGroup, visualGroup);
 			visualGroup.detach();
 		}
@@ -623,16 +602,12 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setVisualDisplayed(boolean)
 	 */
 	@Override
-	public void setVisualDisplayed(boolean newShowVisual)
-	{
-		if (newShowVisual && !visualGroup.isLive())
-		{
+	public void setVisualDisplayed(boolean newShowVisual) {
+		if (newShowVisual && !visualGroup.isLive()) {
 			//structureUpdateBehavior.add(modelGroup, visualGroup);
 			modelGroup.addChild(visualGroup);
 
-		}
-		else if (!newShowVisual && visualGroup.isLive())
-		{
+		} else if (!newShowVisual && visualGroup.isLive()) {
 			//structureUpdateBehavior.remove(modelGroup, visualGroup);
 			visualGroup.detach();
 		}
@@ -644,8 +619,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getAvatarLocation()
 	 */
 	@Override
-	public AvatarLocation getAvatarLocation()
-	{
+	public AvatarLocation getAvatarLocation() {
 		return avatarLocation;
 	}
 
@@ -653,8 +627,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setPhysicsEnabled(boolean)
 	 */
 	@Override
-	public void setPhysicsEnabled(boolean enable)
-	{
+	public void setPhysicsEnabled(boolean enable) {
 		physicsSystem.getPhysicsLocaleDynamics().setSkipStepSim(!enable);
 	}
 
@@ -662,8 +635,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getAvatarCollisionInfo()
 	 */
 	@Override
-	public AvatarCollisionInfo getAvatarCollisionInfo()
-	{
+	public AvatarCollisionInfo getAvatarCollisionInfo() {
 		return avatarCollisionInfo;
 	}
 
@@ -671,20 +643,17 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#getViewingPlatform()
 	 */
 	@Override
-	public ViewingPlatform getViewingPlatform()
-	{
+	public ViewingPlatform getViewingPlatform() {
 		// this won't work for the HMD version for now, as it it 2 platforms
-		return (ViewingPlatform) cameraPanel.getDolly();
+		return (ViewingPlatform)cameraPanel.getDolly();
 	}
 
 	/* (non-Javadoc)
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setAzerty(boolean)
 	 */
 	@Override
-	public void setAzerty(boolean a)
-	{
-		if (a)
-		{
+	public void setAzerty(boolean a) {
+		if (a) {
 			NavigationInputNewtKey.FORWARD_KEY = KeyEvent.VK_Z;
 			//NavigationInputAWTKey.FAST_KEY = KeyEvent.VK_E;
 			//NavigationInputAWTKey.BACK_KEY = KeyEvent.VK_S;
@@ -692,9 +661,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 			//NavigationInputAWTKey.RIGHT_KEY = KeyEvent.VK_D;
 			NavigationInputNewtKey.UP_KEY = KeyEvent.VK_A;
 			NavigationInputNewtKey.DOWN_KEY = KeyEvent.VK_W;
-		}
-		else
-		{
+		} else {
 			NavigationInputNewtKey.FORWARD_KEY = KeyEvent.VK_W;
 			//NavigationInputAWTKey.FAST_KEY = KeyEvent.VK_E;
 			//NavigationInputAWTKey.BACK_KEY = KeyEvent.VK_S;
@@ -709,34 +676,27 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	 * @see scrollsexplorer.simpleclient.SimpleWalkSetupInterface#setMouseLock(boolean)
 	 */
 	@Override
-	public void setMouseLock(boolean mouseLock)
-	{
-		if (!mouseLock)
-		{
+	public void setMouseLock(boolean mouseLock) {
+		if (!mouseLock) {
 			//mouseInputListener.setCanvas(null);
 			newtMouseInputListener.setWindow(null);
 
 			//note tab message only put up if tab used to unlock mouse
-		}
-		else
-		{
+		} else {
 			//mouseInputListener.setCanvas(cameraPanel.getCanvas3D2D());
 			newtMouseInputListener.setWindow(cameraPanel.getCanvas3D2D().getGLWindow());
 
 			// always clear the tab message regardless
-			if (firstInstruction != null)
-			{
+			if (firstInstruction != null) {
 				firstInstruction.removeFromCanvas();
 			}
 		}
 	}
 
-	private class HMDKeyHandler implements KeyListener
-	{
+	private class HMDKeyHandler implements KeyListener {
 		private HMDCamDolly hcd;
 
-		public HMDKeyHandler(HMDCamDolly hcd)
-		{
+		public HMDKeyHandler(HMDCamDolly hcd) {
 			this.hcd = hcd;
 			System.out.println("-,+ move eye dist");
 			System.out.println("B reset oculus");
@@ -744,25 +704,17 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		}
 
 		@Override
-		public void keyPressed(KeyEvent e)
-		{
-			if (e.getKeyCode() == KeyEvent.VK_MINUS)
-			{
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_MINUS) {
 				System.out.println("IPD-");
 				hcd.changeIPD(0.95f);
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_EQUALS)
-			{
+			} else if (e.getKeyCode() == KeyEvent.VK_EQUALS) {
 				System.out.println("IPD+");
 				hcd.changeIPD(1.05f);
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_B)
-			{
+			} else if (e.getKeyCode() == KeyEvent.VK_B) {
 				System.out.println("resetting Rift");
 				hcd.reset();
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_F11)
-			{
+			} else if (e.getKeyCode() == KeyEvent.VK_F11) {
 				System.out.println("sending to Rift");
 				hcd.sendToRift();
 			}
@@ -770,16 +722,13 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		}
 
 		@Override
-		public void keyReleased(KeyEvent e)
-		{
+		public void keyReleased(KeyEvent e) {
 
 		}
 	}
 
-	private class NewtMiscKeyHandler implements KeyListener
-	{
-		public NewtMiscKeyHandler()
-		{
+	private class NewtMiscKeyHandler implements KeyListener {
+		public NewtMiscKeyHandler() {
 			/*System.out.println("Esc exit");
 			System.out.println("H toggle havok display");
 			System.out.println("L toggle visual display");
@@ -789,10 +738,8 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 		}
 
 		@Override
-		public void keyPressed(KeyEvent e)
-		{
-			if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-			{
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 				//System.out.println("Need a new exit dialog system");
 				/*if (!exitDialogPane3D.isVisible())
 				{
@@ -806,74 +753,56 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 					exitDialogPane3D.setVisible(false);
 					setMouseLock(true);
 				}*/
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_H)
-			{
-				toggleHavok();
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_L)
-			{
+			} else if (e.getKeyCode() == KeyEvent.VK_H) {
+				BethRenderSettings.setShowPhysics(!BethRenderSettings.isShowPhysic());
+			} else if (e.getKeyCode() == KeyEvent.VK_L) {
+				//TODO: this and the visual below should set a beth render setting value, then the toggle methods should listener for render setting updates
 				toggleVisual();
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_F)
-			{
-				freefly = !freefly;
-				setFreeFly(freefly);
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_J)
-			{
+			} else if (e.getKeyCode() == KeyEvent.VK_F) {
+				// same 
+				//freefly = !freefly;
+				//setFreeFly(freefly);
+				GlobalGameSettings.setIsFreeFly(!GlobalGameSettings.isFreeFly());
+			} else if (e.getKeyCode() == KeyEvent.VK_J) {
 				physicsSystem.setDisplayDebug(true);
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_TAB)
-			{
-				if (newtMouseInputListener.hasGLWindow())
-				{
+			} else if (e.getKeyCode() == KeyEvent.VK_TAB) {
+				if (newtMouseInputListener.hasGLWindow()) {
 					setMouseLock(false);
-					if (firstInstruction != null)
-					{
+					if (firstInstruction != null) {
 						firstInstruction.addToCanvas(cameraPanel.getCanvas3D2D());
 					}
-				}
-				else
-				{
+				} else {
 					setMouseLock(true);
 				}
 
-			}
-			else if (e.getKeyCode() == KeyEvent.VK_I)
-			{
+			} else if (e.getKeyCode() == KeyEvent.VK_I) {
 				// simpleInventorySystem has a listener for the mouse lock
 				System.out.println("Need a new inventory system");
 			}
 		}
 
 		@Override
-		public void keyReleased(KeyEvent arg0)
-		{
+		public void keyReleased(KeyEvent arg0) {
 
 		}
 	}
 
-	private class WalkTrailorCamCollider implements TrailorCamCollider
-	{
-		private Vector3f rayFrom = new Vector3f();
+	private class WalkTrailorCamCollider implements TrailorCamCollider {
+		private Vector3f	rayFrom	= new Vector3f();
 
-		private Vector3f rayTo = new Vector3f();
+		private Vector3f	rayTo	= new Vector3f();
 
 		@Override
-		public float getCollisionFraction(Point3d lookAt, Vector3d cameraVector)
-		{
+		public float getCollisionFraction(Point3d lookAt, Vector3d cameraVector) {
 			rayFrom.set(lookAt);
 			//CAREFUL!!! 3d and 3f conversion requires non-trivial container usage!!!only the set method takes a 3d,
 			//the add doesn't, so rayFrom is being used as a temp holder			
 			rayTo.set(cameraVector);
 			rayTo.add(rayFrom, rayTo);
 
-			if (physicsSystem != null)
-			{
+			if (physicsSystem != null) {
 				ClosestRayResultCallback crrc = physicsSystem.findRayIntersect(rayFrom, rayTo, -1);
-				if (crrc != null)
-				{
+				if (crrc != null) {
 					return crrc.closestHitFraction;
 				}
 			}
@@ -883,8 +812,7 @@ public class SimpleWalkSetup implements SimpleWalkSetupInterface
 	}
 
 	@Override
-	public boolean isTrailorCam()
-	{	
+	public boolean isTrailorCam() {
 		return TRAILER_CAM;
 	}
 

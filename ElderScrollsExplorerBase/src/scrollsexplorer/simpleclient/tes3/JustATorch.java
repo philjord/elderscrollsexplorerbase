@@ -3,14 +3,13 @@ package scrollsexplorer.simpleclient.tes3;
 import org.jogamp.java3d.BranchGroup;
 import org.jogamp.java3d.Transform3D;
 import org.jogamp.java3d.TransformGroup;
-import org.jogamp.vecmath.Color3f;
-import org.jogamp.vecmath.Point3f;
 import org.jogamp.vecmath.Vector3f;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 
 import esfilemanager.loader.IESMManager;
+import esmj3d.j3d.BethRenderSettings;
 import scrollsexplorer.GameConfig;
 import scrollsexplorer.simpleclient.SimpleBethCellManager;
 import scrollsexplorer.simpleclient.SimpleWalkSetupInterface;
@@ -75,18 +74,20 @@ public class JustATorch {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_T) {
-					characterTorch.toggle();
+					BethRenderSettings.setEnableTorchLight(!BethRenderSettings.isEnableTorchLight());
 				}
-
 			}
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-
 			}
 
 		});
 
+	}
+
+	public void setTorchLightEnabled(boolean enabled) {
+		characterTorch.setEnable(enabled);
 	}
 
 }

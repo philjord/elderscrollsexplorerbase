@@ -26,13 +26,7 @@ public interface SimpleWalkSetupInterface
 	void changeLocation(Quat4f rot, Vector3f trans);
 
 	void warp(Vector3f origin);
-
-	void setGlobalAmbLightLevel(float f);
-
-	void setGlobalDirLightLevel(float f);
 	
-	void setGlobalDirLightEnabled(boolean enabled);
-
 	void configure(MeshSource meshSource, SimpleBethCellManager simpleBethCellManager);
 
 	void resetGraphicsSetting();
@@ -46,6 +40,8 @@ public interface SimpleWalkSetupInterface
 	BranchGroup getVisualBranch();
 
 	BranchGroup getPhysicalBranch();
+
+	void setShowHavok(boolean setShowHavok);
 
 	void toggleHavok();
 
@@ -66,5 +62,6 @@ public interface SimpleWalkSetupInterface
 	void setMouseLock(boolean mouseLock);
 
 	boolean isTrailorCam();
+
 
 }
