@@ -21,6 +21,7 @@ import esmj3d.j3d.j3drecords.type.J3dCONT;
 import esmj3d.j3d.j3drecords.type.J3dRECOType;
 import esmj3d.j3d.j3drecords.type.J3dRECOTypeActionable;
 import esmj3d.j3d.j3drecords.type.J3dRECOTypeDynamic;
+import nif.j3d.animation.J3dNiControllerManager;
 import nifbullet.BulletNifModel;
 import nifbullet.NBRigidBody;
 import nifbullet.cha.NifBulletChar;
@@ -142,50 +143,39 @@ public class ActionableMouseOverHandler extends MouseOverHandler {
 										j3dDOOR.isOpen());
 
 								//also update physics view, but assume much
-								J3dRECOInst phyJ3dInstRECO = null;
-								if (SimpleBethCellManager.currentBethWorldPhysicalBranch != null) {
-									phyJ3dInstRECO = SimpleBethCellManager.currentBethWorldPhysicalBranch
-											.getJ3dInstRECO(j3dRECOStatInst.getRecordId());
-								} else if (SimpleBethCellManager.currentBethInteriorPhysicalBranch != null) {
-									phyJ3dInstRECO = SimpleBethCellManager.currentBethInteriorPhysicalBranch
-											.getJ3dInstRECO(j3dRECOStatInst.getRecordId());
-								}
-								if (phyJ3dInstRECO != null) {
-									J3dRECOStatInst phyJ3dRECOStatInst = (J3dRECOStatInst)phyJ3dInstRECO;
-									J3dRECOType phyJ3dRECOType = phyJ3dRECOStatInst.getJ3dRECOType();
-									Doorable phyJ3dDOOR = (Doorable)phyJ3dRECOType;
-									phyJ3dDOOR.toggleOpen();
+								J3dRECOType phyJ3dRECOType = getPhyJ3dRECOType(j3dRECOStatInst.getRecordId());
+								if (phyJ3dRECOType != null) {
+									((Doorable)phyJ3dRECOType).toggleOpen();
 								}
 
 							} else if (j3dRECOType instanceof J3dCONT) {
 								J3dCONT j3dCONT = (J3dCONT)j3dRECOType;
-								j3dCONT.setOpen(true);
+								j3dCONT.toggleOpen();
 
 								clientPhysicsSystem.getPhysicsLocaleDynamics().updateRECOToggleOpen(j3dRECOStatInst,
-										true);
+										j3dCONT.isOpen());
 
 								//also update physics view, but assume much
-								J3dRECOInst phyJ3dInstRECO = null;
-								if (SimpleBethCellManager.currentBethWorldPhysicalBranch != null) {
-									phyJ3dInstRECO = SimpleBethCellManager.currentBethWorldPhysicalBranch
-											.getJ3dInstRECO(j3dRECOStatInst.getRecordId());
-								} else if (SimpleBethCellManager.currentBethInteriorPhysicalBranch != null) {
-									phyJ3dInstRECO = SimpleBethCellManager.currentBethInteriorPhysicalBranch
-											.getJ3dInstRECO(j3dRECOStatInst.getRecordId());
-								}
-
-								if (phyJ3dInstRECO != null) {
-									J3dRECOStatInst phyJ3dRECOStatInst = (J3dRECOStatInst)phyJ3dInstRECO;
-									J3dRECOType phyJ3dRECOType = phyJ3dRECOStatInst.getJ3dRECOType();
-									J3dCONT phyJ3dCONT = (J3dCONT)phyJ3dRECOType;
-									phyJ3dCONT.setOpen(true);
+								J3dRECOType phyJ3dRECOType = getPhyJ3dRECOType(j3dRECOStatInst.getRecordId());
+								if (phyJ3dRECOType != null) {
+									((J3dCONT)phyJ3dRECOType).toggleOpen();
 								}
 
 								System.out.println("Big Fat container opening thingy now!");
 							} else if (j3dRECOType instanceof J3dRECOTypeDynamic) {
-								System.out.println("Picky uppy");
+								System.out.println("Picky uppy BUT NOT DONE");
 							} else if (j3dRECOType instanceof J3dRECOTypeActionable) {
-								System.out.println("Use usey user");
+								//Auto opening node: ArchiveFile:SeventySix - Meshes.ba2/meshes/interiors/vault/doors/vltgeardoor/vltgeardoor01.nif
+								((J3dRECOTypeActionable)j3dRECOType).fireNextAnimation();
+
+								//Note vault door doesn't move physics! cos it's a simple I think
+								clientPhysicsSystem.getPhysicsLocaleDynamics().fireNextAnimation(j3dRECOStatInst);
+
+								//also update physics view, but assume much
+								J3dRECOType phyJ3dRECOType = getPhyJ3dRECOType(j3dRECOStatInst.getRecordId());
+								if (phyJ3dRECOType != null) {
+									((J3dRECOTypeActionable)phyJ3dRECOType).fireNextAnimation();
+								}
 							}
 							//TODO: type   FLOR, MISC etc
 
@@ -196,6 +186,21 @@ public class ActionableMouseOverHandler extends MouseOverHandler {
 			}
 		}
 
+	}
+
+	private J3dRECOType getPhyJ3dRECOType(int recordId) {
+		J3dRECOInst phyJ3dInstRECO = null;
+		if (SimpleBethCellManager.currentBethWorldPhysicalBranch != null) {
+			phyJ3dInstRECO = SimpleBethCellManager.currentBethWorldPhysicalBranch.getJ3dInstRECO(recordId);
+		} else if (SimpleBethCellManager.currentBethInteriorPhysicalBranch != null) {
+			phyJ3dInstRECO = SimpleBethCellManager.currentBethInteriorPhysicalBranch.getJ3dInstRECO(recordId);
+		}
+		if (phyJ3dInstRECO != null) {
+			J3dRECOStatInst phyJ3dRECOStatInst = (J3dRECOStatInst)phyJ3dInstRECO;
+			J3dRECOType phyJ3dRECOType = phyJ3dRECOStatInst.getJ3dRECOType();
+			return phyJ3dRECOType;
+		}
+		return null;
 	}
 
 	@Override
@@ -294,8 +299,8 @@ public class ActionableMouseOverHandler extends MouseOverHandler {
 											}
 										} else {
 
-											currentActionTargetData.hudText = (j3dDOOR.isOpen() ? "Close " : "Open ")
-																				+ j3dDOOR.getDoorName();
+											currentActionTargetData.hudText = (j3dDOOR.isOpen() ? "Close " : "Open ");
+											//+ j3dDOOR.getDoorName(); door name seems full of rubbish
 
 											if (currentActionTargetData.distance < INTERACT_MAX_DIST) {
 												if (BethRenderSettings.isOutlineFocused())

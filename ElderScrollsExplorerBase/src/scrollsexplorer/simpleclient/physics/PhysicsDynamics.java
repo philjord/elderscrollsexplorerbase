@@ -18,6 +18,7 @@ import com.frostwire.util.SparseArray;
 import esmj3d.j3d.j3drecords.inst.J3dLAND;
 import esmj3d.j3d.j3drecords.inst.J3dRECOChaInst;
 import esmj3d.j3d.j3drecords.inst.J3dRECOInst;
+import esmj3d.j3d.j3drecords.inst.J3dRECOStatInst;
 import esmj3d.j3d.j3drecords.type.J3dRECOType;
 import esmj3dtes3.j3d.j3drecords.type.J3dPivotDOOR;
 import nif.NifFile;
@@ -421,6 +422,39 @@ public class PhysicsDynamics extends DynamicsEngine
 		}
 
 	}
+	
+
+
+	// just goes through animations one after the other, for something to do for the user	
+	public void fireNextAnimation(J3dRECOStatInst j3dRECOInst) {
+		BulletNifModel nifBullet = recoIdToNifBullet.get(j3dRECOInst.getRecordId());
+		if (nifBullet instanceof NBSimpleModel)
+		{
+			NBSimpleModel nbKinematicModel = (NBSimpleModel) nifBullet;
+			J3dNiControllerManager ncm = nbKinematicModel.getJ3dNiControllerManager();
+			if (ncm != null) {
+				String[] allSeq = ncm.getAllSequences();
+				if (allSeq != null && allSeq.length > 0) {
+					if (ncm.nextAnimIdx >= allSeq.length)
+						ncm.nextAnimIdx = 0;
+
+					String nextAnim = allSeq[ncm.nextAnimIdx];
+					System.out.println("fireNextAnimation " + nextAnim +" for " + j3dRECOInst.getJ3dRECOType().shortName);
+					J3dNiControllerSequence s = ncm.getSequence(nextAnim);
+					if (s != null) {
+						s.fireSequenceOnce();
+					}
+				}
+				ncm.nextAnimIdx++;
+			}
+
+		}
+
+	}
+	
+	
+	
+	
 
 	/**
 	 * @param j3dRECOInst
@@ -650,5 +684,7 @@ public class PhysicsDynamics extends DynamicsEngine
 
 		public long averageStepTimeMS = 0;
 	}
+
+
 
 }
