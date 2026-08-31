@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.jogamp.java3d.Transform3D;
-import org.jogamp.java3d.compressedtexture.CompressedTextureLoader;
 import org.jogamp.vecmath.Quat4f;
 import org.jogamp.vecmath.Vector3f;
 
@@ -56,6 +55,7 @@ import scrollsexplorer.simpleclient.mouseover.ActionableMouseOverHandler;
 import scrollsexplorer.simpleclient.physics.DynamicsEngine;
 import scrollsexplorer.simpleclient.physics.PhysicsSystem;
 import scrollsexplorer.simpleclient.tes3.Tes3Extensions;
+import texture.CompressedTextureLoaderExt;
 import tools.io.ConfigLoader;
 import tools3d.camera.Camera;
 import tools3d.utils.YawPitch;
@@ -98,8 +98,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		// also it should use a seperate bsa collection to ensure it does what the phoen does
 		// these 5 test the "no dds support" issue and solution on phones
 		BsaTextureSource.allowedTextureFormats = BsaTextureSource.AllowedTextureFormats.KTX;
-		CompressedTextureLoader.RETURN_DECOMPRESSED_DDS = false;
-		CompressedTextureLoader.DROP_0_MIP = false;
+		CompressedTextureLoaderExt.RETURN_DECOMPRESSED_DDS = false;
+		CompressedTextureLoaderExt.DROP_0_MIP = false;
 		javaawt.image.BufferedImage.installBufferedImageDelegate(VMBufferedImage.class);
 		javaawt.imageio.ImageIO.installBufferedImageImpl(VMImageIO.class);
 		javaawt.EventQueue.installEventQueueImpl(VMEventQueue.class);
@@ -114,7 +114,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 		NifCharacter.BULK_BUFFER_UPDATES = false;
 
 		NiGeometryAppearanceFactoryShader.setAsDefault();
-		CompressedTextureLoader.setAnisotropicFilterDegree(4);
+		CompressedTextureLoaderExt.setAnisotropicFilterDegree(4);
 
 		try {
 			PropertyLoader.load();
