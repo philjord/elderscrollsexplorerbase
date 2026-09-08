@@ -193,8 +193,8 @@ public class PhysicsDynamics extends DynamicsEngine
 		{
 			
 			//FIXME:    BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true; makes the record below not load!
-			//if(j3dRECOInst.getRecordId() == 2348)
-			//	System.out.println("boom 2348! " + j3dRECOInst.getJ3dRECOType());
+			if(j3dRECOInst.getRecordId() == 1608751)
+				System.out.println("boom 1608751! " + j3dRECOInst.getJ3dRECOType());
 			
 			J3dRECOType j3dRECOType = j3dRECOInst.getJ3dRECOType();
 
@@ -222,8 +222,7 @@ public class PhysicsDynamics extends DynamicsEngine
 			else 
 			{
 				if (j3dRECOType == null) {
-					// FIXME only suppress while debugggin FO76
-					//System.out.println("PhysicsDynamics j3dRECOType is null for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
+					System.out.println("PhysicsDynamics j3dRECOType is null for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
 				} else if(j3dRECOType.physNifFile == null) {
 					System.out.println("PhysicsDynamics j3dRECOType.physNifFile is null for type " + j3dRECOType + " of inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
 				}
@@ -286,48 +285,36 @@ public class PhysicsDynamics extends DynamicsEngine
 		//root should have scale in it
 		Transform3D rootTrans = j3dRECOInst.getLocation(new Transform3D());
 
-		if (physNifFile != null && physNifFile.length() > 0)
-		{
+		if (physNifFile != null && physNifFile.length() > 0) {
 			NifFile nifFile = NifToJ3d.loadNiObjects(physNifFile, meshSource);
-			if (BulletNifModelClassifier.isStaticModel(nifFile))
-			{
+			BulletNifModelClassifier bulletNifModelClassifier = new BulletNifModelClassifier(nifFile);
+			if (bulletNifModelClassifier.isNotPhysics()) {
+				return null;
+			} else if (bulletNifModelClassifier.isStaticModel()) {
 				// the nif file will have mass of 0 making this static
 				nb = new NBSimpleModel(physNifFile, meshSource, rootTrans, hasPivot);
-			}
-			else if (BulletNifModelClassifier.isKinematicModel(nifFile))
-			{
+			} else if (bulletNifModelClassifier.isKinematicModel()) {
 				// the nif file will have mass of 0 making this kinematic
 				nb = new NBSimpleModel(physNifFile, meshSource, rootTrans);
-			}
-			else if (BulletNifModelClassifier.isSimpleDynamicModel(nifFile, 0))
-			{
+			} else if (bulletNifModelClassifier.isSimpleDynamicModel( 0)) {
 				nb = createDynamic(j3dRECOInst, physNifFile);
-			}
-			else if (BulletNifModelClassifier.isComplexDynamic(nifFile))
-			{
+			} else if (bulletNifModelClassifier.isComplexDynamic()) {
 				//TODO: this bad boy right here
-				//System.out.println("phys skipping isComplexDynamic " + physNifFile);
-			}
-			else
-			{
+				System.out.println("phys skipping isComplexDynamic " + physNifFile);
+			} else {
 				//TODO: lots of plants have this check them out 
-				//System.out.println("crazy type? " + physNifFile);
 				// probably just smoke effect etc, complex dynamic rag doll
-				//System.out.println("phys skipping " + physNifFile);
+				System.out.println("phys skipping unknown type " + physNifFile);
 			}
 
-			if (nb != null)
-			{
-				synchronized (recoIdToNifBullet)
-				{
+			if (nb != null) {
+				synchronized (recoIdToNifBullet) {
 					recoIdToNifBullet.put(j3dRECOInst.getRecordId(), nb);
 					nifBulletToRecoId.put(nb, j3dRECOInst.getRecordId());
 				}
 			}
 
-		}
-		else
-		{
+		} else {
 			//Lights and alsorts of things can have no model or physics
 			//System.out.println("why null phys? " + j3dRECOInst);
 		}
@@ -337,6 +324,7 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	private NBSimpleDynamicModel createDynamic(J3dRECOInst j3dRECOInst, String model)
 	{
+			
 		NBSimpleDynamicModel nb = null;
 		Transform3D rootTrans = j3dRECOInst.getLocation(new Transform3D());
 
