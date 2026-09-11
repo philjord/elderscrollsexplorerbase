@@ -39,39 +39,37 @@ import tools3d.utils.Utils3D;
 import tools3d.utils.scenegraph.StructureUpdateBehavior;
 import utils.source.MeshSource;
 
-public class PhysicsDynamics extends DynamicsEngine
-{
+public class PhysicsDynamics extends DynamicsEngine {
 	//public static HeadlessUniverse headlessUniverse = new HeadlessUniverse();
 
-	protected InstRECOStore instRecoToNif;
+	protected InstRECOStore						instRecoToNif;
 
-	private SparseArray<NifBulletBinding> instRecoBulletBindings = new SparseArray<NifBulletBinding>();
+	private SparseArray<NifBulletBinding>		instRecoBulletBindings	= new SparseArray<NifBulletBinding>();
 
-	private HashMap<BulletNifModel, Integer> nifBulletToRecoId = new HashMap<BulletNifModel, Integer>();
+	private HashMap<BulletNifModel, Integer>	nifBulletToRecoId		= new HashMap<BulletNifModel, Integer>();
 
-	private SparseArray<BulletNifModel> recoIdToNifBullet = new SparseArray<BulletNifModel>();
+	private SparseArray<BulletNifModel>			recoIdToNifBullet		= new SparseArray<BulletNifModel>();
 
-	private BranchGroup dynamicsRootBranchGroup;
+	private BranchGroup							dynamicsRootBranchGroup;
 
-	private StructureUpdateBehavior structureUpdateBehavior;
+	private StructureUpdateBehavior				structureUpdateBehavior;
 
-	private boolean displayDebug = false;
+	private boolean								displayDebug			= false;
 
-	private static boolean debugOutputInited = false;
+	private static boolean						debugOutputInited		= false;
 
-	private AvatarLocation avatarLocation;
+	private AvatarLocation						avatarLocation;
 
-	private NBControlledChar myNifBulletChar;
+	private NBControlledChar					myNifBulletChar;
 
-	private ClientNifBulletCharBinding clientNifBulletCharBinding;
+	private ClientNifBulletCharBinding			clientNifBulletCharBinding;
 
-	private MeshSource meshSource;
+	private MeshSource							meshSource;
 
-	private boolean destroyed;
+	private boolean								destroyed;
 
-	public PhysicsDynamics(InstRECOStore instRecoToNif, Vector3f gravity, BranchGroup rootGroup, AvatarCollisionInfo avatarCollisionInfo,
-			MeshSource meshSource)
-	{
+	public PhysicsDynamics(	InstRECOStore instRecoToNif, Vector3f gravity, BranchGroup rootGroup,
+							AvatarCollisionInfo avatarCollisionInfo, MeshSource meshSource) {
 		super(gravity);
 		this.meshSource = meshSource;
 
@@ -90,141 +88,114 @@ public class PhysicsDynamics extends DynamicsEngine
 		this.avatarLocation = avatarCollisionInfo.getAvatarLocation();
 
 		Transform3D rootTrans = new Transform3D(avatarLocation.getTransform());
-		myNifBulletChar = new NBControlledChar(rootTrans, avatarCollisionInfo.getAvatarYHeight(), avatarCollisionInfo.getAvatarXZRadius());
+		myNifBulletChar = new NBControlledChar(rootTrans, avatarCollisionInfo.getAvatarYHeight(),
+				avatarCollisionInfo.getAvatarXZRadius());
 		clientNifBulletCharBinding = new ClientNifBulletCharBinding(avatarLocation, myNifBulletChar);
 
-		synchronized (instRecoBulletBindings)
-		{
+		synchronized (instRecoBulletBindings) {
 			instRecoBulletBindings.put(-999, clientNifBulletCharBinding);
 		}
-		synchronized (dynamicsWorld)
-		{
+		synchronized (dynamicsWorld) {
 
 			myNifBulletChar.addToDynamicsWorld(dynamicsWorld);
 		}
 	}
 
-	public void setDisplayDebug(boolean displayDebug)
-	{
+	public void setDisplayDebug(boolean displayDebug) {
 		this.displayDebug = displayDebug;
 	}
 
-	boolean isDisplayDebug()
-	{
+	boolean isDisplayDebug() {
 		return this.displayDebug;
 	}
 
 	@Override
-	protected void dynamicsPreStep()
-	{
+	protected void dynamicsPreStep() {
 	}
 
 	@Override
-	protected void dynamicsPostStep()
-	{
-		if (displayDebug)
-		{
-			if (!destroyed)
-			{
-				if (!debugOutputInited)
-				{
+	protected void dynamicsPostStep() {
+		if (displayDebug) {
+			if (!destroyed) {
+				if (!debugOutputInited) {
 					DebugOutput.initDebug(dynamicsWorld, avatarLocation);
 					debugOutputInited = true;
 				}
 
-				synchronized (dynamicsWorld)
-				{
+				synchronized (dynamicsWorld) {
 					LWJGL.step();
 					//did it quit?
 					if (!LWJGL.isDoRun())
 						displayDebug = false;
 				}
 			}
-		}
-		else
-		{
-			if (debugOutputInited)
-			{
+		} else {
+			if (debugOutputInited) {
 				DebugOutput.disposeDebug();
 				debugOutputInited = false;
 			}
 		}
 	}
 
-	public NBControlledChar getMyNifBulletChar()
-	{
+	public NBControlledChar getMyNifBulletChar() {
 		return myNifBulletChar;
 	}
 
 	// we must clean up before being collected
 	@Override
-	public void finalize()
-	{
+	public void finalize() {
 		destroy();
 	}
 
 	@Override
-	public void destroy()
-	{
+	public void destroy() {
 		this.destroyed = true;
 		clear();
 		dynamicsRootBranchGroup.detach();
 	}
 
-	public void clear()
-	{
+	public void clear() {
 		instRecoBulletBindings.clear();
 	}
 
-	public BulletNifModel createRECO(J3dRECOInst j3dRECOInst)
-	{
+	public BulletNifModel createRECO(J3dRECOInst j3dRECOInst) {
 
-		if (recoIdToNifBullet.get(j3dRECOInst.getRecordId()) != null)
-		{
-			System.out.println("PhysicsDynamics, already loaded key " + j3dRECOInst.getRecordId() + " of " + j3dRECOInst);
+		if (recoIdToNifBullet.get(j3dRECOInst.getRecordId()) != null) {
+			System.out
+					.println("PhysicsDynamics, already loaded key " + j3dRECOInst.getRecordId() + " of " + j3dRECOInst);
 			new Throwable("Thread:" + Thread.currentThread()).printStackTrace();
 		}
 
-		if (j3dRECOInst instanceof J3dLAND)
-		{
-			return createLand((J3dLAND) j3dRECOInst);
-		}
-		else
-		{
-			
+		if (j3dRECOInst instanceof J3dLAND) {
+			return createLand((J3dLAND)j3dRECOInst);
+		} else {
+
 			//FIXME:    BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true; makes the record below not load!
-			if(j3dRECOInst.getRecordId() == 1608751)
+			if (j3dRECOInst.getRecordId() == 1608751)
 				System.out.println("boom 1608751! " + j3dRECOInst.getJ3dRECOType());
-			
+
 			J3dRECOType j3dRECOType = j3dRECOInst.getJ3dRECOType();
 
-			if (j3dRECOType != null && j3dRECOType.physNifFile != null)
-			{
+			if (j3dRECOType != null && j3dRECOType.physNifFile != null) {
 				// look for tes3 door with no controllers
-				if (j3dRECOType instanceof J3dPivotDOOR)
-				{
+				if (j3dRECOType instanceof J3dPivotDOOR) {
 					// Look out! this is visual TG being used by physics!!!!
 					return createStaticOrDynamic(j3dRECOInst, j3dRECOType.physNifFile, true);
-				}
-				else
-				{
+				} else {
 					return createStaticOrDynamic(j3dRECOInst, j3dRECOType.physNifFile, false);
 				}
-			}
-			else if (j3dRECOInst instanceof J3dRECOChaInst)
-			{
+			} else if (j3dRECOInst instanceof J3dRECOChaInst) {
 				createCharacter(j3dRECOInst);
-			}
-			else if (j3dRECOType != null && j3dRECOType.getName() != null && j3dRECOType.getName().equals("J3dGeneralSOUN"))
-			{
+			} else if (j3dRECOType != null	&& j3dRECOType.getName() != null
+						&& j3dRECOType.getName().equals("J3dGeneralSOUN")) {
 				// sound is not part of phys
-			}			
-			else 
-			{
+			} else {
 				if (j3dRECOType == null) {
-					System.out.println("PhysicsDynamics j3dRECOType is null for inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
-				} else if(j3dRECOType.physNifFile == null) {
-					System.out.println("PhysicsDynamics j3dRECOType.physNifFile is null for type " + j3dRECOType + " of inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
+					System.out.println("PhysicsDynamics j3dRECOType is null for inst "	+ j3dRECOInst + " "
+										+ j3dRECOInst.getRecordId());
+				} else if (j3dRECOType.physNifFile == null) {
+					System.out.println("PhysicsDynamics j3dRECOType.physNifFile is null for type "	+ j3dRECOType
+										+ " of inst " + j3dRECOInst + " " + j3dRECOInst.getRecordId());
 				}
 
 			}
@@ -233,14 +204,11 @@ public class PhysicsDynamics extends DynamicsEngine
 		return null;
 	}
 
-	private NBSimpleModel createLand(J3dLAND j3dLAND)
-	{
+	private NBSimpleModel createLand(J3dLAND j3dLAND) {
 		Transform3D rootTrans = j3dLAND.getLocation(new Transform3D());
 		NBSimpleModel nb = new NBSimpleModel(j3dLAND.getHeights(), rootTrans, J3dLAND.TERRIAN_SQUARE_SIZE);
-		if (nb != null)
-		{
-			synchronized (recoIdToNifBullet)
-			{
+		if (nb != null) {
+			synchronized (recoIdToNifBullet) {
 				recoIdToNifBullet.put(j3dLAND.getRecordId(), nb);
 				nifBulletToRecoId.put(nb, j3dLAND.getRecordId());
 			}
@@ -248,8 +216,7 @@ public class PhysicsDynamics extends DynamicsEngine
 		return nb;
 	}
 
-	private BulletNifModel createCharacter(J3dRECOInst j3dRECOInst)
-	{
+	private BulletNifModel createCharacter(J3dRECOInst j3dRECOInst) {
 		BulletNifModel nb = null;
 
 		//root should have scale in it
@@ -258,10 +225,8 @@ public class PhysicsDynamics extends DynamicsEngine
 		// the nif file will have mass of 0 making this kinematic
 		nb = new NBNonControlledChar(rootTrans, 0, j3dRECOInst.getRecordId());
 
-		if (nb != null)
-		{
-			synchronized (recoIdToNifBullet)
-			{
+		if (nb != null) {
+			synchronized (recoIdToNifBullet) {
 				recoIdToNifBullet.put(j3dRECOInst.getRecordId(), nb);
 				nifBulletToRecoId.put(nb, j3dRECOInst.getRecordId());
 			}
@@ -278,10 +243,8 @@ public class PhysicsDynamics extends DynamicsEngine
 	 * @param j3dRECOInst
 	 * @param physNifFile
 	 */
-	private BulletNifModel createStaticOrDynamic(J3dRECOInst j3dRECOInst, String physNifFile, boolean hasPivot)
-	{
-		BulletNifModel nb = null;
-
+	private BulletNifModel createStaticOrDynamic(J3dRECOInst j3dRECOInst, String physNifFile, boolean hasPivot) {
+		BulletNifModel nb = null;			
 		//root should have scale in it
 		Transform3D rootTrans = j3dRECOInst.getLocation(new Transform3D());
 
@@ -290,13 +253,15 @@ public class PhysicsDynamics extends DynamicsEngine
 			BulletNifModelClassifier bulletNifModelClassifier = new BulletNifModelClassifier(nifFile);
 			if (bulletNifModelClassifier.isNotPhysics()) {
 				return null;
+			} else if (bulletNifModelClassifier.isPhysicTypeNotImplemented()) {
+				return null;
 			} else if (bulletNifModelClassifier.isStaticModel()) {
 				// the nif file will have mass of 0 making this static
 				nb = new NBSimpleModel(physNifFile, meshSource, rootTrans, hasPivot);
 			} else if (bulletNifModelClassifier.isKinematicModel()) {
 				// the nif file will have mass of 0 making this kinematic
 				nb = new NBSimpleModel(physNifFile, meshSource, rootTrans);
-			} else if (bulletNifModelClassifier.isSimpleDynamicModel( 0)) {
+			} else if (bulletNifModelClassifier.isSimpleDynamicModel(0)) {
 				nb = createDynamic(j3dRECOInst, physNifFile);
 			} else if (bulletNifModelClassifier.isComplexDynamic()) {
 				//TODO: this bad boy right here
@@ -305,6 +270,7 @@ public class PhysicsDynamics extends DynamicsEngine
 				//TODO: lots of plants have this check them out 
 				// probably just smoke effect etc, complex dynamic rag doll
 				System.out.println("phys skipping unknown type " + physNifFile);
+				bulletNifModelClassifier.outputDetails();
 			}
 
 			if (nb != null) {
@@ -322,14 +288,12 @@ public class PhysicsDynamics extends DynamicsEngine
 		return nb;
 	}
 
-	private NBSimpleDynamicModel createDynamic(J3dRECOInst j3dRECOInst, String model)
-	{
-			
+	private NBSimpleDynamicModel createDynamic(J3dRECOInst j3dRECOInst, String model) {
+
 		NBSimpleDynamicModel nb = null;
 		Transform3D rootTrans = j3dRECOInst.getLocation(new Transform3D());
 
-		if (model != null && model.length() > 0)
-		{
+		if (model != null && model.length() > 0) {
 
 			//VELO velo = instReco.velocity;
 
@@ -343,29 +307,23 @@ public class PhysicsDynamics extends DynamicsEngine
 			//velo.getVelocities(linearVelocity, rotationalVelocity);
 			nb.forceUpdate(rootTrans, linearVelocity, rotationalVelocity);
 
-		}
-		else
-		{
+		} else {
 			System.out.println("no model for createDynamic " + j3dRECOInst.getRecordId());
 		}
 
 		return nb;
 	}
 
-	public void updateRECOROTR(J3dRECOInst j3dRECOInst, Transform3D newTrans)
-	{
+	public void updateRECOROTR(J3dRECOInst j3dRECOInst, Transform3D newTrans) {
 
 		BulletNifModel nifBullet = recoIdToNifBullet.get(j3dRECOInst.getRecordId());
-		if (nifBullet instanceof NBSimpleDynamicModel)
-		{
+		if (nifBullet instanceof NBSimpleDynamicModel) {
 			Quat4f q = new Quat4f();
 			Vector3f v = new Vector3f();
 			Utils3D.safeGetQuat(newTrans, q);
 			newTrans.get(v);
-			((NBSimpleDynamicModel) nifBullet).setTransform(q, v);
-		}
-		else if (nifBullet instanceof NBSimpleModel)
-		{
+			((NBSimpleDynamicModel)nifBullet).setTransform(q, v);
+		} else if (nifBullet instanceof NBSimpleModel) {
 			// TODO: this seems dodgy perhaps an exception here, surely it should be dynamic or kinematic?
 			//remove re-create and re-add
 			removeRECO(j3dRECOInst);
@@ -375,34 +333,25 @@ public class PhysicsDynamics extends DynamicsEngine
 
 	}
 
-	public void updateRECOToggleOpen(J3dRECOInst j3dRECOInst, boolean isOpen)
-	{
+	public void updateRECOToggleOpen(J3dRECOInst j3dRECOInst, boolean isOpen) {
 		BulletNifModel nifBullet = recoIdToNifBullet.get(j3dRECOInst.getRecordId());
-		if (nifBullet instanceof NBSimpleModel)
-		{
-			NBSimpleModel nbKinematicModel = (NBSimpleModel) nifBullet;
+		if (nifBullet instanceof NBSimpleModel) {
+			NBSimpleModel nbKinematicModel = (NBSimpleModel)nifBullet;
 			String seq = isOpen ? "Open" : "Close";// inst has already been updated (this is post)
 
 			J3dNiControllerManager ncm = nbKinematicModel.getJ3dNiControllerManager();
-			if (ncm != null)
-			{
+			if (ncm != null) {
 				J3dNiControllerSequence s = ncm.getSequence(seq);
-				if (s != null)
-				{
+				if (s != null) {
 					s.fireSequenceOnce();
 				}
-			}
-			else
-			{
-				if (nbKinematicModel.hasPivot())
-				{
+			} else {
+				if (nbKinematicModel.hasPivot()) {
 					nbKinematicModel.pivotTes3Door(isOpen);
-				}
-				else
-				{
+				} else {
 					//wow TES3 door have no animation, they look like they just artifically pivot around 
-					System.out.println(
-							"updateRECOToggleOpen door with no controller, probably travel door " + j3dRECOInst.getJ3dRECOType().getName());
+					System.out.println("updateRECOToggleOpen door with no controller, probably travel door "
+										+ j3dRECOInst.getJ3dRECOType().getName());
 
 					// drawers and chest in oblivion get the same issue
 				}
@@ -410,15 +359,12 @@ public class PhysicsDynamics extends DynamicsEngine
 		}
 
 	}
-	
-
 
 	// just goes through animations one after the other, for something to do for the user	
 	public void fireNextAnimation(J3dRECOStatInst j3dRECOInst) {
 		BulletNifModel nifBullet = recoIdToNifBullet.get(j3dRECOInst.getRecordId());
-		if (nifBullet instanceof NBSimpleModel)
-		{
-			NBSimpleModel nbKinematicModel = (NBSimpleModel) nifBullet;
+		if (nifBullet instanceof NBSimpleModel) {
+			NBSimpleModel nbKinematicModel = (NBSimpleModel)nifBullet;
 			J3dNiControllerManager ncm = nbKinematicModel.getJ3dNiControllerManager();
 			if (ncm != null) {
 				String[] allSeq = ncm.getAllSequences();
@@ -427,7 +373,8 @@ public class PhysicsDynamics extends DynamicsEngine
 						ncm.nextAnimIdx = 0;
 
 					String nextAnim = allSeq[ncm.nextAnimIdx];
-					System.out.println("fireNextAnimation " + nextAnim +" for " + j3dRECOInst.getJ3dRECOType().shortName);
+					System.out.println(
+							"fireNextAnimation " + nextAnim + " for " + j3dRECOInst.getJ3dRECOType().shortName);
 					J3dNiControllerSequence s = ncm.getSequence(nextAnim);
 					if (s != null) {
 						s.fireSequenceOnce();
@@ -439,91 +386,73 @@ public class PhysicsDynamics extends DynamicsEngine
 		}
 
 	}
-	
-	
-	
-	
 
 	/**
 	 * @param j3dRECOInst
 	 */
-	protected void addRECO(J3dRECOInst j3dRECOInst)
-	{
+	protected void addRECO(J3dRECOInst j3dRECOInst) {
 		//NOTE a create must have been called for this J3dRECOInst
 		int recordId = j3dRECOInst.getRecordId();
 
 		BulletNifModel nifBullet = recoIdToNifBullet.get(recordId);
-		if (nifBullet != null)
-		{
+		if (nifBullet != null) {
 			try {
-			// add to physics simulation
-			synchronized (dynamicsWorld)
-			{
-				long startTimeInSynchBlock = System.currentTimeMillis();
-				nifBullet.addToDynamicsWorld(dynamicsWorld);
-				if (System.currentTimeMillis() - startTimeInSynchBlock > 50)
-					System.err.println("TimeInSynchBlock bad " + (System.currentTimeMillis() - startTimeInSynchBlock));
-			}
-
-			if (nifBullet instanceof Node)
-			{
-				if (((Node) nifBullet).getParent() == null)
-				{
-					structureUpdateBehavior.add(dynamicsRootBranchGroup, (Node) nifBullet);
+				// add to physics simulation
+				synchronized (dynamicsWorld) {
+					long startTimeInSynchBlock = System.currentTimeMillis();
+					nifBullet.addToDynamicsWorld(dynamicsWorld);
+					if (System.currentTimeMillis() - startTimeInSynchBlock > 50)
+						System.err.println(
+								"TimeInSynchBlock bad " + (System.currentTimeMillis() - startTimeInSynchBlock));
 				}
-				else
-				{
-					new Throwable("PhysicsDynamics attempt to re-add a node to scene! recordId " + recordId + " " + nifBullet)
-							.printStackTrace();
-				}
-			}
 
-			if (nifBullet instanceof NBSimpleDynamicModel)
-			{
-				NifBulletBinding irnbb = new InstRecoNifBulletBinding(j3dRECOInst, instRecoToNif, (NBSimpleDynamicModel) nifBullet);
-
-				synchronized (instRecoBulletBindings)
-				{
-					instRecoBulletBindings.put(j3dRECOInst.getRecordId(), irnbb);
+				if (nifBullet instanceof Node) {
+					if (((Node)nifBullet).getParent() == null) {
+						structureUpdateBehavior.add(dynamicsRootBranchGroup, (Node)nifBullet);
+					} else {
+						new Throwable("PhysicsDynamics attempt to re-add a node to scene! recordId "	+ recordId + " "
+										+ nifBullet).printStackTrace();
+					}
 				}
-			}
-			}catch(AssertionError e) {
+
+				if (nifBullet instanceof NBSimpleDynamicModel) {
+					NifBulletBinding irnbb = new InstRecoNifBulletBinding(j3dRECOInst, instRecoToNif,
+							(NBSimpleDynamicModel)nifBullet);
+
+					synchronized (instRecoBulletBindings) {
+						instRecoBulletBindings.put(j3dRECOInst.getRecordId(), irnbb);
+					}
+				}
+			} catch (AssertionError e) {
 				//at com.bulletphysics.collision.dispatch.CollisionWorld.addCollisionObject(CollisionWorld.java:114)
 				//assert !this.collisionObjects.contains(collisionObject);
 				e.printStackTrace();
 			}
-		}
-		else
-		{
+		} else {
 			//System.out.println("nifBullet == null in addRECO for inst "+j3dRECOInst.getRecordId());
 		}
 
 	}
 
-	protected void removeRECO(J3dRECOInst j3dRECOInst)
-	{
+	protected void removeRECO(J3dRECOInst j3dRECOInst) {
 		int recordId = j3dRECOInst.getRecordId();
 		BulletNifModel nifBullet = recoIdToNifBullet.get(recordId);
-		if (nifBullet != null)
-		{
+		if (nifBullet != null) {
 			if (nifBullet instanceof Node)
-				structureUpdateBehavior.remove(dynamicsRootBranchGroup, (Node) nifBullet);
+				structureUpdateBehavior.remove(dynamicsRootBranchGroup, (Node)nifBullet);
 
 			// remove from physics simulation
-			synchronized (dynamicsWorld)
-			{
+			synchronized (dynamicsWorld) {
 				long startTimeInSynchBlock = System.currentTimeMillis();
 				nifBullet.removeFromDynamicsWorld();
 				nifBullet.destroy();
 				if (System.currentTimeMillis() - startTimeInSynchBlock > 50)
 					System.err.println("TimeInSynchBlock bad " + (System.currentTimeMillis() - startTimeInSynchBlock));
 			}
-			synchronized (instRecoBulletBindings)
-			{
+			synchronized (instRecoBulletBindings) {
 				instRecoBulletBindings.remove(recordId);
 			}
-			synchronized (recoIdToNifBullet)
-			{
+			synchronized (recoIdToNifBullet) {
 				nifBulletToRecoId.remove(nifBullet);
 				recoIdToNifBullet.remove(recordId);
 			}
@@ -531,25 +460,20 @@ public class PhysicsDynamics extends DynamicsEngine
 		}
 	}
 
-	public void applyPhysicsToModel()
-	{
-		synchronized (instRecoBulletBindings)
-		{
-			for (int i = 0; i < instRecoBulletBindings.size(); i++)
-			{
+	public void applyPhysicsToModel() {
+		synchronized (instRecoBulletBindings) {
+			for (int i = 0; i < instRecoBulletBindings.size(); i++) {
 				NifBulletBinding instRecoNifBulletBinding = instRecoBulletBindings.get(instRecoBulletBindings.keyAt(i));
-				if(instRecoNifBulletBinding != clientNifBulletCharBinding)
+				if (instRecoNifBulletBinding != clientNifBulletCharBinding)
 					instRecoNifBulletBinding.applyToModel();
 			}
 		}
 
 	}
-	
-	public void applyControlledCharacterPhysicsToModel()
-	{
-		synchronized (instRecoBulletBindings)
-		{
-			if(clientNifBulletCharBinding != null) {
+
+	public void applyControlledCharacterPhysicsToModel() {
+		synchronized (instRecoBulletBindings) {
+			if (clientNifBulletCharBinding != null) {
 				clientNifBulletCharBinding.applyToModel();
 			}
 		}
@@ -561,73 +485,55 @@ public class PhysicsDynamics extends DynamicsEngine
 	 * @param recordId
 	 * @return
 	 */
-	public BulletNifModel getNifBullet(int recordId)
-	{
+	public BulletNifModel getNifBullet(int recordId) {
 		return recoIdToNifBullet.get(recordId);
 	}
 
-	public int getRecordId(BulletNifModel nifBullet)
-	{
+	public int getRecordId(BulletNifModel nifBullet) {
 		Integer id = null;
-		synchronized (dynamicsWorld)
-		{
+		synchronized (dynamicsWorld) {
 			id = nifBulletToRecoId.get(nifBullet);
 		}
-		if (id == null)
-		{
+		if (id == null) {
 			return -1;
-		}
-		else
-		{
+		} else {
 			return id.intValue();
 		}
 
 	}
 
-	public ClosestRayResultCallback findRayIntersect(Vector3f rayFrom, Vector3f rayTo, int characterRecordIdToIgnore)
-	{
-		try
-		{
+	public ClosestRayResultCallback findRayIntersect(Vector3f rayFrom, Vector3f rayTo, int characterRecordIdToIgnore) {
+		try {
 			CollisionWorld.ClosestRayResultCallback rayCallback = new ClosestRayResultCallbackChar(rayFrom, rayTo,
 					characterRecordIdToIgnore);
-			synchronized (dynamicsWorld)
-			{
+			synchronized (dynamicsWorld) {
 				dynamicsWorld.rayTest(rayFrom, rayTo, rayCallback);
 			}
 			return rayCallback;
-		}
-		catch (NullPointerException e)
-		{
+		} catch (NullPointerException e) {
 			System.out.println("findRayIntersect null again! something something ObjectPools");
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	public static class ClosestRayResultCallbackChar extends CollisionWorld.ClosestRayResultCallback
-	{
+	public static class ClosestRayResultCallbackChar extends CollisionWorld.ClosestRayResultCallback {
 		public int characterRecordIdToIgnore;
 
-		public ClosestRayResultCallbackChar(Vector3f rayFromWorld, Vector3f rayToWorld, int characterRecordIdToIgnore)
-		{
+		public ClosestRayResultCallbackChar(Vector3f rayFromWorld, Vector3f rayToWorld, int characterRecordIdToIgnore) {
 			super(rayFromWorld, rayToWorld);
 			this.characterRecordIdToIgnore = characterRecordIdToIgnore;
 		}
 
 		@Override
-		public boolean needsCollision(BroadphaseProxy proxy0)
-		{
+		public boolean needsCollision(BroadphaseProxy proxy0) {
 			//FIXME: the id system should be much more general, for now only characters
-			if (characterRecordIdToIgnore != -1)
-			{
-				if (proxy0.clientObject instanceof RigidBody)
-				{
-					RigidBody rb = (RigidBody) proxy0.clientObject;
-					if (rb.getUserPointer() instanceof NBNonControlledChar)
-					{
-						NBNonControlledChar nbncc = (NBNonControlledChar) rb.getUserPointer();
-						if (nbncc.getRecordId() == characterRecordIdToIgnore)
-						{
+			if (characterRecordIdToIgnore != -1) {
+				if (proxy0.clientObject instanceof RigidBody) {
+					RigidBody rb = (RigidBody)proxy0.clientObject;
+					if (rb.getUserPointer() instanceof NBNonControlledChar) {
+						NBNonControlledChar nbncc = (NBNonControlledChar)rb.getUserPointer();
+						if (nbncc.getRecordId() == characterRecordIdToIgnore) {
 							return false;
 						}
 					}
@@ -638,22 +544,16 @@ public class PhysicsDynamics extends DynamicsEngine
 		}
 	}
 
-	public PhysicsStatus getPhysicsStatus()
-	{
+	public PhysicsStatus getPhysicsStatus() {
 		PhysicsStatus ret = new PhysicsStatus();
-		synchronized (recoIdToNifBullet)
-		{
-			for (int i = 0; i < recoIdToNifBullet.size(); i++)
-			{
+		synchronized (recoIdToNifBullet) {
+			for (int i = 0; i < recoIdToNifBullet.size(); i++) {
 				BulletNifModel bnm = recoIdToNifBullet.get(recoIdToNifBullet.keyAt(i));
 
-				if (bnm instanceof NBSimpleDynamicModel)
-				{
+				if (bnm instanceof NBSimpleDynamicModel) {
 					ret.dynCount++;
-				}
-				else if (bnm instanceof NBSimpleModel)
-				{
-					NBSimpleModel sm = (NBSimpleModel) bnm;
+				} else if (bnm instanceof NBSimpleModel) {
+					NBSimpleModel sm = (NBSimpleModel)bnm;
 					ret.kinCount += sm.hasKinematics() ? 1 : 0;
 					ret.staCount += !sm.hasKinematics() ? 1 : 0;
 				}
@@ -662,17 +562,14 @@ public class PhysicsDynamics extends DynamicsEngine
 		return ret;
 	}
 
-	public static class PhysicsStatus
-	{
-		public int dynCount = 0;
+	public static class PhysicsStatus {
+		public int	dynCount			= 0;
 
-		public int kinCount = 0;
+		public int	kinCount			= 0;
 
-		public int staCount = 0;
+		public int	staCount			= 0;
 
-		public long averageStepTimeMS = 0;
+		public long	averageStepTimeMS	= 0;
 	}
-
-
 
 }
