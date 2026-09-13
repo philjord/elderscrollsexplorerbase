@@ -171,8 +171,8 @@ public class PhysicsDynamics extends DynamicsEngine {
 		} else {
 
 			//FIXME:    BethWorldVisualBranch.LOAD_PHYS_FROM_VIS = true; makes the record below not load!
-			if (j3dRECOInst.getRecordId() == 1608751)
-				System.out.println("boom 1608751! " + j3dRECOInst.getJ3dRECOType());
+			//if (j3dRECOInst.getRecordId() == 1608751)
+			//	System.out.println("boom 1608751! " + j3dRECOInst.getJ3dRECOType());
 
 			J3dRECOType j3dRECOType = j3dRECOInst.getJ3dRECOType();
 
@@ -244,40 +244,43 @@ public class PhysicsDynamics extends DynamicsEngine {
 	 * @param physNifFile
 	 */
 	private BulletNifModel createStaticOrDynamic(J3dRECOInst j3dRECOInst, String physNifFile, boolean hasPivot) {
-		BulletNifModel nb = null;			
+		BulletNifModel nb = null;
 		//root should have scale in it
 		Transform3D rootTrans = j3dRECOInst.getLocation(new Transform3D());
 
 		if (physNifFile != null && physNifFile.length() > 0) {
 			NifFile nifFile = NifToJ3d.loadNiObjects(physNifFile, meshSource);
-			BulletNifModelClassifier bulletNifModelClassifier = new BulletNifModelClassifier(nifFile);
-			if (bulletNifModelClassifier.isNotPhysics()) {
-				return null;
-			} else if (bulletNifModelClassifier.isPhysicTypeNotImplemented()) {
-				return null;
-			} else if (bulletNifModelClassifier.isStaticModel()) {
-				// the nif file will have mass of 0 making this static
-				nb = new NBSimpleModel(physNifFile, meshSource, rootTrans, hasPivot);
-			} else if (bulletNifModelClassifier.isKinematicModel()) {
-				// the nif file will have mass of 0 making this kinematic
-				nb = new NBSimpleModel(physNifFile, meshSource, rootTrans);
-			} else if (bulletNifModelClassifier.isSimpleDynamicModel(0)) {
-				nb = createDynamic(j3dRECOInst, physNifFile);
-			} else if (bulletNifModelClassifier.isComplexDynamic()) {
-				//TODO: this bad boy right here
-				System.out.println("phys skipping isComplexDynamic " + physNifFile);
-			} else {
-				//TODO: lots of plants have this check them out 
-				// probably just smoke effect etc, complex dynamic rag doll
-				System.out.println("phys skipping unknown type " + physNifFile);
-				bulletNifModelClassifier.outputDetails();
-			}
-
-			if (nb != null) {
-				synchronized (recoIdToNifBullet) {
-					recoIdToNifBullet.put(j3dRECOInst.getRecordId(), nb);
-					nifBulletToRecoId.put(nb, j3dRECOInst.getRecordId());
+			if (nifFile != null) {
+				BulletNifModelClassifier bulletNifModelClassifier = new BulletNifModelClassifier(nifFile);
+				if (bulletNifModelClassifier.isNotPhysics()) {
+					// probably just smoke effect etc
+					return null;
+				} else if (bulletNifModelClassifier.isPhysicTypeNotImplemented()) {
+					//complex dynamic rag doll type things
+					return null;
+				} else if (bulletNifModelClassifier.isStaticModel()) {
+					// the nif file will have mass of 0 making this static
+					nb = new NBSimpleModel(physNifFile, meshSource, rootTrans, hasPivot);
+				} else if (bulletNifModelClassifier.isKinematicModel()) {
+					// the nif file will not have mass of 0 making this kinematic
+					nb = new NBSimpleModel(physNifFile, meshSource, rootTrans);
+				} else if (bulletNifModelClassifier.isSimpleDynamicModel(0)) {
+					nb = createDynamic(j3dRECOInst, physNifFile);
+				} else if (bulletNifModelClassifier.isComplexDynamic()) {
+					System.out.println("PhysicsDynamics skipping isComplexDynamic " + physNifFile);
+				} else {
+					System.out.print("PhysicsDynamics skipping unknown type " + physNifFile + " ");
+					bulletNifModelClassifier.outputDetails();
 				}
+
+				if (nb != null) {
+					synchronized (recoIdToNifBullet) {
+						recoIdToNifBullet.put(j3dRECOInst.getRecordId(), nb);
+						nifBulletToRecoId.put(nb, j3dRECOInst.getRecordId());
+					}
+				}
+			} else {
+				System.out.println("nifFile is null when loading " + physNifFile);
 			}
 
 		} else {
