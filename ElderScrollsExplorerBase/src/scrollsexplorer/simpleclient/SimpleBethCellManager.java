@@ -179,6 +179,10 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices {
 
 	public void setCurrentCellFormId(final int newCellFormId, final Vector3f trans, final Quat4f rot) {
 		if (canChangeCell) {
+			
+			//add a bit to translate in case its foot level and causing me to fall through
+			trans.y+=0.5;			
+			
 			// use a new thread as generally the Awt thread is coming in and better to let it go
 			Thread thread = new Thread() {
 				@Override
@@ -189,120 +193,125 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices {
 					simpleWalkSetup.setVisualDisplayed(false);
 					bethAIControl.pause();
 					showLoadScreen();
+					// sometime we are just teleporting inside the same cell (morrowind Dagon Fel, Vacant Tower) 
+					if (currentCellFormId == newCellFormId) {
+						simpleWalkSetup.changeLocation(rot, trans);
+					} else {
+						//NOTE no structure thread as visual are not displayed now from call above (not live at all)
+						System.out.println("Setting cell to ID:" + newCellFormId);
+						if (currentCellFormId != -1 && currentCellFormId != newCellFormId) {
+							System.out.println("unloading cell " + currentCellFormId + "...");
 
-					//NOTE no structure thread as visual are not displayed now from call above (not live at all)
+							avatarLocation.removeAvatarLocationListener(bethAIControl);
+							bethAIControl.unload();
 
-					System.out.println("Setting cell to ID:" + newCellFormId);
-					if (currentCellFormId != -1 && currentCellFormId != newCellFormId) {
-						System.out.println("unloading cell " + currentCellFormId + "...");
+							// unload current
+							if (currentBethWorldVisualBranch != null) {
+								currentBethWorldVisualBranch.detach();
+								currentBethWorldVisualBranch.unload();
 
-						avatarLocation.removeAvatarLocationListener(bethAIControl);
-						bethAIControl.unload();
-
-						// unload current
-						if (currentBethWorldVisualBranch != null) {
-							currentBethWorldVisualBranch.detach();
-							currentBethWorldVisualBranch.unload();
-
-							if (avatarLocation != null) {
-								avatarLocation.removeAvatarLocationListener(currentBethWorldVisualBranch);
-							}
-							currentBethWorldVisualBranch = null;
-						}
-						if (currentBethWorldPhysicalBranch != null) {
-							currentBethWorldPhysicalBranch.detach();
-							if (avatarLocation != null) {
-								avatarLocation.removeAvatarLocationListener(currentBethWorldPhysicalBranch);
-							}
-							currentBethWorldPhysicalBranch = null;
-						}
-						if (currentBethInteriorVisualBranch != null) {
-							currentBethInteriorVisualBranch.detach();
-							currentBethInteriorVisualBranch = null;
-						}
-						if (currentBethInteriorPhysicalBranch != null) {
-							currentBethInteriorPhysicalBranch.detach();
-							currentBethInteriorPhysicalBranch = null;
-						}
-					}
-					currentCellFormId = newCellFormId;
-
-					//update location to avoid double load as would happen if not done between unload and load	
-					simpleWalkSetup.changeLocation(rot, trans);
-
-					try {
-						// now load new
-						if (currentCellFormId != -1) {
-							System.out.println("loading " + currentCellFormId + "...");
-							IDashboard.dashboard.setCellLoading(1);
-							PluginRecord cell = esmManager.getWRLD(currentCellFormId);
-							if (cell != null) {
-
-								bethAIControl.cellChanged(currentCellFormId, true);
-								bethAIControl.init(avatarLocation.getTransform());
-								avatarLocation.addAvatarLocationListener(bethAIControl);
-
-								// outside is light
-								BethRenderSettings.setGlobalAmbLightLevel(60f / 100f);
-								BethRenderSettings.setGlobalDirLightLevel(60f / 100f);
-								BethRenderSettings.setGlobalDirLightEnabled(true);
-
-								currentBethWorldVisualBranch = new BethWorldVisualBranch(currentCellFormId,
-										j3dCellFactory, simpleWalkSetup.getPhysicsSystem());
 								if (avatarLocation != null) {
-									currentBethWorldVisualBranch.init(avatarLocation.getTransform());
-									avatarLocation.addAvatarLocationListener(currentBethWorldVisualBranch);
+									avatarLocation.removeAvatarLocationListener(currentBethWorldVisualBranch);
 								}
-								// notice init before making live to speed it up
-								simpleWalkSetup.getVisualBranch().addChild(currentBethWorldVisualBranch);
-								if (!BethWorldVisualBranch.LOAD_PHYS_FROM_VIS) {
-									currentBethWorldPhysicalBranch = new BethWorldPhysicalBranch(
-											simpleWalkSetup.getPhysicsSystem(), currentCellFormId, j3dCellFactory);
-									if (avatarLocation != null) {
-										currentBethWorldPhysicalBranch.init(avatarLocation.getTransform());
-										avatarLocation.addAvatarLocationListener(currentBethWorldPhysicalBranch);
-									}
-									simpleWalkSetup.getPhysicalBranch().addChild(currentBethWorldPhysicalBranch);
+								currentBethWorldVisualBranch = null;
+							}
+							if (currentBethWorldPhysicalBranch != null) {
+								currentBethWorldPhysicalBranch.detach();
+								if (avatarLocation != null) {
+									avatarLocation.removeAvatarLocationListener(currentBethWorldPhysicalBranch);
 								}
-							} else {
+								currentBethWorldPhysicalBranch = null;
+							}
+							if (currentBethInteriorVisualBranch != null) {
+								currentBethInteriorVisualBranch.detach();
+								currentBethInteriorVisualBranch = null;
+							}
+							if (currentBethInteriorPhysicalBranch != null) {
+								currentBethInteriorPhysicalBranch.detach();
+								currentBethInteriorPhysicalBranch = null;
+							}
+						}
+						currentCellFormId = newCellFormId;
 
-								bethAIControl.cellChanged(currentCellFormId, false);
-								bethAIControl.init(avatarLocation.getTransform());
-								avatarLocation.addAvatarLocationListener(bethAIControl);
+						//update location to avoid double load as would happen if not done between unload and load	
+						simpleWalkSetup.changeLocation(rot, trans);
 
-								//must be interior?
-								// inside is dim
-								BethRenderSettings.setGlobalAmbLightLevel(50f / 100f);
-								BethRenderSettings.setGlobalDirLightEnabled(false);
-
-								cell = esmManager.getInteriorCELL(currentCellFormId);
+						try {
+							// now load new
+							if (currentCellFormId != -1) {
+								System.out.println("loading " + currentCellFormId + "...");
+								IDashboard.dashboard.setCellLoading(1);
+								PluginRecord cell = esmManager.getWRLD(currentCellFormId);
 								if (cell != null) {
-									currentBethInteriorVisualBranch = new BethInteriorVisualBranch(currentCellFormId,
-											cell.getEditorID(), j3dCellFactory, simpleWalkSetup.getPhysicsSystem());
-									simpleWalkSetup.getVisualBranch().addChild(currentBethInteriorVisualBranch);
-									if (!BethWorldVisualBranch.LOAD_PHYS_FROM_VIS) {
-										currentBethInteriorPhysicalBranch = new BethInteriorPhysicalBranch(
-												simpleWalkSetup.getPhysicsSystem(), currentCellFormId, j3dCellFactory);
-										simpleWalkSetup.getPhysicalBranch().addChild(currentBethInteriorPhysicalBranch);
-									}
+
+									bethAIControl.cellChanged(currentCellFormId, true);
+									bethAIControl.init(avatarLocation.getTransform());
+									avatarLocation.addAvatarLocationListener(bethAIControl);
+
+									// outside is light
+									BethRenderSettings.setGlobalAmbLightLevel(60f / 100f);
+									BethRenderSettings.setGlobalDirLightLevel(60f / 100f);
+									BethRenderSettings.setGlobalDirLightEnabled(true);
+
+									currentBethWorldVisualBranch = new BethWorldVisualBranch(currentCellFormId,
+											j3dCellFactory, simpleWalkSetup.getPhysicsSystem());
 									if (avatarLocation != null) {
-										//TODO: the unload load part of this should still be called I think
-										//currentBethInteriorPhysicalBranch.init(avatarLocation.getTransform());
-										//avatarLocation.addAvatarLocationListener(currentBethInteriorPhysicalBranch);
+										currentBethWorldVisualBranch.init(avatarLocation.getTransform());
+										avatarLocation.addAvatarLocationListener(currentBethWorldVisualBranch);
+									}
+									// notice init before making live to speed it up
+									simpleWalkSetup.getVisualBranch().addChild(currentBethWorldVisualBranch);
+									if (!BethWorldVisualBranch.LOAD_PHYS_FROM_VIS) {
+										currentBethWorldPhysicalBranch = new BethWorldPhysicalBranch(
+												simpleWalkSetup.getPhysicsSystem(), currentCellFormId, j3dCellFactory);
+										if (avatarLocation != null) {
+											currentBethWorldPhysicalBranch.init(avatarLocation.getTransform());
+											avatarLocation.addAvatarLocationListener(currentBethWorldPhysicalBranch);
+										}
+										simpleWalkSetup.getPhysicalBranch().addChild(currentBethWorldPhysicalBranch);
 									}
 								} else {
-									System.out.println("unknown cell id " + currentCellFormId);
 
+									bethAIControl.cellChanged(currentCellFormId, false);
+									bethAIControl.init(avatarLocation.getTransform());
+									avatarLocation.addAvatarLocationListener(bethAIControl);
+
+									//must be interior?
+									// inside is dim
+									BethRenderSettings.setGlobalAmbLightLevel(50f / 100f);
+									BethRenderSettings.setGlobalDirLightEnabled(false);
+
+									cell = esmManager.getInteriorCELL(currentCellFormId);
+									if (cell != null) {
+										currentBethInteriorVisualBranch = new BethInteriorVisualBranch(
+												currentCellFormId, cell.getEditorID(), j3dCellFactory,
+												simpleWalkSetup.getPhysicsSystem());
+										simpleWalkSetup.getVisualBranch().addChild(currentBethInteriorVisualBranch);
+										if (!BethWorldVisualBranch.LOAD_PHYS_FROM_VIS) {
+											currentBethInteriorPhysicalBranch = new BethInteriorPhysicalBranch(
+													simpleWalkSetup.getPhysicsSystem(), currentCellFormId,
+													j3dCellFactory);
+											simpleWalkSetup.getPhysicalBranch()
+													.addChild(currentBethInteriorPhysicalBranch);
+										}
+										if (avatarLocation != null) {
+											//TODO: the unload load part of this should still be called I think
+											//currentBethInteriorPhysicalBranch.init(avatarLocation.getTransform());
+											//avatarLocation.addAvatarLocationListener(currentBethInteriorPhysicalBranch);
+										}
+									} else {
+										System.out.println("unknown cell id " + currentCellFormId);
+									}
 								}
+								IDashboard.dashboard.setCellLoading(-1);
 							}
-							IDashboard.dashboard.setCellLoading(-1);
+						} catch (DataFormatException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						} catch (PluginException e) {
+							e.printStackTrace();
 						}
-					} catch (DataFormatException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					} catch (PluginException e) {
-						e.printStackTrace();
 					}
 					simpleWalkSetup.setVisualDisplayed(true);
 					simpleWalkSetup.setEnabled(true);
