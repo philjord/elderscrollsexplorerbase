@@ -625,7 +625,15 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 				}
 
 			}
-
+			
+			
+		/*	if(true) {
+				//Just a debugger to make me alwyas at 0,0,0 to start with
+				returnTrans.set(new Vector3f(0, 262, 0));
+				return;
+			}*/
+			
+			
 			if (doors.size() > 0) {
 				int idx = (int)(Math.random() * (doors.size() - 1));
 				if (gameConfigToLoad.gameName != "TESIII: Morrowind") {

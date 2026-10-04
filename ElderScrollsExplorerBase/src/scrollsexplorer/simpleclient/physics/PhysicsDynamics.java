@@ -206,7 +206,7 @@ public class PhysicsDynamics extends DynamicsEngine {
 
 	private NBSimpleModel createLand(J3dLAND j3dLAND) {
 		Transform3D rootTrans = j3dLAND.getLocation(new Transform3D());
-		NBSimpleModel nb = new NBSimpleModel(j3dLAND.getHeights(), rootTrans, J3dLAND.TERRIAN_SQUARE_SIZE);
+		NBSimpleModel nb = new NBSimpleModel(j3dLAND.getHeights(), rootTrans, j3dLAND.getTERRIAN_SQUARE_SIZE());
 		if (nb != null) {
 			synchronized (recoIdToNifBullet) {
 				recoIdToNifBullet.put(j3dLAND.getRecordId(), nb);
@@ -267,7 +267,8 @@ public class PhysicsDynamics extends DynamicsEngine {
 				} else if (bulletNifModelClassifier.isSimpleDynamicModel(0)) {
 					nb = createDynamic(j3dRECOInst, physNifFile);
 				} else if (bulletNifModelClassifier.isComplexDynamic()) {
-					System.out.println("PhysicsDynamics skipping isComplexDynamic " + physNifFile);
+					//System.out.println("PhysicsDynamics skipping isComplexDynamic " + physNifFile);
+					//TODO:
 				} else {
 					System.out.print("PhysicsDynamics skipping unknown type " + physNifFile + " ");
 					bulletNifModelClassifier.outputDetails();
