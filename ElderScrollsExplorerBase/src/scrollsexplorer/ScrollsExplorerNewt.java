@@ -627,8 +627,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 			}
 			
 			
-		/*	if(true) {
-				//Just a debugger to make me alwyas at 0,0,0 to start with
+	/*		if(true) {
+				//Just a debugger to make me always at 0,0,0 to start with
 				returnTrans.set(new Vector3f(0, 262, 0));
 				return;
 			}*/

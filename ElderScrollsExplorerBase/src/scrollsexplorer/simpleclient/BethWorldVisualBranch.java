@@ -36,6 +36,7 @@ import esmj3d.j3d.cell.Beth32LodManager;
 import esmj3d.j3d.cell.Beth32_4LodManager;
 import esmj3d.j3d.cell.BethLodManager;
 import esmj3d.j3d.cell.BethNoLodManager;
+import esmj3d.j3d.cell.BtdbLodManager;
 import esmj3d.j3d.cell.GridSpace;
 import esmj3d.j3d.cell.J3dCELLGeneral;
 import esmj3d.j3d.cell.J3dICELLPersistent;
@@ -157,6 +158,11 @@ public class BethWorldVisualBranch extends BranchGroup implements LocationUpdate
 			else if (j3dCellFactory.getMainESMFileName().indexOf("Oblivion") != -1)
 			{
 				bethLodManager = new Beth32LodManager(j3dCellFactory);
+			}
+			else if (j3dCellFactory.getMainESMFileName().indexOf("SeventySix") != -1 ||
+					j3dCellFactory.getMainESMFileName().indexOf("Starfield") != -1)
+			{
+				bethLodManager = new BtdbLodManager(j3dCellFactory);
 			}
 			else
 			{
