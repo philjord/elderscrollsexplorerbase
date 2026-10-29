@@ -179,14 +179,17 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices {
 
 	public void setCurrentCellFormId(final int newCellFormId, final Vector3f trans, final Quat4f rot) {
 		if (canChangeCell) {
-			
+
 			//add a bit to translate in case its foot level and causing me to fall through
-			trans.y+=0.5;			
-			
+			trans.y += 0.5;
+
 			// use a new thread as generally the Awt thread is coming in and better to let it go
 			Thread thread = new Thread() {
+				long cellLoadTime = 0;
+
 				@Override
 				public void run() {
+					cellLoadTime = System.currentTimeMillis();//reuse as the start time
 					canChangeCell = false;
 
 					simpleWalkSetup.setEnabled(false);
@@ -319,6 +322,8 @@ public class SimpleBethCellManager implements InstRECOStore, AIActorServices {
 					dropLoadScreen();
 
 					canChangeCell = true;
+					cellLoadTime = System.currentTimeMillis() - cellLoadTime;//reused as the start time
+					System.out.println("Cell " + currentCellFormId + " loaded in " + cellLoadTime + "ms");
 
 				}
 			};
