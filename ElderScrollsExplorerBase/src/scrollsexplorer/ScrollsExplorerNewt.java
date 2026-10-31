@@ -68,6 +68,10 @@ import utils.source.SoundSource;
 import utils.source.TextureSource;
 
 public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, LocationUpdateListener {
+
+	// if the GUI wants to set a fixed start point for debug or otherwise
+	public static Vector3f				fixedStartTrans		= null;
+
 	//I think this auto installs itself 
 	public DashboardNewt				dashboardNewt		= new DashboardNewt();
 
@@ -129,7 +133,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 			simpleWalkSetup.getAvatarLocation().addAvatarLocationListener(this);
 
 			for (GameConfig gameConfig : GameConfig.allGameConfigs) {
-				System.out.println("checking [" + gameToLoad + "] against [" + gameConfig.gameName+"]");
+				System.out.println("checking [" + gameToLoad + "] against [" + gameConfig.gameName + "]");
 				if (gameConfig.gameName.equals(gameToLoad)) {
 					System.out.println("Found game to load! " + gameConfig.gameName);
 					if (hasESMAndBSAFiles(gameConfig)) {
@@ -176,6 +180,8 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 					"" + PropertyCodec.vector3fIn(simpleWalkSetup.getAvatarLocation().get(new Vector3f())));
 			PropertyLoader.properties.setProperty("CellId" + esmManager.getName(),
 					"" + simpleBethCellManager.getCurrentCellFormId());
+			PropertyLoader.properties.setProperty("FixLoc" + esmManager.getName(),
+					fixedStartTrans.x + ", " + fixedStartTrans.y + ", " + fixedStartTrans.z);
 		}
 		PropertyLoader.save();
 
@@ -247,6 +253,17 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							prevCellformid = gameConfigToLoad.startCellId;
 						}
 
+						String flString = PropertyLoader.properties.getProperty("FixLoc" + esmManager.getName(), "");
+						String[] parts = flString.split("[^\\d-]+");
+
+						if (parts.length == 3) {
+							fixedStartTrans = new Vector3f(Float.parseFloat(parts[0]), Float.parseFloat(parts[1]),
+									Float.parseFloat(parts[2]));
+						} else {
+							fixedStartTrans = null;
+							PropertyLoader.properties.setProperty("FixLoc" + esmManager.getName(), null);
+						}
+
 						if (bsaFileSet == null) {
 							bsaFileSet = new BSArchiveSetFile(new String[] {gameConfigToLoad.scrollsFolder}, true);
 							//OK time to check that each bsa file that holds dds has a ktx equivalent and drop the dds version
@@ -258,20 +275,18 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 							for (ArchiveFile archiveFile : bsaFileSet) {
 								if (archiveFile != null && archiveFile.hasDDS()) {
 									// we want a archive with the same name but ending in _ktx.bsa holding KTX files
-									String ddsArchiveName = archiveFile.getName();									
+									String ddsArchiveName = archiveFile.getName();
 									String ktxArchiveName = ddsArchiveName.substring(0,
 											ddsArchiveName.lastIndexOf("."));
 									ktxArchiveName = ktxArchiveName + "_ktx.bsa";
 									neededBsas.put(ktxArchiveName, archiveFile);
 								}
 							}
-							
-							
+
 							//multithread now as we want o get conversion done fastest
 							ArrayList<DDSToKTXBsaConverter> converters = new ArrayList<DDSToKTXBsaConverter>();
 							//TODO: in fact she's a bit complex so do it one day when it's important!
-							
-							
+
 							for (String ktxArchiveName : neededBsas.keySet()) {
 								ArchiveFile ddsArchive = neededBsas.get(ktxArchiveName);
 								//remove the dds version archive either way
@@ -348,10 +363,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 									}
 								}
 							}
-							
-							
-							
-							
+
 						}
 
 						if (bsaFileSet.size() == 0) {
@@ -367,7 +379,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 						//and be passed in deep the J3dNiGeometryXXX gear with TextureSource
 						MaterialsSource.setBgsmSource(materialsSource);
 						MeshSource.setMeshSource(meshSource);
-						
+
 						new EsmSoundKeyToName(esmManager);
 						//TODO: Morrowind appears to have sound and music as a seperate gosh darned file system system! not in a bsa
 
@@ -459,8 +471,12 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 									simpleWalkSetup, simpleBethCellManager);
 						}
 
-						// need to set Trans to a door somewhere?
-						findADoor(prevCellformid, gameConfigToLoad, esmManager, trans, yp);
+						// if we don't have a fixed start point then  need to set Trans to a door somewhere?
+						if (fixedStartTrans == null) {
+							findADoor(prevCellformid, gameConfigToLoad, esmManager, trans, yp);
+						} else {
+							trans.set(fixedStartTrans);
+						}
 
 						simpleWalkSetup.getAvatarLocation().set(yp.get(new Quat4f()), trans);
 
@@ -625,15 +641,7 @@ public class ScrollsExplorerNewt implements BethRenderSettings.UpdateListener, L
 				}
 
 			}
-			
-			
-	/*		if(true) {
-				//Just a debugger to make me always at 0,0,0 to start with
-				returnTrans.set(new Vector3f(0, 262, 0));
-				return;
-			}*/
-			
-			
+
 			if (doors.size() > 0) {
 				int idx = (int)(Math.random() * (doors.size() - 1));
 				if (gameConfigToLoad.gameName != "TESIII: Morrowind") {
